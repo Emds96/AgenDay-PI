@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/verifica_login.php';
-include("info-funcionario.php");
+require_once __DIR__ . '/info-funcionario.php';
 ?>
 
 <!DOCTYPE html>
 <!-- Coding by CodingLab | www.codinglabweb.com-->
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8" />
@@ -39,7 +39,7 @@ include("info-funcionario.php");
             <div class="dropdown">
                 <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-                    Barbearia
+                    <?= htmlspecialchars((string) ($_SESSION['nome_estabelecimento'] ?? 'Estabelecimento'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                 </a>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item fw-bold" href="config.php">Configurações</a></li>
@@ -124,25 +124,39 @@ include("info-funcionario.php");
             <div class="card box">
 
                 <div class="card-header">
-                    <h2 class="text-center">Funcionarios</h2>
+                    <h2 class="text-center">Funcionários</h2>
                 </div>
 
+                <?php if (!empty($_SESSION['sucesso_funcionario'])): ?>
+                    <div class="alert alert-success mx-3 mt-3" role="status">Funcionário cadastrado com sucesso!</div>
+                <?php endif; unset($_SESSION['sucesso_funcionario']); ?>
+                <?php if (!empty($_SESSION['erro_funcionario'])): ?>
+                    <div class="alert alert-danger mx-3 mt-3" role="alert">
+                        <?= htmlspecialchars((string) $_SESSION['erro_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                    </div>
+                <?php endif; unset($_SESSION['erro_funcionario']); ?>
+
                 <div class="container-fluid buscar">
-                    <form class="d-flex d-flex justify-content-around ">
+                    <form class="d-flex d-flex justify-content-around" method="GET" action="cad-funcionario.php">
                         <div class="col-md-4">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control shadow input-pesquisa" placeholder="Buscar" aria-label="Username" aria-describedby="addon-wrapping">
-
-                                <button>
-                                    <span class="input-group-text button-pesquisa shadow" id="addon-wrapping"><i class="bi bi-search"></i></span>
+                                <input type="search" class="form-control shadow input-pesquisa"
+                                    name="busca" maxlength="120" placeholder="Buscar funcionário"
+                                    aria-label="Buscar funcionários"
+                                    value="<?= htmlspecialchars($busca, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                <button type="submit" aria-label="Pesquisar funcionários">
+                                    <span class="input-group-text button-pesquisa shadow">
+                                        <i class="bi bi-search"></i>
+                                    </span>
                                 </button>
                             </div>
                         </div>
-                        <button class="rounded-3 border shadow rounded adicionar" data-bs-toggle="modal" data-bs-target="#exampleModal" type="button">Adicionar</button>
+                        <button class="rounded-3 border shadow rounded adicionar" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal" type="button">Adicionar</button>
                     </form>
                 </div>
 
-                <div class="modal" tabindex="-1" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal" tabindex="-1" id="exampleModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -152,32 +166,50 @@ include("info-funcionario.php");
 
                             <div class="modal-body">
                                 <form enctype="multipart/form-data" action="cadastro-funcionario.php" method="POST">
+                                    <input type="hidden" name="csrf_token"
+                                        value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
                                     <div class="row">
                                         <div class="mb-3 col-7">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Nome do funcionario" name="nome">
+                                            <input type="text" class="form-control rounded-3 shadow"
+                                                placeholder="Nome do funcionário" name="nome" maxlength="120" required>
                                         </div>
                                     </div>
-
-                                    <div class="row">
-                                        <div class="col-7 mb-3">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Serviço" name="servico">
-                                        </div>
-                                    </div>
-
                                     <div class="row">
                                         <div class="col-4 mb-3">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Contato" name="contato">
+                                            <input type="tel" class="form-control rounded-3 shadow"
+                                                placeholder="Contato" name="contato" maxlength="20" required>
                                         </div>
                                     </div>
+
+                                    <fieldset class="mb-3">
+                                        <legend class="fs-6">Serviços que realiza (opcional)</legend>
+                                        <?php if ($servicosDisponiveis === []): ?>
+                                            <p class="text-muted mb-2">Ainda não há serviços cadastrados.
+                                                Você pode cadastrar o funcionário agora e vincular serviços depois.</p>
+                                        <?php else: ?>
+                                            <?php foreach ($servicosDisponiveis as $servico): ?>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="servicos[]"
+                                                        value="<?= (int) $servico['id_servicos'] ?>"
+                                                        id="func-servico-<?= (int) $servico['id_servicos'] ?>">
+                                                    <label class="form-check-label"
+                                                        for="func-servico-<?= (int) $servico['id_servicos'] ?>">
+                                                        <?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                                    </label>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </fieldset>
 
                                     <div class="input-group">
-                                        <input type="file" class="form-control shadow" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload" name="arquivo">
+                                        <input type="file" class="form-control shadow" id="inputGroupFile04"
+                                            aria-label="Foto do funcionário (opcional)" name="arquivo"
+                                            accept="image/jpeg,image/png">
                                     </div>
+                                    <small class="text-muted">Foto opcional: JPG ou PNG, até 2 MB.</small>
 
                                     <div class="float-end m-3">
-                                        <div class="">
-                                            <button class="concluir rounded-3 border shadow">Concluir</button>
-                                        </div>
+                                        <button type="submit" class="concluir rounded-3 border shadow">Concluir</button>
                                     </div>
                                 </form>
         
@@ -186,44 +218,46 @@ include("info-funcionario.php");
                     </div>
                 </div>
 
-                <div class='container scroll'>
-                    <?php
-                    while ($user_data = mysqli_fetch_assoc($result)) {
-                        echo
-                            "<div class='container conteudo'>
-                                <div class='row'>
-                                    <div class='col-1' style='text-align: center;'>
-                                        <img src='".$user_data['arquivo_funcionario']."' class='perfil' alt='...'>
+                <div class="container scroll">
+                    <?php if ($funcionarios === []): ?>
+                        <p class="text-center text-muted py-4">Nenhum funcionário encontrado.</p>
+                    <?php else: ?>
+                        <?php foreach ($funcionarios as $funcionario): ?>
+                            <div class="container conteudo">
+                                <div class="row">
+                                    <div class="col-1" style="text-align: center;">
+                                        <?php
+                                            $fotoFuncionario = $funcionario['arquivo_funcionario'];
+                                            $fotoValida = is_string($fotoFuncionario)
+                                                && preg_match('~^arquivos/funcionarios/[a-f0-9]{32}\.(jpg|png)$~D', $fotoFuncionario);
+                                        ?>
+                                        <?php if ($fotoValida): ?>
+                                            <img src="<?= htmlspecialchars($fotoFuncionario, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                                class="perfil" alt="Foto do funcionário">
+                                        <?php else: ?>
+                                            <i class="bi bi-person-circle fs-2" aria-hidden="true"></i>
+                                        <?php endif; ?>
                                     </div>
-                                    <div class='col pt-3'>
-                                        <strong>".
-                                        $user_data['nome_funcionario']." <br>
-                                        </strong>".
-                                        $user_data['contato_funcionario']."<br>
-                                        <strong>".
-                                        $user_data['servico_funcionario']."
-                                        </strong>
+                                    <div class="col pt-3">
+                                        <strong><?= htmlspecialchars((string) $funcionario['nome_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>
+                                        <br>
+                                        <?= htmlspecialchars((string) $funcionario['contato_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                        <br>
+                                        <small><?= $funcionario['servicos_vinculados'] !== null && $funcionario['servicos_vinculados'] !== ''
+                                            ? htmlspecialchars((string) $funcionario['servicos_vinculados'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+                                            : 'Sem serviços vinculados' ?></small>
                                     </div>
-                                </div>   
-                            </div>";
-                    }
-                    ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
+            </div>
         </section>
     </main>
     <section class="overlay"></section>
     <script src="js\menu-lateral.js"></script>
-    <?php
-    if (isset($_SESSION['msg'])) :
-    ?>
-        <div class="alert alert-danger col-2 container fixed-bottom" role="alert">
-            Funcionario não cadastrado. <br>
-            Formato de imagem invalida.
-        </div>
-    <?php
-    endif;
-    unset($_SESSION['msg']);
-    ?>
+
 
     <footer>
         <div class="rodape">
