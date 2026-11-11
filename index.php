@@ -1,5 +1,10 @@
 <?php
-session_start();
+require_once __DIR__ . '/sessao.php';
+if (isset($_SESSION['id_estabelecimento']) && is_int($_SESSION['id_estabelecimento'])) {
+    header('Location: agenda.php');
+    exit;
+}
+$csrfToken = agenday_token_csrf();
 ?>
 <html lang="pt-BR" dir="ltr">
 
@@ -24,6 +29,7 @@ session_start();
 
         <div class="form-container sign-up-container">
             <form action="cadastrar.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                 <h1>Criar Conta</h1>
 
                 <div class="row">
@@ -47,7 +53,7 @@ session_start();
                 <div class="row">
                     <div class="mb-2 col">
                         <div class="input-group">
-                            <input class="input rounded rounded-4" name="senha" type="password" placeholder=" " required />
+                            <input class="input rounded rounded-4" name="senha" type="password" placeholder=" " minlength="8" required />
                             <label class="letra">Senha</label>
                         </div>
                     </div>
@@ -56,7 +62,7 @@ session_start();
                 <div class="row">
                     <div class="mb-2 col">
                         <div class="input-group">
-                            <input class="input rounded rounded-4" type="password" placeholder=" " required />
+                            <input class="input rounded rounded-4" name="confirmar_senha" type="password" placeholder=" " minlength="8" required />
                             <label class="letra">Repita a senha</label>
                         </div>
                     </div>
@@ -70,6 +76,7 @@ session_start();
 
         <div class="form-container sign-in-container">
             <form action="login.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                 <h1>Entrar</h1>
 
                 <div class="row">
@@ -129,7 +136,7 @@ session_start();
     if (isset($_SESSION['usuario_existe'])) :
     ?>
         <div class="alert alert-danger col-2 container fixed-bottom" role="alert">
-            Nome de estabelecimento já existente
+            E-mail de estabelecimento já cadastrado
         </div>
     <?php
     endif;
@@ -151,6 +158,12 @@ session_start();
     unset($_SESSION['nao_autenticado']);
     ?>
 
+
+    <?php if (isset($_SESSION['erro_cadastro'])) : ?>
+        <div class="alert alert-danger col-4 container fixed-bottom" role="alert">
+            <?= htmlspecialchars($_SESSION['erro_cadastro'], ENT_QUOTES, 'UTF-8') ?>
+        </div>
+    <?php endif; unset($_SESSION['erro_cadastro']); ?>
 
     <script src="js/login.js" charset="utf-8"></script>
 </body>
