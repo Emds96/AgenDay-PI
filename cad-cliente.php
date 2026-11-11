@@ -153,7 +153,7 @@ require_once __DIR__ . '/info-clientes.php';
                     </form>
                 </div>
 
-                <div class="modal" tabindex="-1" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal" tabindex="-1" id="exampleModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -228,6 +228,8 @@ require_once __DIR__ . '/info-clientes.php';
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
+            </div>
+        </section>
     </main>
 
     <section class="overlay"></section>
