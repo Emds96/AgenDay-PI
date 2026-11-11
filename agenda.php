@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/verifica_login.php';
 
-// 4.2: nenhuma gravação permitida. O POST só será implementado na 4.3.
+// Esta página somente exibe dados. O POST autenticado é salvo por salvar-agendamento.php.
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
     http_response_code(405);
     header('Allow: GET');
-    exit('A gravação de agendamentos ainda não está disponível.');
+    exit('Use o formulário para criar agendamentos.');
 }
 
 require_once __DIR__ . '/lib/agendamentos.php';
@@ -137,17 +137,27 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
         </div>
     </header>
     <main>
-        <!-- 4.2: preparar um atendimento, sem inserir no banco. -->
+        <!-- 4.3: formulário autenticado; validação final e gravação no servidor. -->
         <section class="container-fluid py-4" aria-labelledby="novo-agendamento-titulo">
             <div class="card shadow-sm agendamento-card mx-auto">
                 <div class="card-body p-3 p-md-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                         <h1 id="novo-agendamento-titulo" class="h4 mb-0">Novo agendamento</h1>
-                        <span class="badge text-bg-secondary">Prévia · Etapa 4.2</span>
+                        <span class="badge text-bg-primary">Agendamentos · Etapa 4.3</span>
                     </div>
-                    <p class="text-muted mb-3">Escolha um cliente, serviço, funcionário e horário para preparar o atendimento.</p>
-                    <div class="alert alert-info" role="status">
-                        Esta tela ainda <strong>não salva agendamentos</strong>. A gravação será implementada na microtarefa 4.3.
+                    <p class="text-muted mb-3">Escolha cliente, serviço, funcionário, data e horário para registrar um atendimento.</p>
+                    <?php if (!empty($_SESSION['sucesso_agendamento'])): ?>
+                        <div class="alert alert-success" role="status">
+                            <?= htmlspecialchars((string) $_SESSION['sucesso_agendamento'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                        </div>
+                    <?php endif; unset($_SESSION['sucesso_agendamento']); ?>
+                    <?php if (!empty($_SESSION['erro_agendamento'])): ?>
+                        <div class="alert alert-danger" role="alert">
+                            <?= htmlspecialchars((string) $_SESSION['erro_agendamento'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                        </div>
+                    <?php endif; unset($_SESSION['erro_agendamento']); ?>
+                    <div class="alert alert-info" role="note">
+                        O sistema confere a disponibilidade ao salvar. O calendário abaixo ainda é ilustrativo.
                     </div>
                     <?php if ($erroOpcoesAgenda): ?>
                         <div class="alert alert-danger" role="alert">
@@ -171,7 +181,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                         $opcoesAgenda['funcionarios_servicos'],
                         JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE
                     ) ?></script>
-                    <form id="form-novo-agendamento" method="post" action="agenda.php" autocomplete="off">
+                    <form id="form-novo-agendamento" method="post" action="salvar-agendamento.php" autocomplete="off">
                         <input type="hidden" name="csrf_token"
                             value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
                         <div class="row g-3">
@@ -230,8 +240,9 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                             Selecione os campos para visualizar a previsão do atendimento.
                         </div>
                         <div class="mt-3 d-flex flex-wrap gap-3 align-items-center">
-                            <button type="submit" class="btn btn-primary" disabled>Salvar agendamento (em breve)</button>
-                            <span class="text-muted small">Nenhum dado será gravado nesta etapa.</span>
+                            <button type="submit" class="btn btn-primary" id="agendamento-salvar"
+                                <?= !$agendaPodePreparar ? 'disabled' : '' ?>>Salvar agendamento</button>
+                            <span class="text-muted small">A confirmação acontece após a validação no servidor.</span>
                         </div>
                     </form>
                 </div>

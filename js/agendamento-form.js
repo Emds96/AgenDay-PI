@@ -1,13 +1,21 @@
 'use strict';
 
-// Microtarefa 4.2: visualização de uma prévia. Nenhum envio é realizado.
+// Microtarefa 4.3: formulário envia POST ao servidor; o PHP valida e grava.
 (() => {
     const formulario = document.querySelector('#form-novo-agendamento');
     if (!formulario) return;
 
-    // Impede envio também quando o visitante pressiona Enter.
-    // O servidor rejeita métodos POST enquanto a etapa 4.3 não existir.
-    formulario.addEventListener('submit', (evento) => evento.preventDefault());
+    // Após a validação nativa do navegador, evita cliques duplos.
+    // A validação definitiva (incluindo conflito de horários) ocorre no PHP.
+    formulario.addEventListener('submit', () => {
+        if (formulario.checkValidity()) {
+            const botao = document.querySelector('#agendamento-salvar');
+            if (botao) {
+                botao.disabled = true;
+                botao.textContent = 'Salvando...';
+            }
+        }
+    });
 
     const cliente = document.querySelector('#agendamento-cliente');
     const servico = document.querySelector('#agendamento-servico');
@@ -72,11 +80,11 @@
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit'
         });
-        resumo.textContent = 'Prévia (não salva): '
+        resumo.textContent = 'Prévia do atendimento: '
             + nomeCliente + ' · ' + nomeServico + ' · ' + nomeFuncionario
             + ' · início ' + formatador.format(inicio)
             + ' · fim previsto ' + formatador.format(fim)
-            + ' (' + minutos + ' min). A disponibilidade não foi verificada.';
+            + ' (' + minutos + ' min). A disponibilidade será verificada ao salvar.';
     }
 
     function atualizarFuncionarios() {
