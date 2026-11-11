@@ -31,6 +31,6 @@ O banco está hospedado na conta independente `if0_43415733_agenday`. **Nenhuma 
 - Estas são mudanças **no código**, ainda **não implantadas ou testadas no InfinityFree**. Não afirmar que o login foi validado ao vivo.
 - O banco V2 começa vazio, portanto não existe conta de demonstração até que uma seja criada.
 - Senhas antigas MD5 não são aceitas nesta nova versão. Como o banco é independente, isso é intencional.
-- Cadastro/consulta de clientes, funcionários e serviços ainda exigem a adaptação completa à estrutura V2 nas microtarefas **3.2, 3.3 e 3.4**; há formulários e colunas legados. Para evitar vazamento entre empresas, **não publique a aplicação completa** antes desses ajustes.
+- Cadastro/consulta de **clientes** já foram adaptados ao BD V2 na microtarefa **3.2**, mas ainda não foram testados online. Funcionários e serviços exigem adaptação nas microtarefas **3.3 e 3.4**. **Não publique a aplicação completa** antes desses ajustes.
 - As operações restantes de gravação ainda precisam de CSRF, validação, prepared statements e `id_estabelecimento` na inserção. Não estão concluídas nesta microtarefa.
 - `alterar-senha.php`, finanças e comandas ainda não implementam todas as ações; as telas apenas ganharam a verificação de sessão.

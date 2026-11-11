@@ -5,7 +5,8 @@ require_once __DIR__ . '/conexao.php';
 // O estabelecimento vem da sessão, nunca da URL/formulário.
 $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
 $busca = isset($_GET['busca']) && is_string($_GET['busca']) ? trim($_GET['busca']) : '';
-$busca = substr($busca, 0, 120);
+// Limitar a 120 caracteres UTF-8 sem dividir acentos no meio.
+$busca = preg_match('/^.{0,120}/us', $busca, $trechoBusca) ? $trechoBusca[0] : '';
 $clientes = [];
 
 if ($busca !== '') {
