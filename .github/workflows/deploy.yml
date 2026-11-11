@@ -1,0 +1,28 @@
+name: Deploy to InfinityFree
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  web-deploy:
+    name: Deploy to InfinityFree FTP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciais
+        env:
+          DB_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          php -r '$c = file_get_contents("conexao.php"); $c = str_replace("DB_PASSWORD_PLACEHOLDER", getenv("DB_PASS"), $c); file_put_contents("conexao.php", $c);'
+
+      - name: Sync FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: htdocs/

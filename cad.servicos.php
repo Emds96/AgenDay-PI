@@ -11,7 +11,7 @@ include("info-servicos.php");
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <Title>AgenDay</Title>
-    <link rel="icon" href="img\icon-agenda.png" type="image/x-icon">
+    <link rel="icon" href="img/icon-agenda.png" type="image/x-icon">
     <!-- BOOTSTRAP -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 
@@ -59,13 +59,13 @@ include("info-servicos.php");
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-0">
                         <li class="nav-item " style="padding: 10px;">
                             <a class="nav-link fw-bold" href="agenda.php">
-                                <img src="img\1651909_calendar_christmas_date_icon.png" alt="" color="white" width="24" height="27" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
+                                <img src="img/icon-agenda.svg" alt="Agenda" width="24" height="24" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
                                 Agenda
                             </a>
                         </li>
                         <li class="nav-item dropdown" style="padding: 10px;">
                             <a class="nav-link dropdown-toggle fw-bold " href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="img\1651909_calendar_christmas_date_icon.png" alt="" color="white" width="24" height="27" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
+                                <img src="img/icon-cadastrar.svg" alt="Cadastrar" width="24" height="24" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
                                 Cadastrar
                             </a>
                             <ul class="dropdown-menu dropdown-menu-light">
@@ -85,7 +85,7 @@ include("info-servicos.php");
                         </li>
                         <li class="nav-item dropdown" style="padding: 10px;">
                             <a class="nav-link dropdown-toggle fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="img\1651909_calendar_christmas_date_icon.png" alt="" color="white" width="24" height="27" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
+                                <img src="img/icon-comandas.svg" alt="Comandas" width="24" height="24" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
                                 Comandas
                             </a>
                             <ul class="dropdown-menu dropdown-menu-light ">
@@ -99,7 +99,7 @@ include("info-servicos.php");
                         </li>
                         <li class="nav-item" style="padding: 10px;">
                             <a class="nav-link fw-bold" href="financeiro.php">
-                                <img src="img\1651909_calendar_christmas_date_icon.png" alt="" color="white" width="24" height="27" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
+                                <img src="img/icon-financeiro.svg" alt="Financeiro" width="24" height="24" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
                                 Financeiro
                             </a>
                         </li>
@@ -108,8 +108,8 @@ include("info-servicos.php");
                 <div class="offcanvas-footer">
                     <div class="navbar-nav text-center flex-grow-1 pe-3">
                         <li class="nav-item">
-                            <a class="nav-link fw-bold" aria-current="page" href="#">
-                                <img src="img\1651909_calendar_christmas_date_icon.png" alt="" color="white" width="24" height="27" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
+                            <a class="nav-link fw-bold" aria-current="page" href="logout.php">
+                                <img src="img/icon-sair.svg" alt="Sair" width="24" height="24" class="d-inline-block align-text-top" style="margin: 0px 10px 0px 0px;">
                                 Sair
                             </a>
                         </li>
