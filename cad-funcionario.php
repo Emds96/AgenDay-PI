@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/verifica_login.php';
 include("info-funcionario.php");
 ?>
 
