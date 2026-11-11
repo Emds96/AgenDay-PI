@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/verifica_login.php';
-include("info-servicos.php");
+require_once __DIR__ . '/info-servicos.php';
 ?>
 
 <!DOCTYPE html>
 <!-- Coding by CodingLab | www.codinglabweb.com-->
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8" />
@@ -39,7 +39,7 @@ include("info-servicos.php");
             <div class="dropdown">
                 <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-                    Barbearia
+                    <?= htmlspecialchars((string) ($_SESSION['nome_estabelecimento'] ?? 'Estabelecimento'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                 </a>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item fw-bold" href="config.php">Configurações</a></li>
@@ -127,22 +127,34 @@ include("info-servicos.php");
                     <h2 class="text-center">Serviços</h2>
                 </div>
 
+                <?php if (!empty($_SESSION['sucesso_servico'])): ?>
+                    <div class="alert alert-success mx-3 mt-3" role="status">Serviço cadastrado com sucesso!</div>
+                <?php endif; unset($_SESSION['sucesso_servico']); ?>
+                <?php if (!empty($_SESSION['erro_servico'])): ?>
+                    <div class="alert alert-danger mx-3 mt-3" role="alert">
+                        <?= htmlspecialchars((string) $_SESSION['erro_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                    </div>
+                <?php endif; unset($_SESSION['erro_servico']); ?>
+
                 <div class="container-fluid buscar">
-                    <form class="d-flex d-flex justify-content-around ">
+                    <form class="d-flex d-flex justify-content-around" action="cad.servicos.php" method="GET">
                         <div class="col-md-4">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control shadow input-pesquisa" placeholder="Buscar" aria-label="Username" aria-describedby="addon-wrapping">
-
-                                <button>
-                                    <span class="input-group-text button-pesquisa shadow" id="addon-wrapping"><i class="bi bi-search"></i></span>
+                                <input type="search" class="form-control shadow input-pesquisa"
+                                    name="busca" maxlength="120" placeholder="Buscar serviços"
+                                    aria-label="Buscar serviços"
+                                    value="<?= htmlspecialchars($busca, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                <button type="submit" aria-label="Pesquisar serviços">
+                                    <span class="input-group-text button-pesquisa shadow"><i class="bi bi-search"></i></span>
                                 </button>
                             </div>
                         </div>
-                        <button class="rounded-3 border shadow rounded adicionar" data-bs-toggle="modal" data-bs-target="#exampleModal" type="button">Adicionar</button>
+                        <button type="button" class="rounded-3 border shadow rounded adicionar"
+                            data-bs-toggle="modal" data-bs-target="#exampleModal">Adicionar</button>
                     </form>
                 </div>
 
-                <div class="modal" tabindex="-1" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal" tabindex="-1" id="exampleModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -152,34 +164,44 @@ include("info-servicos.php");
 
                             <div class="modal-body">
                             <form action="cadastro-servicos.php" method="POST">
+                                    <input type="hidden" name="csrf_token"
+                                        value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
                                     <div class="row">
                                         <div class="mb-3 col-7">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Nome do Servico" name="nome">
+                                            <label for="nome-servico" class="form-label">Nome do serviço</label>
+                                            <input type="text" id="nome-servico" name="nome"
+                                                class="form-control rounded-3 shadow" maxlength="120"
+                                                placeholder="Ex.: Corte de cabelo" required>
                                         </div>
                                     </div>
-
                                     <div class="row">
-                                        <div class="col-7 mb-3">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Duração" name="duracao">
+                                        <div class="mb-3 col-7">
+                                            <label for="duracao-servico" class="form-label">Duração (minutos)</label>
+                                            <input type="number" id="duracao-servico" name="duracao_minutos"
+                                                class="form-control rounded-3 shadow" min="1" max="1440" step="1"
+                                                placeholder="Ex.: 45" required>
                                         </div>
                                     </div>
-
                                     <div class="row">
-                                        <div class="col-4 mb-3">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Preço" name="preco">
+                                        <div class="mb-3 col-4">
+                                            <label for="preco-servico" class="form-label">Preço (R$)</label>
+                                            <input type="text" id="preco-servico" name="preco" inputmode="decimal"
+                                                class="form-control rounded-3 shadow" maxlength="11"
+                                                pattern="[0-9]{1,8}([,.][0-9]{1,2})?"
+                                                placeholder="Ex.: 35,90" required>
+                                            <small class="text-muted">Aceita vírgula ou ponto. Use 0 para serviço gratuito.</small>
                                         </div>
                                     </div>
-
                                     <div class="row">
-                                        <div class="col-4 mb-3">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Descriçao" name="descricao">
+                                        <div class="mb-3 col-7">
+                                            <label for="descricao-servico" class="form-label">Descrição (opcional)</label>
+                                            <textarea id="descricao-servico" name="descricao"
+                                                class="form-control rounded-3 shadow" rows="3"
+                                                maxlength="2000" placeholder="Detalhes do serviço"></textarea>
                                         </div>
                                     </div>
-
                                     <div class="float-end m-3">
-                                        <div class="">
-                                            <button class="concluir rounded-3 border shadow">Concluir</button>
-                                        </div>
+                                        <button type="submit" class="concluir rounded-3 border shadow">Concluir</button>
                                     </div>
                                 </form>
                             </div>
@@ -188,25 +210,30 @@ include("info-servicos.php");
                 </div>
 
                 <div class="container scroll">
-                <?php
-                    while ($user_data = mysqli_fetch_assoc($result)) {
-                        echo
-                            "<div class='container conteudo'>
-                                <div class='row'>
-                                    <div class='col pt-3'>
-                                        <strong>".
-                                        $user_data['nome_servico']." <br>
-                                        </strong>".
-                                        $user_data['duracao_servico']."<br>
-                                        <strong>".
-                                        $user_data['preco_servico']."
-                                        </strong>
+                    <?php if ($servicos === []): ?>
+                        <p class="text-center text-muted py-4">Nenhum serviço encontrado.</p>
+                    <?php else: ?>
+                        <?php foreach ($servicos as $servico): ?>
+                            <?php
+                                $partesDuracao = explode(':', (string) $servico['duracao_servico']);
+                                $duracaoMinutos = ((int) $partesDuracao[0] * 60) + (int) ($partesDuracao[1] ?? 0);
+                            ?>
+                            <div class="container conteudo">
+                                <div class="row">
+                                    <div class="col pt-3">
+                                        <strong><?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>
+                                        <br>
+                                        Duração: <?= $duracaoMinutos ?> min
+                                        <br>
+                                        <strong>Preço: R$ <?= number_format((float) $servico['preco_servico'], 2, ',', '.') ?></strong>
+                                        <?php if (!empty($servico['descricao_servico'])): ?>
+                                            <p><?= nl2br(htmlspecialchars((string) $servico['descricao_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) ?></p>
+                                        <?php endif; ?>
                                     </div>
-                                </div>   
-                            </div>";
-                    }
-                    ?>
-                    
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>
