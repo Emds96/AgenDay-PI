@@ -4,8 +4,8 @@
 
 ## Mudanças realizadas
 
-- `agenda.php`: substituiu a lista de horários estáticos e o calendário ilustrativo por uma grade mensal e painel de atendimentos do dia. O formulário de salvar da 4.3 foi preservado.
-- `js/calendario.js`: reescrito para buscar a agenda na API já criada (`api/agendamentos.php`) por mês. Navegação anterior/próximo mês, botão **Hoje**, seleção de dia e indicadores da quantidade de registros.
+- `agenda.php`: substituiu a lista de horários estáticos e o calendário ilustrativo por uma grade mensal e painel de atendimentos do dia. O formulário de salvar da 4.3 foi preservado. Após salvar, a página abre o mês do atendimento recém-criado.
+- `js/calendario.js`: reescrito para buscar a agenda na API já criada (`api/agendamentos.php`) por mês. Navegação anterior/próximo mês, botão **Hoje**, seleção de dia, data inicial do último agendamento salvo e indicadores da quantidade de registros.
 - `css/agenda-calendario.css`: estilização responsiva e visualização dos status, com controles acessíveis de teclado.
 - Os cartões exibem **cliente, serviço, funcionário, início, fim, status e observações**. São mostrados `agendado`, `confirmado`, `concluido` e `cancelado` de forma diferenciada.
 - Atendimentos que atravessam a meia-noite aparecem em **todos os dias interceptados** pelo intervalo (início incluso, fim exclusivo). O painel ordena pelo início do atendimento.
@@ -26,7 +26,7 @@
 1. Publicar versão de testes de forma controlada mantendo `conexao.php` privado; não usar o banco do colega.
 2. Criar cliente, serviço e funcionário vinculado, salvar agendamentos reais pela 4.3 e confirmar no MySQL.
 3. Conferir datas, nomes, horários de início e fim e status exibidos no dia correto.
-4. Navegar meses/anos, testar fevereiro e ano bissexto, escolher Hoje e testar datas sem registros.
+4. Navegar meses/anos, testar fevereiro e ano bissexto, escolher Hoje, testar datas sem registros e conferir que a agenda abre no dia do agendamento recém-salvo.
 5. Testar agendamento que atravessa a meia-noite, registros cancelados e concluídos.
 6. Testar duas empresas diferentes: uma não pode ver agendamentos da outra.
 7. Testar sem login (API 401), sem Internet/erro de servidor e botão Tentar novamente.

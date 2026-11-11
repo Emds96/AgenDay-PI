@@ -19,6 +19,8 @@ try {
 
     $id = agenday_agenda_criar($conexao, $_POST);
     $_SESSION['sucesso_agendamento'] = 'Agendamento #' . $id . ' salvo com sucesso!';
+    // Somente após gravar com sucesso: mostrar o mês do novo atendimento.
+    $_SESSION['agenda_dia_recem_salvo'] = $_POST['data'];
 } catch (InvalidArgumentException | DomainException $e) {
     $_SESSION['erro_agendamento'] = $e->getMessage();
 } catch (Throwable $e) {

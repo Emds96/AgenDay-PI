@@ -53,9 +53,21 @@
     }
 
     const hoje = hojeNoFuso();
-    let ano = Number(hoje.slice(0, 4));
-    let mes = Number(hoje.slice(5, 7)) - 1;
+    const sugestao = calendario.dataset.diaInicial || '';
     let diaEscolhido = hoje;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(sugestao)) {
+        const anoSugerido = Number(sugestao.slice(0, 4));
+        const mesSugerido = Number(sugestao.slice(5, 7)) - 1;
+        const diaSugerido = Number(sugestao.slice(8, 10));
+        const dataVerificada = new Date(Date.UTC(anoSugerido, mesSugerido, diaSugerido));
+        if (anoSugerido >= 2000 && anoSugerido <= 2100
+            && formatoData(dataVerificada.getUTCFullYear(), dataVerificada.getUTCMonth(),
+                dataVerificada.getUTCDate()) === sugestao) {
+            diaEscolhido = sugestao;
+        }
+    }
+    let ano = Number(diaEscolhido.slice(0, 4));
+    let mes = Number(diaEscolhido.slice(5, 7)) - 1;
     let eventos = [];
     let carregando = false;
     let erroConsulta = '';

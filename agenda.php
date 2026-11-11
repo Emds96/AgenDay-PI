@@ -19,6 +19,13 @@ try {
     error_log('AgenDay: falha ao carregar agendamento (' . get_class($e) . ').');
     $erroOpcoesAgenda = true;
 }
+// Data do último agendamento salvo, validada pelo backend (uso único na interface).
+$agendaDiaInicial = $_SESSION['agenda_dia_recem_salvo'] ?? '';
+unset($_SESSION['agenda_dia_recem_salvo']);
+if (!is_string($agendaDiaInicial) || !preg_match('/\\A\\d{4}-\\d{2}-\\d{2}\\z/D', $agendaDiaInicial)) {
+    $agendaDiaInicial = '';
+}
+
 $agendaTemClientes = $opcoesAgenda['clientes'] !== [];
 $agendaTemServicos = $opcoesAgenda['servicos'] !== [];
 $agendaTemVinculos = $opcoesAgenda['funcionarios_servicos'] !== [];
@@ -265,7 +272,9 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                                     Hoje
                                 </button>
                             </div>
-                            <div class="calendar" id="agenda-calendario" data-fuso="<?= htmlspecialchars(
+                            <div class="calendar" id="agenda-calendario"
+                                data-dia-inicial="<?= htmlspecialchars($agendaDiaInicial, ENT_QUOTES, 'UTF-8') ?>"
+                                data-fuso="<?= htmlspecialchars(
                                     defined('AGENDAY_TIMEZONE') ? (string) AGENDAY_TIMEZONE : 'America/Manaus',
                                     ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'
                                 ) ?>">
