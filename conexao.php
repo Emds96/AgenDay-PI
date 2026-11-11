@@ -7,10 +7,10 @@ if ($_SERVER['SERVER_NAME'] == 'localhost' || $_SERVER['SERVER_NAME'] == '127.0.
     define('DB', 'agenday');
 } else {
     // Ambiente Online (InfinityFree)
-    define('HOST', 'sql208.byetcluster.com');
-    define('USUARIO', 'if0_43406270');
+    define('HOST', '');
+    define('USUARIO', '');
     define('SENHA', 'DB_PASSWORD_PLACEHOLDER');
-    define('DB', 'if0_43406270_agenday');
+    define('DB', '');
 }
 
 $conexao = mysqli_connect(HOST, USUARIO, SENHA, DB) or die('não conectado');
