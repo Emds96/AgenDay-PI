@@ -1,0 +1,29 @@
+/* Etapa 4.2: formulário da agenda, sem alterar estilos globais antigos. */
+.agendamento-card {
+  width: 100%;
+  max-width: 1100px;
+  border: 1px solid #dae6f2;
+  border-radius: 14px;
+}
+.agendamento-card .card-body {
+  background-color: #fff;
+  border-radius: inherit;
+}
+.agendamento-card .form-label {
+  font-weight: 600;
+  color: #2d3e52;
+}
+.agendamento-card .form-control,
+.agendamento-card .form-select {
+  min-height: 44px;
+}
+.agendamento-resumo {
+  background-color: #f1f7ff;
+  border: 1px dashed #a9bed7;
+  color: #2d425c;
+  min-height: 56px;
+}
+@media (max-width: 576px) {
+  .agendamento-card { border-radius: 10px; }
+  .agendamento-card .card-body { padding: 1rem; }
+}
