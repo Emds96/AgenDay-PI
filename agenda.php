@@ -265,7 +265,10 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                                     Hoje
                                 </button>
                             </div>
-                            <div class="calendar" id="agenda-calendario">
+                            <div class="calendar" id="agenda-calendario" data-fuso="<?= htmlspecialchars(
+                                    defined('AGENDAY_TIMEZONE') ? (string) AGENDAY_TIMEZONE : 'America/Manaus',
+                                    ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'
+                                ) ?>">
                                 <div class="calendar-header" aria-label="Navegação pelo calendário">
                                     <button type="button" class="agenda-navegacao-btn" id="agenda-mes-anterior"
                                         aria-label="Mês anterior" title="Mês anterior">
@@ -294,6 +297,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                                 O número nos dias indica quantos registros existem, incluindo os cancelados.
                                 A disponibilidade para novos agendamentos é verificada ao salvar.
                             </p>
+                            <noscript><p class="alert alert-warning">Ative o JavaScript para visualizar os agendamentos no calendário.</p></noscript>
                             <div id="agenda-estado" class="small mt-2" role="status" aria-live="polite">
                                 Carregando atendimentos...
                             </div>
