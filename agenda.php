@@ -43,6 +43,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/agenda.css">
     <link rel="stylesheet" href="css/agendamento-form.css">
+    <link rel="stylesheet" href="css/agenda-calendario.css">
 </head>
 
 <body>
@@ -249,84 +250,71 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
             </div>
         </section>
 
-        <!-- Calendário antigo: a integração real virá na 4.4. -->
-        <section class="container-fluid" aria-label="Calendário ilustrativo">
-            <p class="text-muted small mt-2 mb-2">Os horários e o calendário abaixo são ilustrativos. Ainda não representam a disponibilidade real.</p>
-            <div class="card box-agenda">
-                <div class="row g-0">
-                    <div class="col-sm-6 col-md-8 card-container shadow-lg p-3 mb-5 bg-body rounded">
-                        <div class="card">
-                            <ul class="list-group list-group-flush">
-                                <a href="">
-                                    <li class="list-group-item">8:00</li>
-                                </a>
-
-                                <li class="list-group-item">8:30</li>
-                                <li class="list-group-item">9:00</li>
-                                <li class="list-group-item">9:30</li>
-                                <li class="list-group-item">10:00</li>
-                                <li class="list-group-item">10:30</li>
-                                <li class="list-group-item">11:00</li>
-                                <li class="list-group-item">11:30</li>
-                                <li class="list-group-item">12:00</li>
-                                <li class="list-group-item">12:30</li>
-                                <li class="list-group-item">13:00</li>
-                                <li class="list-group-item">13:30</li>
-                                <li class="list-group-item">14:00</li>
-                                <li class="list-group-item">14:30</li>
-                                <li class="list-group-item">15:00</li>
-                                <li class="list-group-item">15:30</li>
-                                <li class="list-group-item">16:00</li>
-                                <li class="list-group-item">16:30</li>
-                                <li class="list-group-item">17:00</li>
-                                <li class="list-group-item">17:30</li>
-                                <li class="list-group-item">18:00</li>
-                                <li class="list-group-item">18:30</li>
-                            </ul>
+        <!-- Microtarefa 4.4: agendamentos reais via API protegida por sessão. -->
+        <section class="container-fluid py-3 pb-4 agenda-consulta" aria-labelledby="agenda-calendario-titulo">
+            <div class="row g-3">
+                <div class="col-12 col-lg-7">
+                    <div class="card shadow-sm agenda-calendario-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div>
+                                    <h2 class="h5 mb-1" id="agenda-calendario-titulo">Calendário de agendamentos</h2>
+                                    <p class="text-muted small mb-0">Selecione uma data para conferir os atendimentos registrados.</p>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="agenda-voltar-hoje">
+                                    Hoje
+                                </button>
+                            </div>
+                            <div class="calendar" id="agenda-calendario">
+                                <div class="calendar-header" aria-label="Navegação pelo calendário">
+                                    <button type="button" class="agenda-navegacao-btn" id="agenda-mes-anterior"
+                                        aria-label="Mês anterior" title="Mês anterior">
+                                        <span aria-hidden="true">‹</span>
+                                    </button>
+                                    <h3 class="agenda-mes-titulo mb-0" id="agenda-mes-titulo" aria-live="polite">Carregando mês...</h3>
+                                    <button type="button" class="agenda-navegacao-btn" id="agenda-mes-seguinte"
+                                        aria-label="Próximo mês" title="Próximo mês">
+                                        <span aria-hidden="true">›</span>
+                                    </button>
+                                </div>
+                                <div class="calendar-body">
+                                    <div class="calendar-week-day" aria-hidden="true">
+                                        <div>Dom</div>
+                                        <div>Seg</div>
+                                        <div>Ter</div>
+                                        <div>Qua</div>
+                                        <div>Qui</div>
+                                        <div>Sex</div>
+                                        <div>Sáb</div>
+                                    </div>
+                                    <div class="calendar-days" id="agenda-dias" aria-label="Dias do mês"></div>
+                                </div>
+                            </div>
+                            <p class="small text-muted mt-3 mb-0">
+                                O número nos dias indica quantos registros existem, incluindo os cancelados.
+                                A disponibilidade para novos agendamentos é verificada ao salvar.
+                            </p>
+                            <div id="agenda-estado" class="small mt-2" role="status" aria-live="polite">
+                                Carregando atendimentos...
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="agenda-tentar-novamente" hidden>
+                                Tentar novamente
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- calendario -->
-            <div class="card box-agenda">
-                <div class="col-sm-6 col-md-8 light ">
-                    <div class="calendar">
-                        <div class="calendar-header">
-                            <span class="month-picker" id="month-picker">February</span>
-                            <div class="year-picker">
-                                <span class="year-change" id="prev-year">
-                                    <pre><</pre>
-                                </span>
-                                <span id="year">2021</span>
-                                <span class="year-change" id="next-year">
-                                    <pre>></pre>
-                                </span>
+                <div class="col-12 col-lg-5">
+                    <section class="card shadow-sm agenda-dia-card h-100" aria-labelledby="agenda-dia-titulo">
+                        <div class="card-body">
+                            <h2 class="h5 mb-2" id="agenda-dia-titulo">Atendimentos do dia</h2>
+                            <p class="small text-muted" id="agenda-dia-resumo" role="status" aria-live="polite">
+                                Escolha um dia no calendário.
+                            </p>
+                            <div id="agenda-lista-dia" class="agenda-lista-dia" aria-label="Atendimentos do dia">
+                                <p class="text-muted">Carregando agendamentos...</p>
                             </div>
                         </div>
-                        <div class="calendar-body">
-                            <div class="calendar-week-day">
-                                <div>Dom</div>
-                                <div>Seg</div>
-                                <div>Ter</div>
-                                <div>Qua</div>
-                                <div>Qui</div>
-                                <div>Sex</div>
-                                <div>Sab</div>
-                            </div>
-                            <div class="calendar-days">
-
-                            </div>
-                        </div>
-                        <!-- <div class="calendar-footer">
-                            <div class="toggle">
-                                <span>Dark Mode</span>
-                                <div class="dark-mode-switch">
-                                    <div class="dark-mode-switch-ident"></div>
-                                </div>
-                            </div>
-                        </div> -->
-                        <div class="month-list"></div>
-                    </div>
+                    </section>
                 </div>
             </div>
         </section>
