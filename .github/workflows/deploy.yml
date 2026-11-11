@@ -13,11 +13,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar credenciais
+      - name: Criar conexao.php para producao
         env:
           DB_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          php -r '$c = file_get_contents("conexao.php"); $c = str_replace("DB_PASSWORD_PLACEHOLDER", getenv("DB_PASS"), $c); file_put_contents("conexao.php", $c);'
+          php -r '
+          $pass = addslashes(getenv("DB_PASS"));
+          $content = "<?php\n" .
+                     "define(\"HOST\", \"sql208.byetcluster.com\");\n" .
+                     "define(\"USUARIO\", \"if0_43406270\");\n" .
+                     "define(\"SENHA\", \"$pass\");\n" .
+                     "define(\"DB\", \"if0_43406270_agenday\");\n\n" .
+                     "try {\n" .
+                     "    \$conexao = mysqli_connect(HOST, USUARIO, SENHA, DB);\n" .
+                     "} catch (Throwable \$e) {\n" .
+                     "    die(\"Erro ao conectar ao banco de dados: \" . \$e->getMessage());\n" .
+                     "}\n\n" .
+                     "if (!\$conexao) {\n" .
+                     "    die(\"Nao conectado: \" . mysqli_connect_error());\n" .
+                     "}\n";
+          file_put_contents("conexao.php", $content);
+          '
 
       - name: Sync FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

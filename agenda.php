@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-
-<!-- Coding by CodingLab | www.codinglabweb.com-->
 <html lang="en">
 
 <head>
@@ -40,7 +38,7 @@
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item fw-bold" href="#">Sair</a></li>
+                    <li><a class="dropdown-item fw-bold" href="logout.php">Sair</a></li>
                 </ul>
             </div>
             <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel" style="width:20%">
