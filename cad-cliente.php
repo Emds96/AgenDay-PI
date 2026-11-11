@@ -1,12 +1,12 @@
 <?php
 require_once __DIR__ . '/verifica_login.php';
-include("info-clientes.php");
+require_once __DIR__ . '/info-clientes.php';
 ?>
 
 
 <!DOCTYPE html>
 <!-- Coding by CodingLab | www.codinglabweb.com-->
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8" />
@@ -128,14 +128,24 @@ include("info-clientes.php");
                     <h2 class="text-center">Clientes</h2>
                 </div>
 
+                <?php if (!empty($_SESSION['sucesso_cliente'])): ?>
+                    <div class="alert alert-success mx-3 mt-3" role="status">Cliente cadastrado com sucesso!</div>
+                <?php endif; unset($_SESSION['sucesso_cliente']); ?>
+                <?php if (!empty($_SESSION['erro_cliente'])): ?>
+                    <div class="alert alert-danger mx-3 mt-3" role="alert">
+                        <?= htmlspecialchars((string) $_SESSION['erro_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                    </div>
+                <?php endif; unset($_SESSION['erro_cliente']); ?>
+
                 <div class="container-fluid buscar">
-                    <form class="d-flex d-flex justify-content-around ">
+                    <form class="d-flex d-flex justify-content-around" action="cad-cliente.php" method="GET">
                         <div class="col-md-4">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control shadow input-pesquisa" placeholder="Buscar" aria-label="Username" aria-describedby="addon-wrapping">
-
-                                <button>
-                                    <span class="input-group-text button-pesquisa shadow" id="addon-wrapping"><i class="bi bi-search"></i></span>
+                                <input type="search" class="form-control shadow input-pesquisa" name="busca"
+                                    value="<?= htmlspecialchars($busca, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                    placeholder="Buscar clientes" aria-label="Buscar clientes" maxlength="120">
+                                <button type="submit" aria-label="Pesquisar clientes">
+                                    <span class="input-group-text button-pesquisa shadow"><i class="bi bi-search"></i></span>
                                 </button>
                             </div>
                         </div>
@@ -153,32 +163,29 @@ include("info-clientes.php");
 
                             <div class="modal-body">
                                 <form enctype="multipart/form-data" action="cadastro-clientes.php" method="POST">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
                                     <div class="row">
                                         <div class="mb-3 col-7">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Nome do cliente" name="nome">
+                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Nome do cliente" name="nome" maxlength="120" required>
                                         </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="col-7 mb-3">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="E-mail" name="email">
+                                            <input type="email" class="form-control rounded-3 shadow" placeholder="E-mail (opcional)" name="email" maxlength="190">
                                         </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="col-4 mb-3">
-                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Contato" name="contato">
+                                            <input type="tel" class="form-control rounded-3 shadow" placeholder="Contato" name="contato" maxlength="20" required>
                                         </div>
                                     </div>
-
                                     <div class="input-group">
-                                        <input type="file" class="form-control shadow" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload" name="arquivo">
+                                        <input type="file" class="form-control shadow" id="inputGroupFile04" name="arquivo"
+                                            accept="image/jpeg,image/png" aria-label="Foto do cliente (opcional)">
                                     </div>
-
+                                    <small class="text-muted">Foto opcional: JPG ou PNG, até 2 MB.</small>
                                     <div class="float-end m-3">
-                                        <div class="">
-                                            <button class="concluir rounded-3 border shadow">Concluir</button>
-                                        </div>
+                                        <button type="submit" class="concluir rounded-3 border shadow">Concluir</button>
                                     </div>
                                 </form>
         
@@ -188,31 +195,39 @@ include("info-clientes.php");
                 </div>
 
                 <div class="container scroll">
-
-                <?php
-                    while ($user_data = mysqli_fetch_assoc($result)) {
-                        echo
-                            "<div class='container conteudo'>
-                                <div class='row'>
-                                    <div class='col-1' style='text-align: center;'>
-                                        <img src='".$user_data['arquivo_cliente']."' class='perfil' alt='...'>
+                    <?php if (empty($clientes)): ?>
+                        <p class="text-center text-muted py-4">Nenhum cliente encontrado.</p>
+                    <?php else: ?>
+                        <?php foreach ($clientes as $cliente): ?>
+                            <div class="container conteudo">
+                                <div class="row">
+                                    <div class="col-1" style="text-align: center;">
+                                        <?php
+                                            $fotoCliente = $cliente['arquivo_cliente'];
+                                            $fotoValida = is_string($fotoCliente)
+                                                && preg_match('~^arquivos/clientes/[a-f0-9]{32}\.(jpg|png)$~D', $fotoCliente);
+                                        ?>
+                                        <?php if ($fotoValida): ?>
+                                            <img src="<?= htmlspecialchars($fotoCliente, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                                class="perfil" alt="Foto do cliente">
+                                        <?php else: ?>
+                                            <i class="bi bi-person-circle fs-2" aria-hidden="true"></i>
+                                        <?php endif; ?>
                                     </div>
-                                    <div class='col pt-3'>
-                                        <strong>".
-                                        $user_data['nome_cliente']." <br>
-                                        </strong>".
-                                        $user_data['contato_cliente']."<br>
-                                        <strong>".
-                                        $user_data['email_cliete']."
-                                        </strong>
+                                    <div class="col pt-3">
+                                        <strong><?= htmlspecialchars((string) $cliente['nome_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>
+                                        <br>
+                                        <?= htmlspecialchars((string) $cliente['contato_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                        <?php if (!empty($cliente['email_cliente'])): ?>
+                                            <br>
+                                            <?= htmlspecialchars((string) $cliente['email_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                        <?php endif; ?>
                                     </div>
-                                </div>   
-                            </div>";
-                    }
-                    ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-            </div>
-        </section>
     </main>
 
     <section class="overlay"></section>
