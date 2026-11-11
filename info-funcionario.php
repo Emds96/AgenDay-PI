@@ -27,7 +27,7 @@ $stmt->close();
 // A subconsulta mostra os serviços associados ao funcionário, sem misturar empresas.
 $query = 'SELECT f.id_funcionario, f.nome_funcionario, f.contato_funcionario,
                  f.arquivo_funcionario,
-                 (SELECT GROUP_CONCAT(s.nome_servico ORDER BY s.nome_servico SEPARATOR ", ")
+                 (SELECT GROUP_CONCAT(s.nome_servico ORDER BY s.nome_servico SEPARATOR \', \')
                   FROM funcionario_servico fs
                   JOIN servicos s ON s.id_estabelecimento = fs.id_estabelecimento
                                  AND s.id_servicos = fs.id_servicos
