@@ -5,11 +5,13 @@ if (isset($_SESSION['id_estabelecimento']) && is_int($_SESSION['id_estabelecimen
     exit;
 }
 $csrfToken = agenday_token_csrf();
+$abrirCadastro = isset($_SESSION['erro_cadastro']) || isset($_SESSION['usuario_existe']);
 ?>
 <html lang="pt-BR" dir="ltr">
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login</title>
 
 
@@ -24,12 +26,19 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/login.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/responsivo.css">
 </head>
 
 <body class="agenday-auth">
-    <div class="container box " id="container">
+    <div class="container box <?= $abrirCadastro ? 'right-panel-active' : '' ?>" id="container">
+        <div class="auth-mobile-switch" role="group" aria-label="Acesso ao AgenDay">
+            <button type="button" id="auth-ir-login" aria-pressed="<?= $abrirCadastro ? 'false' : 'true' ?>"
+                aria-controls="formulario-login">Entrar</button>
+            <button type="button" id="auth-ir-cadastro" aria-pressed="<?= $abrirCadastro ? 'true' : 'false' ?>"
+                aria-controls="formulario-cadastro">Criar conta</button>
+        </div>
 
-        <div class="form-container sign-up-container">
+        <div class="form-container sign-up-container" id="formulario-cadastro">
             <form action="cadastrar.php" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                 <h1>Criar Conta</h1>
@@ -76,7 +85,7 @@ $csrfToken = agenday_token_csrf();
             </form>
         </div>
 
-        <div class="form-container sign-in-container">
+        <div class="form-container sign-in-container" id="formulario-login">
             <form action="login.php" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                 <h1>Entrar</h1>

@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="css/alterar-senha.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/responsivo.css">
 </head>
 
 <body class="agenday-app">
