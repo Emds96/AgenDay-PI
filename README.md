@@ -150,7 +150,8 @@ A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agenda
 - [x] Criar o tema base turquesa e padronizar cores, tipografia e componentes (**5.1**, revisão visual pendente).
 - [x] Aplicar no código a responsividade ao login, menu, cadastros e calendário (**5.2**, validação visual em dispositivos ainda pendente).
 - [ ] Executar testes funcionais e de segurança na hospedagem.
-- [ ] Publicar a versão atualizada com controle e backup.
+- [x] Preparar automação de publicação segura GitHub → InfinityFree (desativada até configuração/autorização).
+- [ ] Configurar acesso FTPS e backup; ativar publicação controlada da versão atualizada.
 - [ ] Preparar dados fictícios, imagens das telas e apresentação da feira.
 - [ ] Após aprovação e testes, fazer o merge para a `main` **deste fork**.
 
@@ -168,6 +169,7 @@ A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agenda
 - [Cancelamento e conflitos — 4.5](docs/AGENDAMENTOS_4_5.md)
 - [Design System — 5.1](docs/DESIGN_SYSTEM_5_1.md)
 - [Responsividade — 5.2](docs/RESPONSIVIDADE_5_2.md)
+- [Publicação automatizada — configuração segura](docs/PUBLICACAO_AUTOMATICA.md)
 
 ## Histórico do projeto e créditos
 
