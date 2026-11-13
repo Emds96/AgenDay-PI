@@ -35,11 +35,21 @@ def build_package() -> None:
             if file.is_file() and file.suffix.lower() in suffixes:
                 copy_safe(file, file.relative_to(ROOT))
 
+    # Enviar apenas as regras anti-execucao PHP; nunca incluir fotos no pacote.
+    for folder in ("clientes", "funcionarios"):
+        guard = ROOT / "arquivos" / folder / ".htaccess"
+        if not guard.is_file():
+            raise RuntimeError("Protecao de uploads ausente: " + folder)
+        copy_safe(guard, Path("arquivos") / folder / ".htaccess")
+
     files = sorted(p.relative_to(OUT).as_posix() for p in OUT.rglob("*") if p.is_file())
     assert "index.php" in files and "agenda.php" in files, "Pacote incompleto"
     assert "lib/agendamento-gravar.php" in files, "Biblioteca ausente"
     assert "cancelar-agendamento.php" in files, "Cancelamento ausente"
-    assert not any(p.startswith(("arquivos/", "sql/", "tests/", "docs/", "notas/", ".github/"))
+    guard_files = {"arquivos/clientes/.htaccess", "arquivos/funcionarios/.htaccess"}
+    assert guard_files.issubset(set(files)), "Protecoes do diretorio de uploads ausentes"
+    assert not any((p.startswith("arquivos/") and p not in guard_files)
+                   or p.startswith(("sql/", "tests/", "docs/", "notas/", ".github/"))
                    or p in PROHIBITED or p.endswith(".env") for p in files), "Arquivo sensível no pacote"
     print(f"Pacote preparado: {len(files)} arquivos, sem SQL, senhas ou uploads.")
 

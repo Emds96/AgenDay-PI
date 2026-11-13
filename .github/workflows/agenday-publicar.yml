@@ -42,7 +42,10 @@ jobs:
           test -f deploy-package/cancelar-agendamento.php
           test ! -e deploy-package/conexao.php
           test ! -e deploy-package/conexao.exemplo.php
-          test ! -e deploy-package/arquivos
+          test -f deploy-package/arquivos/clientes/.htaccess
+          test -f deploy-package/arquivos/funcionarios/.htaccess
+          test ! -e deploy-package/arquivos/clientes/*.jpg
+          test ! -e deploy-package/arquivos/funcionarios/*.jpg
           test ! -e deploy-package/sql
           test ! -e deploy-package/tests
           test ! -e deploy-package/docs
