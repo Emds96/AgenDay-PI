@@ -1,0 +1,522 @@
+/*
+ * AgenDay 2.0 — 5.2 responsividade.
+ * Importar depois de design-system.css.
+ * Estilos escopados: agenday-app (administrativo) e agenday-auth (login).
+ * Nenhuma alteração nas regras de negócio ou no banco.
+ */
+
+/* Todos os tamanhos: menus legados tinham width:20% inline, estreitos em notebooks. */
+.agenday-app #offcanvasDarkNavbar.offcanvas {
+    width: clamp(270px, 24vw, 360px) !important;
+    max-width: 100vw;
+}
+
+.agenday-app .offcanvas .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    overflow-wrap: anywhere;
+}
+
+.agenday-app .offcanvas .offcanvas-body {
+    overflow-y: auto;
+}
+
+.agenday-app .offcanvas .nav-link img,
+.agenday-app .offcanvas .nav-link svg {
+    flex-shrink: 0;
+}
+
+.agenday-app .navbar .dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    max-width: min(56vw, 310px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.agenday-app .navbar .dropdown-toggle img {
+    flex-shrink: 0;
+}
+
+.agenday-app .navbar .dropdown-menu {
+    max-width: calc(100vw - 16px);
+    overflow-wrap: anywhere;
+}
+
+.agenday-app .card,
+.agenday-app .modal-content,
+.agenday-app input,
+.agenday-app select,
+.agenday-app textarea {
+    min-width: 0;
+}
+
+.agenday-app .form-control,
+.agenday-app .form-select,
+.agenday-app .form-control[type="file"] {
+    max-width: 100%;
+}
+
+.agenday-app .conteudo {
+    overflow-wrap: anywhere;
+}
+
+/* Login: alternância compacta existe somente nas larguras móveis. */
+.agenday-auth .auth-mobile-switch {
+    display: none;
+}
+
+/* Tablets e notebooks: compensar alguns estilos com largura rígida. */
+@media (max-width: 991.98px) {
+    .agenday-app #offcanvasDarkNavbar.offcanvas {
+        width: min(360px, 86vw) !important;
+    }
+
+    .agenday-app main > .container {
+        max-width: 100%;
+    }
+
+    .agenday-app main .box {
+        max-width: 100%;
+    }
+
+    .agenday-app .modal-dialog.modal-xl,
+    .agenday-app .modal-dialog.modal-lg {
+        max-width: calc(100vw - 32px);
+    }
+
+    .agenday-auth #container .form-container form {
+        padding-inline: 20px;
+    }
+
+    .agenday-auth #container .input {
+        width: 100%;
+        padding-inline: 18px;
+    }
+
+    .agenday-auth #container .form-container .row {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+/* Celulares: impedir que o layout antigo force rolagem horizontal. */
+@media (max-width: 767.98px) {
+    .agenday-app {
+        overflow-x: clip;
+    }
+
+    .agenday-app header.navbar > .container-fluid {
+        min-width: 0;
+        gap: 6px;
+        padding-inline: 12px;
+        flex-wrap: nowrap;
+    }
+
+    .agenday-app header.navbar .offcanvas-title {
+        font-size: 1.1rem;
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .agenday-app header.navbar .navbar-toggler {
+        flex-shrink: 0;
+    }
+
+    .agenday-app header.navbar .dropdown {
+        min-width: 0;
+    }
+
+    .agenday-app header.navbar .dropdown-toggle {
+        max-width: 43vw;
+        font-size: .83rem;
+        padding-inline: 6px;
+        overflow: hidden;
+    }
+
+    .agenday-app header.navbar .dropdown-toggle img {
+        width: 26px;
+        height: 26px;
+        margin-right: 2px !important;
+    }
+
+    .agenday-app #offcanvasDarkNavbar.offcanvas {
+        width: min(340px, 88vw) !important;
+    }
+
+    .agenday-app .offcanvas-footer,
+    .agenday-app .offcanvas-body {
+        padding: 12px;
+    }
+
+    .agenday-app main > .container,
+    .agenday-app main > .container-fluid {
+        width: 100%;
+        max-width: 100%;
+        padding-inline: 12px;
+    }
+
+    /* Cadastros e perfil: remover as alturas rígidas de 800/720/780px. */
+    .agenday-app main .box {
+        height: auto;
+        min-height: 0;
+        max-width: 100%;
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+
+    .agenday-app main .boxOne {
+        height: auto;
+        min-height: 0;
+    }
+
+    .agenday-app main .scroll,
+    .agenday-app main .box .scroll {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding-block: 12px;
+    }
+
+    .agenday-app main .header-box {
+        position: relative;
+        height: auto;
+        min-height: 56px;
+        padding-block: 12px;
+    }
+
+    .agenday-app main .card-header {
+        padding: 12px;
+    }
+
+    .agenday-app main .card-header h2 {
+        font-size: clamp(1.3rem, 5vw, 1.7rem);
+        margin-bottom: 0;
+    }
+
+    /* Filtros: pesquisar e adicionar um abaixo do outro. */
+    .agenday-app main .buscar {
+        margin-top: 16px;
+        padding-inline: 12px;
+    }
+
+    .agenday-app main .buscar form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .agenday-app main .buscar form > .col-md-4 {
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .agenday-app main .buscar form .input-group {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .agenday-app main .buscar .adicionar {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 18px;
+    }
+
+    /* Linhas de clientes/funcionários/serviços com fotos e textos longos. */
+    .agenday-app main .conteudo {
+        width: calc(100% - 16px);
+        height: auto;
+        min-height: 82px;
+        margin: 8px;
+        padding: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .agenday-app main .conteudo > .row {
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .agenday-app main .conteudo > .row > .col-1 {
+        width: 58px;
+        flex: 0 0 58px;
+        padding-inline: 0;
+    }
+
+    .agenday-app main .conteudo > .row > .col {
+        min-width: 0;
+        flex: 1 1 auto;
+        padding: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .agenday-app main .conteudo .perfil {
+        width: 52px;
+        height: 52px;
+        max-width: 100%;
+        object-fit: cover;
+        margin-top: 0;
+    }
+
+    /* Modais: campos originalmente col-4/col-7 viram largura total. */
+    .agenday-app .modal-dialog {
+        width: calc(100% - 16px);
+        max-width: calc(100vw - 16px);
+        margin: 8px auto;
+    }
+
+    .agenday-app .modal-content {
+        max-height: calc(100dvh - 16px);
+        overflow-y: auto;
+        border-radius: var(--ad-radius-md, 12px);
+    }
+
+    .agenday-app .modal-body {
+        padding: 14px;
+    }
+
+    .agenday-app .modal-body .row > [class*="col-"] {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+
+    .agenday-app .modal-body :is(input, textarea, select) {
+        max-width: 100%;
+    }
+
+    .agenday-app .modal-body form > .float-end,
+    .agenday-app .modal-body form .float-end {
+        float: none !important;
+        display: block;
+        margin: 12px 0 0 !important;
+        text-align: center;
+    }
+
+    .agenday-app .modal-body .concluir {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 16px;
+    }
+
+    .agenday-app .nav-tabs {
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .agenday-app .nav-tabs .nav-link {
+        font-size: .88rem;
+        padding: 8px 10px;
+    }
+
+    .agenday-app .form-floating {
+        width: 100%;
+    }
+
+    .agenday-app main .img-fundo {
+        max-width: 65vw;
+        height: auto;
+        aspect-ratio: 1;
+    }
+
+    /* Agenda e painel diário usam as colunas empilhadas do Bootstrap. */
+    .agenday-app .agenda-consulta .card-body {
+        padding: 14px;
+    }
+
+    .agenday-app .agenda-calendario-card,
+    .agenday-app .agenda-dia-card {
+        min-width: 0;
+    }
+
+    .agenday-app .agenda-atendimento {
+        overflow-wrap: anywhere;
+    }
+
+    .agenday-app .agendamento-card .card-body {
+        padding: 14px !important;
+    }
+
+    /* Login: layout de uma coluna; painel turquesa original permanece no desktop. */
+    .agenday-auth {
+        min-height: 100dvh;
+        padding: 12px;
+        overflow-x: clip;
+    }
+
+    .agenday-auth #container.box {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 560px;
+        height: auto;
+        min-height: 0;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .agenday-auth #container .auth-mobile-switch {
+        display: flex;
+        gap: 8px;
+        padding: 16px 16px 0;
+        position: relative;
+        z-index: 6;
+        background: var(--ad-surface, #fff);
+    }
+
+    .agenday-auth #container .auth-mobile-switch button {
+        flex: 1;
+        min-width: 0;
+        min-height: 44px;
+        margin: 0;
+        border: 1px solid var(--ad-border, #ccdfdb);
+        padding: 10px 8px;
+        letter-spacing: 0;
+        border-radius: 9px;
+        font-size: .88rem;
+        background: var(--ad-surface-muted, #f5fbfa);
+        color: var(--ad-primary, #18544d);
+        text-transform: none;
+    }
+
+    .agenday-auth #container .auth-mobile-switch button[aria-pressed="true"] {
+        background: var(--ad-primary, #18544d);
+        border-color: var(--ad-primary, #18544d);
+        color: #fff;
+    }
+
+    .agenday-auth #container .overlay-container {
+        display: none;
+    }
+
+    .agenday-auth #container .form-container,
+    .agenday-auth #container.right-panel-active .form-container {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: auto;
+        transform: none;
+        animation: none;
+        opacity: 1;
+        transition: none;
+        z-index: auto;
+    }
+
+    .agenday-auth #container .sign-up-container {
+        display: none;
+    }
+
+    .agenday-auth #container.right-panel-active .sign-up-container {
+        display: block;
+    }
+
+    .agenday-auth #container.right-panel-active .sign-in-container {
+        display: none;
+    }
+
+    .agenday-auth #container .form-container form {
+        height: auto;
+        padding: 20px 18px 24px;
+    }
+
+    .agenday-auth #container .form-container form h1 {
+        font-size: clamp(1.55rem, 7vw, 2rem);
+        margin-bottom: 14px;
+    }
+
+    .agenday-auth #container .form-container .row {
+        width: 100%;
+        margin-inline: 0;
+    }
+
+    .agenday-auth #container .form-container .row > .col {
+        min-width: 0;
+        padding-inline: 0;
+    }
+
+    .agenday-auth #container .input-group {
+        width: 100%;
+    }
+
+    .agenday-auth #container .input {
+        width: 100%;
+        min-width: 0;
+        font-size: 16px; /* evita zoom automático em alguns navegadores móveis */
+        padding: 15px 14px;
+    }
+
+    .agenday-auth #container .letra {
+        left: 12px;
+        top: 22px;
+        font-size: 15px;
+    }
+
+    .agenday-auth #container .input:focus + .letra,
+    .agenday-auth #container .input:not(:placeholder-shown) + .letra {
+        top: -2px;
+    }
+
+    .agenday-auth #container form > button {
+        width: 100%;
+        max-width: 340px;
+        min-height: 44px;
+        padding: 11px 15px;
+    }
+
+    .agenday-auth .alert.fixed-bottom {
+        position: relative !important;
+        width: 100%;
+        max-width: 560px;
+        margin: 12px auto;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 390px) {
+    .agenday-app header.navbar .offcanvas-title {
+        font-size: 1rem;
+    }
+
+    .agenday-app header.navbar .dropdown-toggle {
+        max-width: 37vw;
+    }
+
+    .agenday-app #agenda-calendario .calendar-days,
+    .agenday-app #agenda-calendario .calendar-week-day {
+        gap: 2px;
+    }
+
+    .agenday-app #agenda-calendario .agenda-dia-botao {
+        min-height: 46px;
+        padding-inline: 0;
+        font-size: .84rem;
+    }
+
+    .agenday-app #agenda-calendario .agenda-dia-vazio {
+        min-height: 46px;
+    }
+
+    .agenday-app #agenda-calendario .calendar-week-day {
+        font-size: .72rem;
+    }
+
+    .agenday-app .agenda-atendimento-topo {
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .agenday-auth #container .form-container,
+    .agenday-auth #container .overlay-container {
+        transition: none;
+        animation: none;
+    }
+}
