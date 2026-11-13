@@ -33,10 +33,10 @@ Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados inde
 | Serviços | Cadastro com nome, duração, preço e descrição; pesquisa |
 | Agendamentos | Seleção de cliente, serviço, funcionário, data e hora; gravação programada no MySQL |
 | Controle de horários | Validação de dados e verificação de sobreposição de atendimentos na gravação |
-| Calendário | Navegação mensal, visualização de agendamentos por dia e indicação de status |
+| Calendário | Navegação mensal, visualização de agendamentos por dia, status e cancelamento de atendimentos ativos |
 | Segurança | Consultas preparadas, proteção CSRF e isolamento de dados por estabelecimento nos fluxos adaptados |
 
-**Ainda não concluído:** cancelamento de agendamentos, revisão final da interface, testes de ponta a ponta e publicação da versão completa. Algumas telas legadas, como comandas e financeiro, permanecem fora do escopo funcional já validado.
+**Ainda não concluído:** testes integrados de cancelamento e concorrência, revisão final da interface, testes de ponta a ponta e publicação da versão completa. Algumas telas legadas, como comandas e financeiro, permanecem fora do escopo funcional já validado.
 
 ## Tecnologias
 
@@ -130,13 +130,14 @@ Crie um estabelecimento de teste, faça login e cadastre um **cliente**, um **se
 
 ## Testes
 
-Há um roteiro automatizado para a validação de dados de agendamentos, sem conectar ao banco:
+Há roteiros automatizados para validação de dados e identificadores de cancelamento, sem conectar ao banco:
 
 ```bash
 php tests/agendamento-validacao.php
+php tests/agendamento-cancelamento.php
 ```
 
-A execução dos testes em PHP, os cadastros reais e os agendamentos concorrentes **ainda precisam ser confirmados em ambiente integrado**. Revisões estáticas e simulações do calendário não equivalem a um teste completo com MySQL.
+A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agendamentos concorrentes **ainda precisam ser confirmados em ambiente integrado**. Revisões estáticas e simulações do calendário não equivalem a um teste completo com MySQL.
 
 ## Status e próximos passos
 
@@ -144,7 +145,8 @@ A execução dos testes em PHP, os cadastros reais e os agendamentos concorrente
 - [x] Modelo de banco v2 criado e importado em conta própria; conexão básica testada.
 - [x] Código de login, clientes, funcionários e serviços adaptado ao modelo v2.
 - [x] Código de criação de agendamentos e calendário conectado à API.
-- [ ] Implementar cancelamento e revisar regras finais de conflitos (**4.5**).
+- [x] Implementar no código o cancelamento de agendamentos ativos e revisar as regras de conflitos (**4.5**).
+- [ ] Validar cancelamento e concorrência com sessões simultâneas no MySQL real.
 - [ ] Revisar a interface e a experiência em celular.
 - [ ] Executar testes funcionais e de segurança na hospedagem.
 - [ ] Publicar a versão atualizada com controle e backup.
@@ -162,6 +164,7 @@ A execução dos testes em PHP, os cadastros reais e os agendamentos concorrente
 - [Tela de agendamentos — 4.2](docs/AGENDAMENTOS_4_2.md)
 - [Gravação de agendamentos — 4.3](docs/AGENDAMENTOS_4_3.md)
 - [Calendário — 4.4](docs/AGENDAMENTOS_4_4.md)
+- [Cancelamento e conflitos — 4.5](docs/AGENDAMENTOS_4_5.md)
 
 ## Histórico do projeto e créditos
 
