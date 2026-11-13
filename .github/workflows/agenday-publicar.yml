@@ -1,0 +1,83 @@
+name: AgenDay 2.0 - Validacao e publicacao controlada
+
+on:
+  push:
+    branches:
+      - dev-feira-uninorte
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agenday-infinityfree
+  cancel-in-progress: false
+
+jobs:
+  validar:
+    name: Validar codigo e pacote
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter codigo
+        uses: actions/checkout@v4
+      - name: Conferir sintaxe PHP
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -type f -name '*.php' -not -path './deploy-package/*' -print0 | xargs -0 -n 1 php -l
+      - name: Rodar testes locais
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/agendamento-validacao.php
+          php tests/agendamento-cancelamento.php
+          node tests/responsividade-check.js
+      - name: Preparar pacote permitido
+        run: python3 scripts/preparar_publicacao.py
+      - name: Confirmar exclusao de arquivos privados
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f deploy-package/index.php
+          test -f deploy-package/cancelar-agendamento.php
+          test ! -e deploy-package/conexao.php
+          test ! -e deploy-package/conexao.exemplo.php
+          test ! -e deploy-package/arquivos
+          test ! -e deploy-package/sql
+          test ! -e deploy-package/tests
+          test ! -e deploy-package/docs
+          test ! -e deploy-package/.github
+      - name: Guardar pacote aprovado temporariamente
+        uses: actions/upload-artifact@v4
+        with:
+          name: agenday-publicavel
+          path: deploy-package/
+          retention-days: 1
+          if-no-files-found: error
+
+  publicar:
+    name: Enviar ao InfinityFree somente com autorizacao
+    needs: validar
+    if: >-
+      ${{ github.repository == 'Emds96/AgenDay-PI'
+          && github.ref == 'refs/heads/dev-feira-uninorte'
+          && vars.AGENDAY_DEPLOY_ENABLED == 'true'
+          && vars.AGENDAY_DEPLOY_MODE == 'publish' }}
+    runs-on: ubuntu-latest
+    environment: producao-agenday
+    steps:
+      - name: Obter publicador seguro
+        uses: actions/checkout@v4
+      - name: Recuperar pacote validado
+        uses: actions/download-artifact@v4
+        with:
+          name: agenday-publicavel
+          path: deploy-package/
+      - name: Publicar por FTP com TLS obrigatorio
+        env:
+          AGENDAY_DEPLOY_ENABLED: ${{ vars.AGENDAY_DEPLOY_ENABLED }}
+          AGENDAY_DEPLOY_MODE: ${{ vars.AGENDAY_DEPLOY_MODE }}
+          AGENDAY_FTP_HOST: ${{ secrets.AGENDAY_FTP_HOST }}
+          AGENDAY_FTP_USERNAME: ${{ secrets.AGENDAY_FTP_USERNAME }}
+          AGENDAY_FTP_PASSWORD: ${{ secrets.AGENDAY_FTP_PASSWORD }}
+        run: python3 scripts/publicar_ftp.py
