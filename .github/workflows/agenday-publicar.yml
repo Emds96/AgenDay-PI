@@ -55,6 +55,48 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
+
+  diagnosticar_ftp:
+    name: Testar FTPS sem publicar arquivos
+    needs: validar
+    if: >-
+      ${{ github.repository == 'Emds96/AgenDay-PI'
+          && github.ref == 'refs/heads/dev-feira-uninorte'
+          && contains(github.event.head_commit.message, '[teste-ftps]') }}
+    runs-on: ubuntu-latest
+    environment: producao-agenday
+    steps:
+      - name: Conectar via FTPS e verificar pasta htdocs (somente leitura)
+        env:
+          AGENDAY_FTP_HOST: ${{ secrets.AGENDAY_FTP_HOST }}
+          AGENDAY_FTP_USERNAME: ${{ secrets.AGENDAY_FTP_USERNAME }}
+          AGENDAY_FTP_PASSWORD: ${{ secrets.AGENDAY_FTP_PASSWORD }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import ssl
+          import sys
+          from ftplib import FTP_TLS
+
+          ftp = FTP_TLS(context=ssl.create_default_context(), timeout=30)
+          try:
+              ftp.connect(os.environ["AGENDAY_FTP_HOST"], 21)
+              ftp.login(os.environ["AGENDAY_FTP_USERNAME"], os.environ["AGENDAY_FTP_PASSWORD"])
+              ftp.prot_p()
+              ftp.cwd("htdocs")
+              ftp.pwd()
+              print("OK: FTP com TLS autenticado; pasta htdocs acessível, sem qualquer upload.")
+          except Exception as error:
+              print("Teste de conexão falhou: " + type(error).__name__, file=sys.stderr)
+              raise SystemExit(1)
+          finally:
+              try:
+                  ftp.quit()
+              except Exception:
+                  ftp.close()
+          PY
+
   publicar:
     name: Enviar ao InfinityFree somente com autorizacao
     needs: validar
