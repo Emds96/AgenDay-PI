@@ -51,9 +51,11 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
     <link rel="stylesheet" href="css/agenda.css">
     <link rel="stylesheet" href="css/agendamento-form.css">
     <link rel="stylesheet" href="css/agenda-calendario.css">
+    <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
+    <link rel="stylesheet" href="css/design-system.css">
 </head>
 
-<body>
+<body class="agenday-app">
     <header class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <button class="navbar-toggler bg-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">

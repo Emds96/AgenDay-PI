@@ -22,9 +22,11 @@ $csrfToken = agenday_token_csrf();
     <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css'>
     <link rel="stylesheet" href="css/login.css">
+    <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
+    <link rel="stylesheet" href="css/design-system.css">
 </head>
 
-<body>
+<body class="agenday-auth">
     <div class="container box " id="container">
 
         <div class="form-container sign-up-container">

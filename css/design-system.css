@@ -1,0 +1,291 @@
+/*
+ * AgenDay 2.0 — Design System, etapa 5.1.
+ *
+ * Tema BASE do produto. Manter nomes semânticos:
+ * no futuro, um tema por estabelecimento poderá substituir os tokens,
+ * mas a personalização por cliente NÃO está implementada nesta etapa.
+ * Este arquivo deve ser carregado DEPOIS dos CSS antigos e do Bootstrap.
+ */
+
+:root {
+  /* Identidade original da tela de login */
+  --ad-accent: #7AD6CC;
+  --ad-accent-hover: #5CC6BA;
+  --ad-accent-soft: #A2ECE4;
+  --ad-accent-strong: #1CC1AE;
+  --ad-primary: #18544D;
+  --ad-primary-hover: #11675C;
+  --ad-primary-soft: #E7F8F4;
+
+  /* Superfícies e tipografia */
+  --ad-background: #E3F2FD;
+  --ad-surface: #FFFFFF;
+  --ad-surface-muted: #F5FBFA;
+  --ad-text: #203B38;
+  --ad-text-muted: #486560;
+  --ad-border: #CCDFDB;
+  --ad-focus: #11675C;
+  --ad-danger: #B42332;
+
+  /* Tamanhos compartilhados, sem alterar a estrutura da página */
+  --ad-radius-sm: 8px;
+  --ad-radius-md: 12px;
+  --ad-radius-lg: 16px;
+  --ad-shadow: 0 6px 22px rgba(24, 84, 77, .10);
+  --ad-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* O escopo por página evita sobrescrever estilos de scripts e componentes legados. */
+body.agenday-app,
+body.agenday-auth {
+  font-family: var(--ad-font);
+  color: var(--ad-text);
+  background-color: var(--ad-background);
+}
+
+body.agenday-app {
+  --bs-primary: #18544D;
+  --bs-primary-rgb: 24, 84, 77;
+  --bs-link-color: var(--ad-primary);
+  --bs-link-hover-color: var(--ad-primary-hover);
+  --bs-body-color: var(--ad-text);
+  --bs-body-bg: var(--ad-background);
+}
+
+.agenday-app h1,
+.agenday-app h2,
+.agenday-app h3,
+.agenday-app h4,
+.agenday-auth h1,
+.agenday-auth h2 {
+  color: var(--ad-text);
+  letter-spacing: -.015em;
+}
+
+.agenday-app a:not(.btn) {
+  text-underline-offset: .15em;
+}
+
+.agenday-app a:not(.btn):hover {
+  color: var(--ad-primary-hover);
+}
+
+/* Navegação e menus: mantém o markup e o offcanvas atuais. */
+.agenday-app > header.navbar {
+  background-color: var(--ad-surface) !important;
+  border-bottom: 1px solid var(--ad-border);
+  box-shadow: 0 2px 12px rgba(24, 84, 77, .08);
+}
+
+.agenday-app > header.navbar .offcanvas-title {
+  color: var(--ad-primary);
+}
+
+.agenday-app .offcanvas {
+  background: var(--ad-surface);
+}
+
+.agenday-app .offcanvas .nav-link {
+  color: var(--ad-text);
+  border-radius: var(--ad-radius-sm);
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.agenday-app .offcanvas .nav-link:hover,
+.agenday-app .offcanvas .nav-link:focus-visible,
+.agenday-app .offcanvas .nav-link[aria-current="page"] {
+  color: var(--ad-primary);
+  background-color: var(--ad-primary-soft);
+}
+
+.agenday-app .dropdown-item:focus,
+.agenday-app .dropdown-item:hover,
+.agenday-app .dropdown-item.active,
+.agenday-app .dropdown-item:active {
+  background-color: var(--ad-primary-soft);
+  color: var(--ad-primary);
+}
+
+/* Cartões e áreas de listagem. Evitar mudar larguras/posicionamento herdados. */
+.agenday-app .card,
+.agenday-app main .box {
+  border-color: var(--ad-border);
+  background-color: var(--ad-surface);
+}
+
+.agenday-app .card {
+  border-radius: var(--ad-radius-md);
+}
+
+.agenday-app main .box {
+  background: var(--ad-surface);
+}
+
+.agenday-app .header-box {
+  background-color: var(--ad-primary-soft);
+  color: var(--ad-primary);
+}
+
+.agenday-app .conteudo {
+  background: var(--ad-surface-muted);
+  border: 1px solid var(--ad-border);
+  box-shadow: var(--ad-shadow);
+}
+
+/* Botões. A cor forte é usada com texto branco para preservar contraste. */
+.agenday-app .btn.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--ad-primary);
+  --bs-btn-border-color: var(--ad-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--ad-primary-hover);
+  --bs-btn-hover-border-color: var(--ad-primary-hover);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--ad-primary-hover);
+  --bs-btn-active-border-color: var(--ad-primary-hover);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--ad-primary);
+  --bs-btn-disabled-border-color: var(--ad-primary);
+}
+
+.agenday-app .btn.btn-outline-primary {
+  --bs-btn-color: var(--ad-primary);
+  --bs-btn-border-color: var(--ad-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--ad-primary);
+  --bs-btn-hover-border-color: var(--ad-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--ad-primary-hover);
+  --bs-btn-active-border-color: var(--ad-primary-hover);
+}
+
+.agenday-app .adicionar,
+.agenday-app .concluir {
+  background-color: var(--ad-accent);
+  border-color: var(--ad-accent);
+  color: var(--ad-primary);
+  font-weight: 700;
+}
+
+.agenday-app .adicionar:hover,
+.agenday-app .concluir:hover {
+  background-color: var(--ad-accent-hover);
+  border-color: var(--ad-accent-hover);
+  color: var(--ad-primary);
+}
+
+.agenday-app .text-bg-primary {
+  background-color: var(--ad-primary) !important;
+  color: #fff !important;
+}
+
+/* Formulários: mesmos estados e foco em todas as telas. */
+.agenday-app .form-control,
+.agenday-app .form-select,
+.agenday-app .input-group-text {
+  border-color: var(--ad-border);
+}
+
+.agenday-app .form-control:focus,
+.agenday-app .form-select:focus {
+  border-color: var(--ad-focus);
+  box-shadow: 0 0 0 .20rem rgba(24, 84, 77, .16);
+}
+
+.agenday-app .form-label {
+  color: var(--ad-text);
+  font-weight: 600;
+}
+
+.agenday-app .input-group-text.button-pesquisa {
+  background-color: var(--ad-primary-soft);
+  color: var(--ad-primary);
+}
+
+/* Calendário 4.4: remove a mistura de azuis no destaque primário. */
+.agenday-app #agenda-calendario .agenda-dia-selecionado {
+  background-color: var(--ad-primary);
+  border-color: var(--ad-primary);
+  color: #fff;
+}
+
+.agenday-app #agenda-calendario .agenda-dia-selecionado:hover {
+  background-color: var(--ad-primary-hover);
+}
+
+.agenday-app #agenda-calendario .agenda-dia-hoje:not(.agenda-dia-selecionado) {
+  border-color: var(--ad-primary);
+}
+
+.agenday-app #agenda-calendario .agenda-dia-botao:hover:not(.agenda-dia-selecionado) {
+  background-color: var(--ad-primary-soft);
+  border-color: var(--ad-primary);
+}
+
+.agenday-app #agenda-calendario .agenda-dia-contagem {
+  background: var(--ad-accent-soft);
+  color: var(--ad-primary);
+}
+
+.agenday-app #agenda-calendario .agenda-dia-selecionado .agenda-dia-contagem {
+  background: #fff;
+  color: var(--ad-primary);
+}
+
+.agenday-app #agenda-calendario .agenda-navegacao-btn {
+  background: var(--ad-surface-muted);
+  border-color: var(--ad-border);
+  color: var(--ad-primary);
+}
+
+.agenday-app #agenda-calendario .agenda-navegacao-btn:hover:not(:disabled) {
+  background: var(--ad-primary-soft);
+}
+
+.agenday-app .agenda-atendimento {
+  border-left-color: var(--ad-primary);
+}
+
+.agenday-app .agenda-atendimento-cancelado {
+  border-left-color: #889991;
+}
+
+.agenday-app .agenda-situacao-agendado {
+  background: var(--ad-primary-soft);
+  color: var(--ad-primary);
+}
+
+.agenday-app .agendamento-resumo,
+.agenday-app .agenda-dia-vazio-texto {
+  background: var(--ad-surface-muted);
+  color: var(--ad-text);
+  border-color: var(--ad-border);
+}
+
+/* Autenticação: preserva o degradê turquesa original do login. */
+.agenday-auth button:not(.ghost) {
+  background-color: var(--ad-accent-hover);
+  border-color: var(--ad-primary);
+  color: var(--ad-primary);
+}
+
+.agenday-auth button.ghost {
+  border-color: var(--ad-primary);
+}
+
+.agenday-auth .input:focus {
+  border-color: var(--ad-primary);
+}
+
+/* Foco visível para teclado, sem depender apenas de mudança de cor. */
+.agenday-app :is(button, a, input, select, textarea):focus-visible,
+.agenday-auth :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--ad-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agenday-app .offcanvas .nav-link {
+    transition: none;
+  }
+}

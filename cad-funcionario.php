@@ -26,9 +26,11 @@ require_once __DIR__ . '/info-funcionario.php';
 
     <!-- ICONS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
+    <link rel="stylesheet" href="css/design-system.css">
 </head>
 
-<body>
+<body class="agenday-app">
     <header class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <button class="navbar-toggler bg-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">

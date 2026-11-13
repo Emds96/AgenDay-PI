@@ -23,9 +23,11 @@
     <link rel="stylesheet" href="css/body.css" />
     <link rel="stylesheet" href="css/box.css">
     <link rel="stylesheet" href="css/perfil.css">
+    <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
+    <link rel="stylesheet" href="css/design-system.css">
 </head>
 
-<body>
+<body class="agenday-app">
 <header class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <button class="navbar-toggler bg-light" type="button" data-bs-toggle="offcanvas"
