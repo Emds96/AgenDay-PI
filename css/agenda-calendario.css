@@ -253,3 +253,22 @@
         font-size: 1rem;
     }
 }
+
+/* 4.5 — botão de cancelamento visível apenas em agendamentos ativos. */
+.agenda-cancelar-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-top: 12px;
+    padding-top: 9px;
+    border-top: 1px solid #e2e8ef;
+}
+.agenda-cancelar-form .btn {
+    font-weight: 600;
+    min-height: 38px;
+}
+@media (max-width: 575px) {
+    .agenda-cancelar-form .btn {
+        width: 100%;
+    }
+}

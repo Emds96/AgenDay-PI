@@ -9,6 +9,10 @@
     const calendario = document.getElementById('agenda-calendario');
     if (!calendario) return;
 
+    // O token é emitido pelo PHP na página autenticada; nunca é inventado no navegador.
+    const tokenInput = document.querySelector('#form-novo-agendamento input[name="csrf_token"]');
+    const tokenCancelamento = tokenInput ? tokenInput.value : '';
+
     const grade = document.getElementById('agenda-dias');
     const tituloMes = document.getElementById('agenda-mes-titulo');
     const tituloDia = document.getElementById('agenda-dia-titulo');
@@ -208,6 +212,44 @@
             if (typeof registro.observacoes === 'string' && registro.observacoes.trim()) {
                 cartao.appendChild(criarElemento('p', 'agenda-atendimento-observacoes',
                     'Observações: ' + registro.observacoes));
+            }
+
+            // Botão somente para registros ativos. O servidor volta a validar tudo.
+            const ativo = registro.status === 'agendado' || registro.status === 'confirmado';
+            if (ativo && Number.isSafeInteger(registro.id_agendamento)
+                && registro.id_agendamento > 0 && tokenCancelamento) {
+                const formCancelamento = criarElemento('form', 'agenda-cancelar-form');
+                formCancelamento.method = 'post';
+                formCancelamento.action = 'cancelar-agendamento.php';
+
+                const campoId = criarElemento('input');
+                campoId.type = 'hidden';
+                campoId.name = 'id_agendamento';
+                campoId.value = String(registro.id_agendamento);
+                formCancelamento.appendChild(campoId);
+
+                const campoCsrf = criarElemento('input');
+                campoCsrf.type = 'hidden';
+                campoCsrf.name = 'csrf_token';
+                campoCsrf.value = tokenCancelamento;
+                formCancelamento.appendChild(campoCsrf);
+
+                const botaoCancelar = criarElemento('button', 'btn btn-sm btn-outline-danger',
+                    'Cancelar agendamento');
+                botaoCancelar.type = 'submit';
+                formCancelamento.appendChild(botaoCancelar);
+                formCancelamento.addEventListener('submit', evento => {
+                    const confirmou = window.confirm(
+                        'Deseja cancelar este agendamento? Esta ação libera o horário e mantém o histórico.'
+                    );
+                    if (!confirmou) {
+                        evento.preventDefault();
+                        return;
+                    }
+                    botaoCancelar.disabled = true;
+                    botaoCancelar.textContent = 'Cancelando...';
+                });
+                cartao.appendChild(formCancelamento);
             }
             fragmento.appendChild(cartao);
         }

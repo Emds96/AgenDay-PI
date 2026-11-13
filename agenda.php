@@ -151,7 +151,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                 <div class="card-body p-3 p-md-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                         <h1 id="novo-agendamento-titulo" class="h4 mb-0">Novo agendamento</h1>
-                        <span class="badge text-bg-primary">Agendamentos · Etapa 4.3</span>
+                        <span class="badge text-bg-primary">Agendamentos</span>
                     </div>
                     <p class="text-muted mb-3">Escolha cliente, serviço, funcionário, data e horário para registrar um atendimento.</p>
                     <?php if (!empty($_SESSION['sucesso_agendamento'])): ?>
@@ -165,7 +165,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                         </div>
                     <?php endif; unset($_SESSION['erro_agendamento']); ?>
                     <div class="alert alert-info" role="note">
-                        O sistema confere a disponibilidade ao salvar. O calendário abaixo ainda é ilustrativo.
+                        O sistema confere conflitos de horários ao salvar. A agenda abaixo consulta os atendimentos registrados.
                     </div>
                     <?php if ($erroOpcoesAgenda): ?>
                         <div class="alert alert-danger" role="alert">
@@ -259,6 +259,16 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
 
         <!-- Microtarefa 4.4: agendamentos reais via API protegida por sessão. -->
         <section class="container-fluid py-3 pb-4 agenda-consulta" aria-labelledby="agenda-calendario-titulo">
+            <?php if (!empty($_SESSION['sucesso_cancelamento'])): ?>
+                <div class="alert alert-success" role="status">
+                    <?= htmlspecialchars((string) $_SESSION['sucesso_cancelamento'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                </div>
+            <?php endif; unset($_SESSION['sucesso_cancelamento']); ?>
+            <?php if (!empty($_SESSION['erro_cancelamento'])): ?>
+                <div class="alert alert-danger" role="alert">
+                    <?= htmlspecialchars((string) $_SESSION['erro_cancelamento'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                </div>
+            <?php endif; unset($_SESSION['erro_cancelamento']); ?>
             <div class="row g-3">
                 <div class="col-12 col-lg-7">
                     <div class="card shadow-sm agenda-calendario-card h-100">
