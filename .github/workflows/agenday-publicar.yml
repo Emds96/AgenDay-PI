@@ -62,7 +62,7 @@ jobs:
     if: >-
       ${{ github.repository == 'Emds96/AgenDay-PI'
           && github.ref == 'refs/heads/dev-feira-uninorte'
-          && contains(github.event.head_commit.message, '[teste-ftps]') }}
+          && (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[teste-ftps]')) }}
     runs-on: ubuntu-latest
     environment: producao-agenday
     steps:
