@@ -6,7 +6,7 @@
 
 **Sistema web de gestão de agendamentos para estabelecimentos de serviços**
 
-Projeto acadêmico em desenvolvimento para apresentação na feira da **UniNorte — 27 de novembro de 2026**.
+Projeto acadêmico para a feira da **UniNorte — 27 de novembro de 2026 (data indicada no planejamento, sujeita a confirmação)**. **Prazo operacional de conclusão: 24 de novembro de 2026**, conforme relato do responsável sobre orientação do professor; confirmar ambos os marcos.
 
 ![PHP](https://img.shields.io/badge/PHP-Backend-777BB4?logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-Banco%20de%20dados-4479A1?logo=mysql&logoColor=white)
@@ -21,7 +21,7 @@ O **AgenDay 2.0** é uma aplicação web desenvolvida para facilitar a organiza�
 
 Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados independente, autenticação de estabelecimentos, associação entre funcionários e serviços e uma agenda conectada aos registros cadastrados.
 
-> **Estado atual:** as funcionalidades descritas abaixo estão **implementadas no código da branch `dev-feira-uninorte`**, mas ainda dependem de testes integrados na hospedagem. A versão atualizada **não foi publicada no InfinityFree**. Este README não deve ser interpretado como garantia de que o sistema completo já está em produção.
+> **Estado atual (verificado em 16/11/2026):** as funcionalidades descritas abaixo estão **implementadas no código da branch `dev-feira-uninorte`**, mas ainda dependem de testes integrados na hospedagem. O GitHub Actions **confirmou uma publicação FTPS bem-sucedida em 13/11/2026** e a página pública de login e arquivos CSS 2.0 estavam acessíveis em 16/11/2026. **Não foi confirmado se o último commit está implantado nem se o sistema completo funciona em produção.** Consulte [docs/STATUS.md](docs/STATUS.md).
 
 ## Funcionalidades
 
@@ -139,6 +139,12 @@ php tests/agendamento-cancelamento.php
 
 A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agendamentos concorrentes **ainda precisam ser confirmados em ambiente integrado**. Revisões estáticas e simulações do calendário não equivalem a um teste completo com MySQL.
 
+## Fluxo de branches
+
+- **Desenvolvimento:** `dev-feira-uninorte`, preferencialmente com branches curtas de tarefa e PRs destinados à branch de desenvolvimento.
+- **Versão oficial do fork:** `main`, preservada até haver versão estável, validada e aprovada. Promoção = PR de `dev-feira-uninorte` para `main` do fork, sem alterar o repositório original do Gabriel.
+- **Cuidado:** a `main` ainda contém workflow antigo de deploy. Revisar antes de qualquer merge para ela. Nenhuma promoção ou publicação acontece por autorização implícita.
+
 ## Status e próximos passos
 
 - [x] Fork de desenvolvimento independente do projeto original.
@@ -150,12 +156,15 @@ A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agenda
 - [x] Criar o tema base turquesa e padronizar cores, tipografia e componentes (**5.1**, revisão visual pendente).
 - [x] Aplicar no código a responsividade ao login, menu, cadastros e calendário (**5.2**, validação visual em dispositivos ainda pendente).
 - [ ] Executar testes funcionais e de segurança na hospedagem.
-- [x] Preparar automação de publicação segura GitHub → InfinityFree (desativada até configuração/autorização).
-- [ ] Configurar acesso FTPS e backup; ativar publicação controlada da versão atualizada.
+- [x] Preparar automação de publicação segura GitHub → InfinityFree e registrar publicação FTPS concluída em 13/11/2026 ([evidência](https://github.com/Emds96/AgenDay-PI/actions/runs/43518952935)).
+- [ ] Confirmar o commit atualmente publicado, estado atual das autorizações e existência de backup; testar versão atualizada ponta a ponta antes de novas publicações.
 - [ ] Preparar dados fictícios, imagens das telas e apresentação da feira.
-- [ ] Após aprovação e testes, fazer o merge para a `main` **deste fork**.
+- [ ] Após testes e autorização específica, **promover** por Pull Request a versão estável de `dev-feira-uninorte` para a `main` **deste fork**, revisando antes o workflow antigo de deploy da `main`.
 
 ## Documentação complementar
+
+- [Instruções para agentes e fluxo de trabalho](AGENTS.md)
+- [Status consolidado, prazos, publicação e próximos passos](docs/STATUS.md)
 
 - [Autenticação — 3.1](docs/AUTENTICACAO_3_1.md)
 - [Clientes — 3.2](docs/CLIENTES_3_2.md)
