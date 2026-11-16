@@ -3,7 +3,7 @@
 **Atualizado em:** 16/11/2026  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
-**Último commit da branch consultado nesta revisão:** `6596bebc7a9b56b48dc136123266c9946780dd5c` (16/11/2026; antes das correções QA)  
+**Último commit da branch consultado nesta revisão:** `949ba126ad5eac6dda07043b560f44a20873c336` (16/11/2026; merge do PR #4, QA-01)  
 **Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
 
 ## Objetivo e prazos
@@ -105,7 +105,7 @@ O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGEND
 
 **Regra:** cada correção nasce de branch curta baseada na última `dev-feira-uninorte`, gera PR separado com objetivo, testes e registro de evidências. **Só iniciar a próxima correção depois de revisar/integrar a anterior**, salvo autorização diferente. Não fazer merge nem deploy sem autorização explícita.
 
-1. **QA-01 — menu lateral (primeiro):** [PR #4](https://github.com/Emds96/AgenDay-PI/pull/4) aberto com proposta CSS e teste estrutural. **Ainda sem merge/deploy ou validação visual da correção.** Após autorização, confirmar abertura/fechamento, backdrop, navegação e viewport 320/390/768/1366 px. **Critério de aceitação:** painel visível e interativo dentro da janela ao abrir, desaparece ao fechar, sem regressão.
+1. **QA-01 — menu lateral (primeiro):** [PR #4](https://github.com/Emds96/AgenDay-PI/pull/4) **integrado em 16/11/2026**, com CSS e teste estrutural. **CI passou, mas publicação não ocorreu:** o job de envio foi ignorado porque a automação permanece bloqueada. A publicação depende de verificação adicional de identidade na conta GitHub do responsável. Após o envio autorizado e concluído, validar abertura/fechamento, backdrop, navegação e viewport 320/390/768/1366 px. **Critério de aceitação:** painel visível e interativo dentro da janela ao abrir, desaparece ao fechar, sem regressão.
 2. **QA-02 — alteração de senha:** implementar endpoint autenticado com senha atual, nova senha, confirmação, CSRF, `password_verify`/`password_hash` e mensagens seguras; testar persistência e sessão.
 3. **QA-03 — recuperação de senha:** decidir mecanismo apropriado à hospedagem (envio de e-mail confiável, token de uso único/validade e limitação de tentativas), ou remover/desativar o link até ser implementado; jamais oferecer recuperação insegura.
 4. **QA-04 — perfil/configurações:** substituir informações fictícias por dados da conta e definir quais ações realmente serão implementadas, com permissões e validações.
@@ -117,6 +117,16 @@ O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGEND
 **Entre PRs:** validar CI, revisar diferenças e autorizar merge; após merge/deploy controlado, executar regressão usando ZERO Browser MCP. Atualizar este STATUS com número do PR, commit, resultado de teste e pendências. Prioridade geral: navegação e apresentação funcional até o prazo operacional de 24/11.
 
 
+## Situação da correção QA-01 — 16/11/2026
+
+- **PRs integrados:** [#3 — auditoria](https://github.com/Emds96/AgenDay-PI/pull/3) e [#4 — CSS do menu](https://github.com/Emds96/AgenDay-PI/pull/4), ambos em `dev-feira-uninorte`. Commit de integração do CSS: `949ba126ad5eac6dda07043b560f44a20873c336`.
+- **Arquivos da correção:** `css/responsivo.css` e `tests/responsividade-check.js`, somente; sem PHP/SQL/modificação de regras de negócio.
+- **CI:** [execução 43951659658](https://github.com/Emds96/AgenDay-PI/actions/runs/43951659658) passou em sintaxe PHP, testes locais e preparação de pacote; **job de publicação foi `skipped`**, não executado.
+- **Bloqueio constatado:** variáveis de repositório `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`. A interface do GitHub exigiu confirmação de identidade por e-mail antes de permitir alterações. O responsável deve concluir a verificação diretamente no GitHub; **não solicitar nem guardar o código de verificação no chat**.
+- **Ação já realizada:** cancelamento de workflow legado de diagnóstico FTPS que permanecia aguardando aprovação desde 13/11; isso liberou a validação do commit atual. Não houve publicação de código nessa ação.
+- **Conferência da hospedagem:** em 16/11, o `css/responsivo.css` público **não continha o seletor introduzido no PR #4**. Portanto o bug QA-01 **continua pendente de validação em produção**.
+- **Próximo passo:** após verificação do GitHub, executar publicação autorizada da branch correta, restaurar imediatamente os bloqueios `false/disabled`, verificar o CSS servido e repetir testes de menu em 320/390/768/1366 px. Manter próxima correção QA-02 aguardando essa etapa.
+
 ## Estratégia de branches aprovada — 16/11/2026
 
 - **`dev-feira-uninorte`** é a branch de integração do desenvolvimento: novas tarefas devem preferencialmente nascer de branches curtas baseadas nela, com Pull Requests direcionados a ela.
@@ -126,7 +136,7 @@ O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGEND
 
 ## Próximas prioridades propostas
 
-1. **QA-01:** corrigir o menu lateral em PR isolado e repetir o teste visual no navegador real.
+1. **QA-01:** código da correção do menu já integrado ([PR #4](https://github.com/Emds96/AgenDay-PI/pull/4)); **pendente publicar e testar visualmente no navegador real**. Não marcar resolvido antes da regressão.
 2. **QA-02 e QA-03:** definir e corrigir alteração e recuperação de senha, sem introduzir fluxo inseguro.
 3. **QA-04–QA-07:** corrigir dados ilustrativos, console e escopo dos módulos legados por PRs separados.
 4. **QA-08:** refinar modais após estabilizar a navegação.
