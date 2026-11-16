@@ -1,5 +1,7 @@
 # Autenticação do AgenDay 2.0 — microtarefa 3.1
 
+> **Nota de continuidade (16/11/2026):** este documento é o **registro histórico da microtarefa** e descreve o estado da época. Frases como “não publicado”, “não testado” ou “ainda não importado” não devem ser interpretadas como o estado atual do AgenDay. Já houve publicação FTPS comprovada em 13/11 e auditoria de integração **relatada** em 16/11; consulte [STATUS.md](STATUS.md) e [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) para o estado mais recente e para operações autorizadas.
+
 ## O que foi alterado (somente na branch de desenvolvimento)
 
 - `sessao.php` inicia sessões com cookies HttpOnly, SameSite=Lax e Secure quando HTTPS é usado, e gera/valida tokens CSRF para autenticação.
