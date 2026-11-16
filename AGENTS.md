@@ -11,6 +11,12 @@ Este arquivo orienta qualquer agente ou colaborador que trabalhe no **AgenDay 2.
 - **Hospedagem:** conta independente no InfinityFree (`https://agenday-sistema.infinityfree.io/`). Há evidência de publicação FTPS bem-sucedida em 13/11/2026 e de site público acessível em 16/11/2026; isso **não comprova que o último commit foi implantado nem que os fluxos PHP/MySQL funcionem**. Conferir versão e estado atual antes de afirmar.
 - **Documentação:** `README.md`, `docs/STATUS.md` e os documentos por microtarefa em `docs/`. O histórico de commits e o código atual prevalecem sobre descrições antigas.
 
+## Deploy: procedimento obrigatório antes de alterações na hospedagem
+
+**Não criar workflow novo nem tentar a `main` para resolver bloqueio de deploy.** A publicação existente está descrita passo a passo em [`docs/PUBLICACAO_AUTOMATICA.md`](docs/PUBLICACAO_AUTOMATICA.md): GitHub Actions → FTPS → InfinityFree, operada pelo **Remote Desktop Commander + GitHub CLI (`gh`)** na máquina autorizada. O plugin GitHub serve para código/PRs/CI, mas não fornece atualmente o controle de Variables e disparo manual; verificar `gh auth status` antes de assumir indisponibilidade.
+
+A rotina exige autorização para **SHA e destino exatos**, backup recuperável e confirmação da branch; ativa temporariamente `AGENDAY_DEPLOY_ENABLED=true` e `AGENDAY_DEPLOY_MODE=publish`, dispara `workflow_dispatch`, aprova o environment `producao-agenday` quando autorizado, comprova `publicar=success` e **desativa as duas variáveis novamente**, também após falha. Um push com CI verde **não é deploy**. Não tocar secrets, `conexao.php`, SQL, workflow ou banco no processo documental. Consultar o guia atualizado — não confiar em mensagens de sessões anteriores.
+
 ## Como começar uma tarefa
 
 1. Confirmar repositório, branch atual, último commit e escopo solicitado.

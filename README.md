@@ -130,6 +130,8 @@ Crie um estabelecimento de teste, faça login e cadastre um **cliente**, um **se
 
 ## Testes
 
+A inspeção documental de 16/11/2026 não reproduziu o QA autenticado. O [STATUS](docs/STATUS.md) registra uma auditoria integrada **relatada**, com diversos fluxos aprovados no cenário testado e falhas pendentes; não é correto concluir que o aplicativo completo está pronto nem que o PR #4 está publicado.
+
 Há roteiros automatizados para validação de dados e identificadores de cancelamento, sem conectar ao banco:
 
 ```bash
@@ -138,6 +140,14 @@ php tests/agendamento-cancelamento.php
 ```
 
 A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agendamentos concorrentes **ainda precisam ser confirmados em ambiente integrado**. Revisões estáticas e simulações do calendário não equivalem a um teste completo com MySQL.
+
+## Publicação controlada — procedimento operacional
+
+**Antes de qualquer novo deploy, leia o [guia completo de publicação](docs/PUBLICACAO_AUTOMATICA.md).** Mantemos o workflow existente `.github/workflows/agenday-publicar.yml`: código na `dev-feira-uninorte` → GitHub Actions → pacote seguro → FTPS → `htdocs/` no InfinityFree. **Não é necessário migrar para outro workflow**, navegador ou `main`.
+
+O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desktop Commander**, conectado ao computador autorizado, executa o **GitHub CLI (`gh`)** para consultar e alterar temporariamente as duas variáveis de autorização, disparar `workflow_dispatch` e, quando permitido e autorizado, aprovar o ambiente `producao-agenday`. Segredos FTP permanecem no GitHub Environments. Após a execução, as variáveis devem voltar a `false/disabled`.
+
+**Verificação de 16/11/2026:** PRs #3, #4 e #5 integrados ao commit `ac53c8ea9b8be206c032d4072bf07213a9769698`; validações passaram, mas o job de publicação foi **ignorado (skipped)**. O último deploy comprovado é de 13/11, commit `f807327811895bc97827929f4e30c2e60a180110`. **Não presumir que o código integrado está no site**; confirmar o SHA e testar a interface após o próximo deploy autorizado.
 
 ## Fluxo de branches
 

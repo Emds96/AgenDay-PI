@@ -1,5 +1,7 @@
 # AgenDay — Revisão do banco de dados (microtarefa 2.1)
 
+> **Nota de continuidade (16/11/2026):** este documento é o **registro histórico da microtarefa** e descreve o estado da época. Frases como “não publicado”, “não testado” ou “ainda não importado” não devem ser interpretadas como o estado atual do AgenDay. Já houve publicação FTPS comprovada em 13/11 e auditoria de integração **relatada** em 16/11; consulte [STATUS.md](STATUS.md) e [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) para o estado mais recente e para operações autorizadas.
+
 **Data:** 11/11/2026  
 **Branch:** `dev-feira-uninorte`  
 **Status:** revisão estática concluída; nenhuma mudança de esquema ou conexão foi realizada.

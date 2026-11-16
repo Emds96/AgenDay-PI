@@ -1,5 +1,7 @@
 # Microtarefa 4.3 — Salvar agendamentos no MySQL
 
+> **Nota de continuidade (16/11/2026):** este documento é o **registro histórico da microtarefa** e descreve o estado da época. Frases como “não publicado”, “não testado” ou “ainda não importado” não devem ser interpretadas como o estado atual do AgenDay. Já houve publicação FTPS comprovada em 13/11 e auditoria de integração **relatada** em 16/11; consulte [STATUS.md](STATUS.md) e [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) para o estado mais recente e para operações autorizadas.
+
 **Entregue no código** da branch `dev-feira-uninorte` em 11/11/2026. **Não publicado no InfinityFree nem testado conectado ao banco online.** Não alterar nem importar novamente o `BD_v2.sql`: a tabela `agendamentos` já existe no banco independente.
 
 ## Arquivos

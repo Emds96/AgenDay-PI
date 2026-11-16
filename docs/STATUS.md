@@ -3,7 +3,7 @@
 **Atualizado em:** 16/11/2026  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
-**Último commit da branch consultado nesta revisão:** `949ba126ad5eac6dda07043b560f44a20873c336` (16/11/2026; merge do PR #4, QA-01)  
+**Último commit da branch consultado antes desta revisão documental:** `ac53c8ea9b8be206c032d4072bf07213a9769698` (16/11/2026; merge do PR #5, documentação QA-01). **Após integrar este PR documental, consultar o SHA atual novamente.**  
 **Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
 
 ## Objetivo e prazos
@@ -24,13 +24,35 @@ Preparar o AgenDay, sistema web PHP/MySQL de gerenciamento de agendamentos, para
 | Serviços | **Aprovados no cenário QA reportado:** cadastro, preço, duração, pesquisa e rejeição de duplicidade/valores inválidos | Regressão e demais casos-limite |
 | Funcionários | **Aprovados no cenário QA reportado:** cadastro, pesquisa, PNG, vínculo a serviço e persistência | Regressão e demais casos-limite |
 | Agenda/calendário | **Aprovados no cenário QA reportado:** criação, exibição, recarga, bloqueio de sobreposição, cancelamento, reutilização e listagens isoladas entre duas contas | Concorrência realmente simultânea e verificação aprofundada de isolamento ainda pendentes |
-| Tema e responsividade | **Falha QA-01:** menu lateral permanece fora da tela em 320, 390, 768 e 1366 px; pequenos transbordamentos internos em modais | Corrigir menu e repetir testes em múltiplas larguras |
+| Tema e responsividade | **Falha QA-01 no site antes da correção; PR #4 integrado no GitHub**, ainda não comprovado na hospedagem. Pequenos transbordamentos em modais reportados | Publicar e repetir testes em múltiplas larguras antes de afirmar resolução |
 | Comandas, histórico e financeiro | Páginas legadas presentes, sem fluxo de negócio integrado validado | Definir escopo mínimo ou retirar opções da demonstração |
 | Perfil, configurações e alterar senha | Páginas protegidas, com conteúdo/ações ainda ilustrativos ou incompletos | Implementar ou sinalizar/ocultar funcionalidades não operacionais |
 | CI | GitHub Actions com lint PHP e rotinas locais; execução de lint com sucesso no histórico consultado | Acompanhar execuções futuras e não confundir CI verde com teste online |
 | Publicação | Publicação FTPS confirmada em 13/11; **auditoria QA reportou fluxos PHP/MySQL funcionais em 16/11** e igualdade de hashes de três arquivos públicos com GitHub | Commit integral do PHP em produção continua sem verificação; regressão após cada publicação |
 
 > **Atenção:** “implementado no código” não significa “validado em produção”. As páginas podem existir e estar acessíveis sem todas as ações funcionarem.
+
+## Conferência técnica e operacional do deploy — 16/11/2026
+
+**Realizada nesta revisão por leitura do GitHub e consultas somente leitura via GitHub CLI no Remote Desktop Commander.** Fonte operacional e comandos: [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md). Não houve alteração de workflow, variáveis, secrets ou site; **nenhuma publicação foi iniciada**.
+
+| Item verificado | Resultado |
+| --- | --- |
+| Branch de trabalho | `dev-feira-uninorte` em `ac53c8ea9b8be206c032d4072bf07213a9769698` antes deste PR |
+| Histórico recente | PRs [#3](https://github.com/Emds96/AgenDay-PI/pull/3), [#4](https://github.com/Emds96/AgenDay-PI/pull/4) e [#5](https://github.com/Emds96/AgenDay-PI/pull/5) integrados; **#4 altera CSS e teste do menu, #5 documenta QA** |
+| CI do último commit consultado | [run 43953454744](https://github.com/Emds96/AgenDay-PI/actions/runs/43953454744): `validar=success`, `publicar=skipped`, `diagnosticar_ftp=skipped`. `php-lint` também `success` |
+| Última publicação comprovada | [run 43518952935](https://github.com/Emds96/AgenDay-PI/actions/runs/43518952935), commit `f807327811895bc97827929f4e30c2e60a180110`, 13/11; versão posterior **não comprovada** |
+| Travas consultadas | `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`, variáveis de repositório |
+| Secrets conferidos | Nomes `AGENDAY_FTP_HOST`, `AGENDAY_FTP_USERNAME` e `AGENDAY_FTP_PASSWORD` presentes no ambiente; **valores não consultados, validade não testada** |
+| Environment | `producao-agenday` requer revisor `Emds96`, aceita `dev-feira-uninorte`; confirmação da política necessária em futuras execuções |
+| Ferramenta operacional recuperada | Desktop Commander online; `gh` 2.104.0 autenticado como `Emds96`; não é preciso usar browser para controlar workflow enquanto a conexão persistir |
+| Backup atual | **Não revalidado nesta revisão**; existe referência histórica a cópias de 13/11. Exigir backup atualizado e verificável antes de publicar |
+| QA-01 | Corrigido em código no PR #4; **não confirmado no site**. Regressão visual necessária depois de publicar |
+| QA-02–QA-08 | Pendentes conforme registro de defeitos abaixo; não alterados neste PR |
+
+**Atenção:** a tentativa via interface gráfica que exigia confirmação de identidade por e-mail foi um bloqueio daquele caminho, **não demonstra que `gh` esteja indisponível**. A consulta autenticada por CLI funcionou nesta revisão. Se as configurações exigirem outra verificação no momento do deploy, relatar sem pedir códigos no chat.
+
+**Próximo passo aprovado no planejamento:** documentação primeiro; em **outra sessão**, inspecionar esta fonte, autorizar explicitamente e executar o workflow **existente**; confirmar a publicação do commit escolhido, restaurar `false/disabled` e repetir testes do menu. Nenhum deploy é autorizado por esta atualização documental.
 
 ## Estado da publicação — evidências de 16/11/2026
 
@@ -105,7 +127,7 @@ O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGEND
 
 **Regra:** cada correção nasce de branch curta baseada na última `dev-feira-uninorte`, gera PR separado com objetivo, testes e registro de evidências. **Só iniciar a próxima correção depois de revisar/integrar a anterior**, salvo autorização diferente. Não fazer merge nem deploy sem autorização explícita.
 
-1. **QA-01 — menu lateral (primeiro):** [PR #4](https://github.com/Emds96/AgenDay-PI/pull/4) **integrado em 16/11/2026**, com CSS e teste estrutural. **CI passou, mas publicação não ocorreu:** o job de envio foi ignorado porque a automação permanece bloqueada. A publicação depende de verificação adicional de identidade na conta GitHub do responsável. Após o envio autorizado e concluído, validar abertura/fechamento, backdrop, navegação e viewport 320/390/768/1366 px. **Critério de aceitação:** painel visível e interativo dentro da janela ao abrir, desaparece ao fechar, sem regressão.
+1. **QA-01 — menu lateral (primeiro):** [PR #4](https://github.com/Emds96/AgenDay-PI/pull/4) **integrado em 16/11/2026**, com CSS e teste estrutural. **CI passou, mas publicação não ocorreu:** o job de envio foi ignorado porque a automação permanece bloqueada. A interface gráfica havia exigido verificação adicional de identidade; **em nova leitura de 16/11 o GitHub CLI estava autenticado e as variáveis consultáveis**, sem contornar qualquer proteção. A nova publicação exige autorização, backup e as condições do guia operacional. Após o envio autorizado e concluído, validar abertura/fechamento, backdrop, navegação e viewport 320/390/768/1366 px. **Critério de aceitação:** painel visível e interativo dentro da janela ao abrir, desaparece ao fechar, sem regressão.
 2. **QA-02 — alteração de senha:** implementar endpoint autenticado com senha atual, nova senha, confirmação, CSRF, `password_verify`/`password_hash` e mensagens seguras; testar persistência e sessão.
 3. **QA-03 — recuperação de senha:** decidir mecanismo apropriado à hospedagem (envio de e-mail confiável, token de uso único/validade e limitação de tentativas), ou remover/desativar o link até ser implementado; jamais oferecer recuperação insegura.
 4. **QA-04 — perfil/configurações:** substituir informações fictícias por dados da conta e definir quais ações realmente serão implementadas, com permissões e validações.
@@ -119,13 +141,13 @@ O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGEND
 
 ## Situação da correção QA-01 — 16/11/2026
 
-- **PRs integrados:** [#3 — auditoria](https://github.com/Emds96/AgenDay-PI/pull/3) e [#4 — CSS do menu](https://github.com/Emds96/AgenDay-PI/pull/4), ambos em `dev-feira-uninorte`. Commit de integração do CSS: `949ba126ad5eac6dda07043b560f44a20873c336`.
+- **PRs integrados:** [#3 — auditoria](https://github.com/Emds96/AgenDay-PI/pull/3), [#4 — CSS do menu](https://github.com/Emds96/AgenDay-PI/pull/4) e [#5 — acompanhamento da publicação](https://github.com/Emds96/AgenDay-PI/pull/5), todos em `dev-feira-uninorte`. Commit de integração do CSS: `949ba126ad5eac6dda07043b560f44a20873c336`.
 - **Arquivos da correção:** `css/responsivo.css` e `tests/responsividade-check.js`, somente; sem PHP/SQL/modificação de regras de negócio.
 - **CI:** [execução 43951659658](https://github.com/Emds96/AgenDay-PI/actions/runs/43951659658) passou em sintaxe PHP, testes locais e preparação de pacote; **job de publicação foi `skipped`**, não executado.
-- **Bloqueio constatado:** variáveis de repositório `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`. A interface do GitHub exigiu confirmação de identidade por e-mail antes de permitir alterações. O responsável deve concluir a verificação diretamente no GitHub; **não solicitar nem guardar o código de verificação no chat**.
+- **Bloqueio constatado na tentativa via navegador:** variáveis de repositório `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`. A interface do GitHub exigiu confirmação de identidade por e-mail antes de permitir alterações. O responsável deve concluir a verificação diretamente no GitHub; **não solicitar nem guardar o código de verificação no chat**.
 - **Ação já realizada:** cancelamento de workflow legado de diagnóstico FTPS que permanecia aguardando aprovação desde 13/11; isso liberou a validação do commit atual. Não houve publicação de código nessa ação.
 - **Conferência da hospedagem:** em 16/11, o `css/responsivo.css` público **não continha o seletor introduzido no PR #4**. Portanto o bug QA-01 **continua pendente de validação em produção**.
-- **Próximo passo:** após verificação do GitHub, executar publicação autorizada da branch correta, restaurar imediatamente os bloqueios `false/disabled`, verificar o CSS servido e repetir testes de menu em 320/390/768/1366 px. Manter próxima correção QA-02 aguardando essa etapa.
+- **Próximo passo:** utilizando o GitHub CLI já recuperado, após autorização e backup, executar publicação autorizada da branch correta, restaurar imediatamente os bloqueios `false/disabled`, verificar o CSS servido e repetir testes de menu em 320/390/768/1366 px. Manter próxima correção QA-02 aguardando essa etapa.
 
 ## Estratégia de branches aprovada — 16/11/2026
 
@@ -158,6 +180,6 @@ Essa lista é uma **proposta de prioridades**, não um backlog já aprovado ou u
 
 Em uma sessão nova, solicitar:
 
-> Trabalhe em `Emds96/AgenDay-PI`, branch `dev-feira-uninorte`. Leia `AGENTS.md`, `docs/STATUS.md`, `README.md` e os documentos específicos da tarefa. Verifique commits recentes e eventual divergência com o status; diga o que está confirmado, o que falta e recomende o próximo passo. Não faça alterações sem minha autorização.
+> Trabalhe em `Emds96/AgenDay-PI`, branch `dev-feira-uninorte`. Leia `AGENTS.md`, `docs/STATUS.md`, `docs/PUBLICACAO_AUTOMATICA.md`, `README.md` e os documentos específicos da tarefa. Verifique commits recentes e eventual divergência com o status; diga o que está confirmado, o que falta e recomende o próximo passo. Não faça alterações sem minha autorização.
 
 **Como atualizar este arquivo depois:** registrar a data, o commit-base, entregas comprovadas, testes realmente realizados, limitações, decisões aprovadas e próximo passo; preferir a atualização no PR da mesma tarefa. Não apagar o histórico técnico em `docs/`.

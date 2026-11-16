@@ -1,5 +1,7 @@
 # Microtarefa 4.5 — Cancelamento e revisão de conflitos
 
+> **Nota de continuidade (16/11/2026):** este documento é o **registro histórico da microtarefa** e descreve o estado da época. Frases como “não publicado”, “não testado” ou “ainda não importado” não devem ser interpretadas como o estado atual do AgenDay. Já houve publicação FTPS comprovada em 13/11 e auditoria de integração **relatada** em 16/11; consulte [STATUS.md](STATUS.md) e [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) para o estado mais recente e para operações autorizadas.
+
 **Status: implementação no GitHub concluída**, branch `dev-feira-uninorte`. Não há publicação nem testes reais de PHP/MySQL no InfinityFree; `main` e o projeto original continuam preservados.
 
 ## Arquivos criados e alterados
