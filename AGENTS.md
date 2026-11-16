@@ -6,8 +6,9 @@ Este arquivo orienta qualquer agente ou colaborador que trabalhe no **AgenDay 2.
 
 - **Repositório de trabalho:** `Emds96/AgenDay-PI` (fork de `oliv-gabriel/AgenDay-PI`).
 - **Branch de desenvolvimento:** `dev-feira-uninorte`. É a referência principal do trabalho atual; não usar a `main` como referência para avaliar funcionalidades recentes.
+- **Estratégia aprovada (16/11/2026):** continuar o desenvolvimento e os testes na `dev-feira-uninorte`, preferencialmente por branches de tarefa e PRs para ela. Somente quando houver uma versão estável, testada e aprovada para a apresentação, propor PR de `dev-feira-uninorte` para a `main` **deste fork**. Essa integração chama-se promoção da versão; não acontece automaticamente, depende de autorização específica e não altera o repositório de Gabriel. Não é necessário esperar o dia da feira se a versão estiver validada antes.
 - **Tecnologias:** PHP, MySQL/MariaDB, HTML, CSS, JavaScript e Bootstrap.
-- **Hospedagem:** conta independente no InfinityFree. Não presumir que o código da branch esteja implantado: confirmar o estado do ambiente.
+- **Hospedagem:** conta independente no InfinityFree (`https://agenday-sistema.infinityfree.io/`). Há evidência de publicação FTPS bem-sucedida em 13/11/2026 e de site público acessível em 16/11/2026; isso **não comprova que o último commit foi implantado nem que os fluxos PHP/MySQL funcionem**. Conferir versão e estado atual antes de afirmar.
 - **Documentação:** `README.md`, `docs/STATUS.md` e os documentos por microtarefa em `docs/`. O histórico de commits e o código atual prevalecem sobre descrições antigas.
 
 ## Como começar uma tarefa
@@ -24,7 +25,7 @@ Este arquivo orienta qualquer agente ou colaborador que trabalhe no **AgenDay 2.
 - **Exige autorização prévia:** criar, editar ou excluir arquivos; criar branches, commits ou Pull Requests; realizar push/merge; modificar banco, hospedagem, credenciais, configurações ou deploy.
 - Uma autorização pode cobrir a tarefa inteira; não é necessário confirmar cada passo já incluído no escopo aprovado.
 - **Fluxo preferencial para alterações autorizadas:** criar branch a partir de `dev-feira-uninorte` → modificar apenas o escopo aprovado → validar → abrir Pull Request **com base em `dev-feira-uninorte`** → aguardar revisão e merge autorizado.
-- Nunca modificar a `main` ou o repositório original sem autorização explícita. Não fazer merge, deploy ou alterações destrutivas automaticamente.
+- Nunca modificar a `main` do fork ou o repositório original sem autorização explícita. A promoção futura da `dev-feira-uninorte` à `main` do fork exigirá PR, revisão do workflow legado de deploy da `main`, testes e autorização específica. Não fazer merge, deploy ou alterações destrutivas automaticamente.
 - Não reescrever histórico nem sobrescrever mudanças de terceiros. Antes de alterar, verificar se arquivos e branches já foram modificados.
 
 ## Estrutura do projeto
