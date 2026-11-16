@@ -3,8 +3,8 @@
 **Atualizado em:** 16/11/2026  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
-**Último commit da branch consultado nesta revisão:** `682b1be4df7ebdaaad7196989482d4c707ab49b0` (16/11/2026; merge da documentação inicial)  
-**Natureza desta revisão:** leitura de código, documentos, histórico recente, GitHub Actions e páginas/arquivos públicos do site. **Não houve testes integrados autenticados nem operações no banco durante esta revisão.**
+**Último commit da branch consultado nesta revisão:** `6596bebc7a9b56b48dc136123266c9946780dd5c` (16/11/2026; antes das correções QA)  
+**Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
 
 ## Objetivo e prazos
 
@@ -19,16 +19,16 @@ Preparar o AgenDay, sistema web PHP/MySQL de gerenciamento de agendamentos, para
 | Frente | Estado verificado | Validação ainda necessária |
 | --- | --- | --- |
 | Banco relacional v2 | `sql/BD_v2.sql` com 8 tabelas e vínculos por estabelecimento; README registra importação em banco independente | Conferir esquema e dados no MySQL real antes de novas operações |
-| Cadastro/login/logout | Fluxos de código com `password_hash`/`password_verify`, sessão, CSRF e verificação de páginas privadas | Teste de ponta a ponta na hospedagem |
-| Clientes | Cadastro, pesquisa e foto opcional implementados em PHP | Testar gravação, pesquisa, upload e isolamento entre estabelecimentos |
-| Serviços | Cadastro, duração, preço e pesquisa implementados em PHP | Testar valores, duplicidade e leitura no banco |
-| Funcionários | Cadastro, busca, upload e relação N:N com serviços implementados | Testar vínculos, buscas, arquivos e isolamento |
-| Agenda/calendário | Código para criar, listar e cancelar agendamentos; regra de conflitos de horários e trava transacional | Testar PHP/MySQL, cancelamento, horários simultâneos e dados de dois estabelecimentos |
-| Tema e responsividade | Arquivos CSS/JS e ajustes aplicados | Inspeção visual real em celular, tablet e desktop |
+| Cadastro/login/logout | **Aprovados no cenário QA reportado:** duas contas de teste, login, logout, reautenticação e validações | Recuperação e alteração de senha não funcionais; revalidar após correções |
+| Clientes | **Aprovados no cenário QA reportado:** cadastro, pesquisa, persistência, PNG e arquivo inválido | Aprofundar autorização de endpoints e regressão |
+| Serviços | **Aprovados no cenário QA reportado:** cadastro, preço, duração, pesquisa e rejeição de duplicidade/valores inválidos | Regressão e demais casos-limite |
+| Funcionários | **Aprovados no cenário QA reportado:** cadastro, pesquisa, PNG, vínculo a serviço e persistência | Regressão e demais casos-limite |
+| Agenda/calendário | **Aprovados no cenário QA reportado:** criação, exibição, recarga, bloqueio de sobreposição, cancelamento, reutilização e listagens isoladas entre duas contas | Concorrência realmente simultânea e verificação aprofundada de isolamento ainda pendentes |
+| Tema e responsividade | **Falha QA-01:** menu lateral permanece fora da tela em 320, 390, 768 e 1366 px; pequenos transbordamentos internos em modais | Corrigir menu e repetir testes em múltiplas larguras |
 | Comandas, histórico e financeiro | Páginas legadas presentes, sem fluxo de negócio integrado validado | Definir escopo mínimo ou retirar opções da demonstração |
 | Perfil, configurações e alterar senha | Páginas protegidas, com conteúdo/ações ainda ilustrativos ou incompletos | Implementar ou sinalizar/ocultar funcionalidades não operacionais |
 | CI | GitHub Actions com lint PHP e rotinas locais; execução de lint com sucesso no histórico consultado | Acompanhar execuções futuras e não confundir CI verde com teste online |
-| Publicação | **Publicação FTPS confirmada pelo GitHub Actions em 13/11/2026**; página de login e CSS 2.0 acessíveis no site independente em 16/11/2026 | Confirmar commit exato em produção, execução integrada das funcionalidades e estado atual dos controles de publicação |
+| Publicação | Publicação FTPS confirmada em 13/11; **auditoria QA reportou fluxos PHP/MySQL funcionais em 16/11** e igualdade de hashes de três arquivos públicos com GitHub | Commit integral do PHP em produção continua sem verificação; regressão após cada publicação |
 
 > **Atenção:** “implementado no código” não significa “validado em produção”. As páginas podem existir e estar acessíveis sem todas as ações funcionarem.
 
@@ -52,9 +52,70 @@ Referência: [publicação controlada](PUBLICACAO_AUTOMATICA.md).
 - `node tests/responsividade-check.js`: estrutura e eventos de interface; não substitui teste visual.
 - `.github/workflows/php-lint.yml`: checagem de sintaxe PHP. Uma execução de 13/11/2026 foi registrada como bem-sucedida na consulta ao GitHub Actions.
 
-**Nesta atualização de documentação:** não foram executados PHP, Node, navegação autenticada ou operações de banco. Houve leitura do repositório, dos jobs do GitHub Actions e dos recursos públicos da hospedagem. A publicação FTPS de 13/11 foi comprovada pela CI, mas o commit exato atualmente implantado e os fluxos de banco ainda não foram confirmados.
+**Verificação documental anterior:** não executou PHP, Node, navegação autenticada ou operações de banco; leu repositório, CI e recursos públicos. **Desde então, o relatório QA de 16/11 recebido nesta sessão registra testes reais de autenticação e persistência na hospedagem**, detalhados abaixo. O relato é evidência fornecida pelo responsável e não foi reproduzido nesta revisão do documento.
 
 O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGENDAMENTOS_4_5.md), complementado por [RESPONSIVIDADE_5_2.md](RESPONSIVIDADE_5_2.md).
+
+
+## Auditoria funcional no InfinityFree — 16/11/2026 (ZERO Browser MCP)
+
+**Origem:** relatório de testes encaminhado pelo responsável, gerado em sessão dedicada de QA com ZERO Browser MCP (Microsoft Edge). **Evidência relatada, não reexecutada neste commit de documentação.** Execução em https://agenday-sistema.infinityfree.io/ contra a versão publicada, usando registros fictícios. Branch de referência no momento do relatório: `dev-feira-uninorte`, commit `6596bebc7a9b56b48dc136123266c9946780dd5c`.
+
+### Cobertura e resultados reportados
+
+| Área | Resultado reportado | Observações |
+| --- | --- | --- |
+| Cadastro/login/logout | **Aprovado** | Duas contas novas; senha divergente, e-mail inválido/duplicado e credenciais incorretas rejeitados; reautenticação bem-sucedida |
+| Clientes/serviços/funcionários | **Aprovado** | Cadastros persistiram após recarga; pesquisas, vínculo funcionário–serviço e fotos PNG testados |
+| Validações de cadastro | **Aprovado nos casos testados** | Serviço duplicado, duração zero, preço negativo e arquivo inválido rejeitados |
+| Agenda e calendário | **Aprovado nos casos testados** | Criou #3 (20/11, 14h–14h45), bloqueou conflito às 14h30, cancelou e preservou histórico; navegou meses |
+| Segundo estabelecimento | **Aprovado nas listagens normais** | Conta B não exibiu registros A; #4 e #5 da B foram criados, cancelados e permaneceram como histórico; horário cancelado reutilizado |
+| API agenda | **Aprovado nos casos testados** | Respostas HTTP 200 e 422; restrição sem login e filtros de empresa observados |
+| Segurança | **Parcial** | Rotas privadas redirecionaram; NÃO houve teste extensivo de autorização entre contas, concorrência simultânea ou ataque |
+| Responsividade | **Falhou no menu** | 320/390/768/1366 px: classe `show` aplicada mas painel deslocado à esquerda; demais páginas sem overflow geral |
+| Perfil/configuração/senha | **Falhou ou incompleto** | Dados demonstrativos fixos e formulários não funcionais |
+| Comandas/histórico/financeiro | **Incompleto** | Páginas disponíveis no menu, sem fluxo de negócio funcional comprovado |
+| Correspondência GitHub × site | **Parcial** | Relato informa hashes iguais de `css/responsivo.css`, `css/design-system.css` e `js/login.js`; PHP integral sem commit verificável |
+
+### Registro de defeitos
+
+| ID | Prioridade QA | Descrição | Evidência/reprodução relatada |
+| --- | --- | --- | --- |
+| **QA-01** | ALTO | Offcanvas do menu aparece como aberto no DOM mas permanece fora da tela | Abrir `agenda.php`, clicar no menu; reproduzido em 320, 390, 768 e 1366 px |
+| **QA-02** | ALTO | Alterar senha mostra formulário de cliente/upload, não troca de senha | Abrir `alterar-senha.php` |
+| **QA-03** | ALTO | “Esqueceu a senha?” aponta para `#`, sem recuperação | Abrir a tela de login e clicar no link |
+| **QA-04** | MÉDIO | Perfil/configuração exibem dados e ações ilustrativos | Abrir `perfil.php` ou `config.php` autenticado |
+| **QA-05** | MÉDIO | Comandas, histórico e financeiro não disponibilizam operações reais | Abrir os três módulos pelo menu |
+| **QA-06** | MÉDIO | Erro JavaScript em `js/button-add.js:4` na configuração | Abrir `config.php` e inspecionar console |
+| **QA-07** | BAIXO | Cabeçalhos legados exibem “Barbearia” independentemente da empresa | Consultar páginas legadas sob conta fictícia |
+| **QA-08** | BAIXO | Modais com cerca de 12 px de overflow interno horizontal | Abrir modais de cadastro em larguras móveis |
+
+**Inspeção estática adicional nesta etapa:** `alterar-senha.php` contém campos de cliente; o link de recuperação em `index.php` usa `href="#"`; `js/button-add.js` tenta chamar `addEventListener` sem conferir se existe o elemento. A causa CSS precisa ser corrigida e revalidada; não se deve declarar QA-01 resolvido antes de teste visual real.
+
+### Dados de teste e limites
+
+- **Conta QA A:** `QA_AGENDAY_20261116_A`, com serviços, funcionários, clientes e duas imagens PNG fictícias. Agendamento **#3 cancelado**.
+- **Conta QA B:** `QA_AGENDAY_20261116_B`, com serviço, funcionário, cliente e agendamentos **#4 e #5 cancelados**.
+- Segundo o relatório, **nenhum dos três agendamentos ficou ativo**; houve logout ao fim. Uma submissão de cadastro interrompida pode ter criado conta adicional: **não confirmado**.
+- O relatório cita 205 requisições inspecionadas sem falhas HTTP na varredura, mas com erro JS em configuração. Não foi exportado arquivo de screenshots para o repositório.
+- **Não testado:** agendamento verdadeiramente concorrente, cobertura completa de autorização dos endpoints, commit exato do PHP publicado e alteração/exclusão não implementadas.
+- Esses resultados comprovam somente os cenários executados e relatados; **não constituem certificação integral de segurança**. Não armazenar credenciais de contas QA aqui.
+
+### Plano de correção sequencial — um defeito por Pull Request
+
+**Regra:** cada correção nasce de branch curta baseada na última `dev-feira-uninorte`, gera PR separado com objetivo, testes e registro de evidências. **Só iniciar a próxima correção depois de revisar/integrar a anterior**, salvo autorização diferente. Não fazer merge nem deploy sem autorização explícita.
+
+1. **QA-01 — menu lateral (primeiro):** [PR #4](https://github.com/Emds96/AgenDay-PI/pull/4) aberto com proposta CSS e teste estrutural. **Ainda sem merge/deploy ou validação visual da correção.** Após autorização, confirmar abertura/fechamento, backdrop, navegação e viewport 320/390/768/1366 px. **Critério de aceitação:** painel visível e interativo dentro da janela ao abrir, desaparece ao fechar, sem regressão.
+2. **QA-02 — alteração de senha:** implementar endpoint autenticado com senha atual, nova senha, confirmação, CSRF, `password_verify`/`password_hash` e mensagens seguras; testar persistência e sessão.
+3. **QA-03 — recuperação de senha:** decidir mecanismo apropriado à hospedagem (envio de e-mail confiável, token de uso único/validade e limitação de tentativas), ou remover/desativar o link até ser implementado; jamais oferecer recuperação insegura.
+4. **QA-04 — perfil/configurações:** substituir informações fictícias por dados da conta e definir quais ações realmente serão implementadas, com permissões e validações.
+5. **QA-05 — comandas/histórico/financeiro:** decidir, com o responsável, se implementar MVP ou ocultar recursos não funcionais para a feira.
+6. **QA-06 — erro JS da configuração:** isolar e remover/corrigir referência inválida a elemento, com teste de console.
+7. **QA-07 — textos fixos:** corrigir identificação do estabelecimento nos cabeçalhos das páginas legadas.
+8. **QA-08 — overflow dos modais:** ajustar dimensões internas e testar em celular/tablet.
+
+**Entre PRs:** validar CI, revisar diferenças e autorizar merge; após merge/deploy controlado, executar regressão usando ZERO Browser MCP. Atualizar este STATUS com número do PR, commit, resultado de teste e pendências. Prioridade geral: navegação e apresentação funcional até o prazo operacional de 24/11.
+
 
 ## Estratégia de branches aprovada — 16/11/2026
 
@@ -65,13 +126,13 @@ O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGEND
 
 ## Próximas prioridades propostas
 
-1. **Confirmar os dois marcos:** 24/11 como prazo operacional de conclusão (relato do responsável) e 27/11 como data documentada da feira; validar ambos com professor/organização.
-2. **Identificar a versão exata do site publicado** e diferenças em relação à `dev-feira-uninorte`, apesar de já existir evidência de publicação FTPS em 13/11.
-3. **Executar testes integrados controlados** com dados fictícios no ambiente independente: autenticação; clientes, serviços e funcionários; agendamentos; cancelamento; conflitos; isolamento de duas empresas.
-4. **Definir escopo da demonstração:** decidir se comandas, histórico, financeiro, perfil, configurações e alterar senha terão implementação mínima ou serão sinalizados/ocultados no menu para não sugerir recursos inexistentes.
-5. **Conferir experiência em telas reais**, sobretudo celular, formulários, calendário, mensagens de erro, upload e navegação.
-6. **Preparar dados fictícios, roteiro e ensaio da feira**, com plano de contingência caso internet ou hospedagem falhe.
-7. **Após autorização e evidências**, reconciliar documentação de publicação e orientar eventual PR/deploy. Não executar merge na `main` por padrão.
+1. **QA-01:** corrigir o menu lateral em PR isolado e repetir o teste visual no navegador real.
+2. **QA-02 e QA-03:** definir e corrigir alteração e recuperação de senha, sem introduzir fluxo inseguro.
+3. **QA-04–QA-07:** corrigir dados ilustrativos, console e escopo dos módulos legados por PRs separados.
+4. **QA-08:** refinar modais após estabilizar a navegação.
+5. **Regressão:** repetir o fluxo principal auditado; ampliar testes de concorrência e autorização usando contas próprias.
+6. **Documentar a versão implantada:** confirmar o commit PHP publicado e o deploy; manter CI/deploy sob autorização.
+7. **Prazos e apresentação:** confirmar 24/11 e 27/11 e preparar dados de demonstração/contingência. Não promover para `main` sem versão estável e aprovação.
 
 Essa lista é uma **proposta de prioridades**, não um backlog já aprovado ou uma confirmação de que algo foi testado.
 
