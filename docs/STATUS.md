@@ -1,10 +1,29 @@
 # STATUS — AgenDay 2.0
 
-**Atualizado em:** 16/11/2026  
+**Atualizado em:** 16/11/2026 (auditoria transversal da documentação e confirmação somente leitura de backups)  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
 **Último commit da branch consultado antes desta revisão documental:** `ac53c8ea9b8be206c032d4072bf07213a9769698` (16/11/2026; merge do PR #5, documentação QA-01). **Após integrar este PR documental, consultar o SHA atual novamente.**  
 **Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
+
+## Auditoria transversal de documentação e continuidade — 16/11/2026
+
+**Motivo:** a documentação anterior explicava o workflow, mas omitia a sequência concreta de trabalho entre sessões e o **modo de obtenção dos backups**. A revisão abrangente analisou todos os `.md` existentes (`AGENTS.md`, `README.md`, 13 documentos históricos de microtarefas e `docs/STATUS.md`/`docs/PUBLICACAO_AUTOMATICA.md`), os workflows e scripts operacionais. Mantiveram-se os documentos históricos; o estado mais recente continua neste STATUS. Esta auditoria **não executou deploy, QA de escrita, backup, SQL ou mudança de infraestrutura**.
+
+**Documentos operacionais complementares criados:**
+- [`INDICE_DA_DOCUMENTACAO.md`](INDICE_DA_DOCUMENTACAO.md): ordem de leitura e prioridade de evidências.
+- [`GUIA_DE_CONTINUIDADE.md`](GUIA_DE_CONTINUIDADE.md): como trabalhávamos com plugin GitHub, Desktop Commander, `gh`, branches, PRs, CI, ZERO Browser/TinyFish, autorizações e troca de sessão.
+- [`BACKUP_E_RECUPERACAO.md`](BACKUP_E_RECUPERACAO.md): **como obter** backup integral de `htdocs` e exportação do MySQL pelo phpMyAdmin; verificar cobertura, integridade, confidencialidade e recuperação planejada.
+- [`TESTES_E_QUALIDADE.md`](TESTES_E_QUALIDADE.md): níveis de evidência, fluxo de QA, cenários, defeitos QA-01–QA-08 e controles de acesso.
+- [`ARQUITETURA_E_DECISOES.md`](ARQUITETURA_E_DECISOES.md): módulos e limitações, interfaces de estabelecimento/cliente, infraestrutura própria e decisões que ainda aguardam alinhamento com Gabriel.
+
+**Backup — verificação direta somente leitura no computador autorizado:** em `%USERPROFILE%\Documents\AgenDay-Backups\2026-11-16` havia apenas `STATUS_BACKUP_PENDENTE.txt`, registrado pela outra sessão; **não havia cópias atuais do `htdocs` ou SQL**. Em `...\2026-11-13` havia `htdocs.zip` (apenas 3 entradas, conforme status registrado localmente) e um ZIP SQL anterior ao QA de 16/11. **Integridade ZIP anterior não significa cópia atual/completa.** O provedor InfinityFree orienta download por FTP e exportação por phpMyAdmin, e não permite conexão MySQL externa no plano gratuito. Nenhuma credencial foi inspecionada; detalhes e fontes oficiais no runbook.
+
+**Estado GitHub revisitado:** `dev-feira-uninorte` em `040ba53be17bc655438f3ee1a30765b950250ca1` na abertura desta auditoria (PR #6 integrado). Variáveis `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`; [CI 43960024149](https://github.com/Emds96/AgenDay-PI/actions/runs/43960024149) `validar=success` e `publicar=skipped`. Esses números são **fotografia de 16/11**, não garantia para a execução futura. **Reconsultar SHA e runs após integrar este PR documental.**
+
+**Bloqueios antes do próximo deploy:** (1) backups atuais de arquivos e MySQL ainda não verificados; (2) autorização específica do responsável para SHA e execução; (3) confirmar HEAD, Secrets/Variables e status das outras sessões; (4) QA-01 corrigido no GitHub, mas ainda não validado no site. O workflow existente **não precisa de alteração** para resolver esses bloqueios.
+
+**Regra de continuidade aprovada:** **documentar primeiro → autorizar → executar → validar → registrar**. Novas sessões devem ler o índice/guia antes de recorrer a métodos alternativos.
 
 ## Objetivo e prazos
 
@@ -46,7 +65,7 @@ Preparar o AgenDay, sistema web PHP/MySQL de gerenciamento de agendamentos, para
 | Secrets conferidos | Nomes `AGENDAY_FTP_HOST`, `AGENDAY_FTP_USERNAME` e `AGENDAY_FTP_PASSWORD` presentes no ambiente; **valores não consultados, validade não testada** |
 | Environment | `producao-agenday` requer revisor `Emds96`, aceita `dev-feira-uninorte`; confirmação da política necessária em futuras execuções |
 | Ferramenta operacional recuperada | Desktop Commander online; `gh` 2.104.0 autenticado como `Emds96`; não é preciso usar browser para controlar workflow enquanto a conexão persistir |
-| Backup atual | **Não revalidado nesta revisão**; existe referência histórica a cópias de 13/11. Exigir backup atualizado e verificável antes de publicar |
+| Backup atual | **Verificado em leitura nesta auditoria: pasta 16/11 apenas com status pendente; ZIPs 13/11 antigos/incompletos.** Exigir cópias atuais de arquivos e MySQL conforme guia de backup. |
 | QA-01 | Corrigido em código no PR #4; **não confirmado no site**. Regressão visual necessária depois de publicar |
 | QA-02–QA-08 | Pendentes conforme registro de defeitos abaixo; não alterados neste PR |
 
@@ -180,6 +199,6 @@ Essa lista é uma **proposta de prioridades**, não um backlog já aprovado ou u
 
 Em uma sessão nova, solicitar:
 
-> Trabalhe em `Emds96/AgenDay-PI`, branch `dev-feira-uninorte`. Leia `AGENTS.md`, `docs/STATUS.md`, `docs/PUBLICACAO_AUTOMATICA.md`, `README.md` e os documentos específicos da tarefa. Verifique commits recentes e eventual divergência com o status; diga o que está confirmado, o que falta e recomende o próximo passo. Não faça alterações sem minha autorização.
+> Trabalhe em `Emds96/AgenDay-PI`, branch `dev-feira-uninorte`. Leia `AGENTS.md`, `docs/INDICE_DA_DOCUMENTACAO.md`, `docs/GUIA_DE_CONTINUIDADE.md`, `docs/STATUS.md` e o guia específico de backup, QA ou deploy. Confira o estado real antes de agir; a pasta de backups de 16/11 estava pendente na última consulta. Verifique commits recentes e eventual divergência com o status; diga o que está confirmado, o que falta e recomende o próximo passo. Não faça alterações sem minha autorização.
 
 **Como atualizar este arquivo depois:** registrar a data, o commit-base, entregas comprovadas, testes realmente realizados, limitações, decisões aprovadas e próximo passo; preferir a atualização no PR da mesma tarefa. Não apagar o histórico técnico em `docs/`.

@@ -11,6 +11,17 @@ Este arquivo orienta qualquer agente ou colaborador que trabalhe no **AgenDay 2.
 - **Hospedagem:** conta independente no InfinityFree (`https://agenday-sistema.infinityfree.io/`). Há evidência de publicação FTPS bem-sucedida em 13/11/2026 e de site público acessível em 16/11/2026; isso **não comprova que o último commit foi implantado nem que os fluxos PHP/MySQL funcionem**. Conferir versão e estado atual antes de afirmar.
 - **Documentação:** `README.md`, `docs/STATUS.md` e os documentos por microtarefa em `docs/`. O histórico de commits e o código atual prevalecem sobre descrições antigas.
 
+## Continuidade operacional de todas as atividades (leitura obrigatória)
+
+Antes de qualquer tarefa, **não se limitar ao guia de deploy**. Usar [`docs/INDICE_DA_DOCUMENTACAO.md`](docs/INDICE_DA_DOCUMENTACAO.md) para localizar a informação e ler:
+- [`docs/GUIA_DE_CONTINUIDADE.md`](docs/GUIA_DE_CONTINUIDADE.md): **como a equipe trabalhava de fato**, ferramentas, autorizações, branches, coordenação entre sessões, procedimentos, riscos e passagem de contexto.
+- [`docs/ARQUITETURA_E_DECISOES.md`](docs/ARQUITETURA_E_DECISOES.md): mapa técnico, separação do site do Gabriel, funcionalidades e decisões ainda pendentes.
+- [`docs/TESTES_E_QUALIDADE.md`](docs/TESTES_E_QUALIDADE.md): diferença entre UI, código, CI e integração; critérios de QA e defeitos.
+- [`docs/BACKUP_E_RECUPERACAO.md`](docs/BACKUP_E_RECUPERACAO.md): **procedimento de obtenção e verificação dos dois backups** e critérios antes de publicar.
+- [`docs/PUBLICACAO_AUTOMATICA.md`](docs/PUBLICACAO_AUTOMATICA.md): somente o workflow vigente e seus gates.
+
+A documentação histórica de cada microtarefa pode descrever etapas já superadas. **Consultar primeiro GitHub/`STATUS.md`** para distinguir o último código integrado, CI, deploy comprovado e QA em produção. Não afirmar que backup existe só porque uma pasta está preparada. Se uma ferramenta estiver offline, registrar o impedimento; não contornar controles nem redesenhar fluxos automaticamente.
+
 ## Deploy: procedimento obrigatório antes de alterações na hospedagem
 
 **Não criar workflow novo nem tentar a `main` para resolver bloqueio de deploy.** A publicação existente está descrita passo a passo em [`docs/PUBLICACAO_AUTOMATICA.md`](docs/PUBLICACAO_AUTOMATICA.md): GitHub Actions → FTPS → InfinityFree, operada pelo **Remote Desktop Commander + GitHub CLI (`gh`)** na máquina autorizada. O plugin GitHub serve para código/PRs/CI, mas não fornece atualmente o controle de Variables e disparo manual; verificar `gh auth status` antes de assumir indisponibilidade.
@@ -19,8 +30,8 @@ A rotina exige autorização para **SHA e destino exatos**, backup recuperável 
 
 ## Como começar uma tarefa
 
-1. Confirmar repositório, branch atual, último commit e escopo solicitado.
-2. Ler este arquivo, `docs/STATUS.md` e `README.md`; consultar somente os documentos e arquivos de código pertinentes à tarefa.
+1. Confirmar repositório, branch atual, último commit, atividade de outras sessões e escopo solicitado.
+2. Ler este arquivo, `docs/INDICE_DA_DOCUMENTACAO.md`, `docs/GUIA_DE_CONTINUIDADE.md`, `docs/STATUS.md` e o documento específico de backup, QA, deploy ou funcionalidade. Consultar o código pertinente antes de agir.
 3. Identificar o que já existe, os riscos, as dependências e os testes possíveis antes de propor alterações.
 4. Diferenciar expressamente **implementado no código**, **testado localmente/na CI**, **validado na hospedagem** e **pendente**.
 5. Apresentar um plano proporcional à tarefa. Não inventar resultados, funcionalidades ou decisões.
