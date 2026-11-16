@@ -171,9 +171,22 @@ O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desk
 - [ ] Preparar dados fictícios, imagens das telas e apresentação da feira.
 - [ ] Após testes e autorização específica, **promover** por Pull Request a versão estável de `dev-feira-uninorte` para a `main` **deste fork**, revisando antes o workflow antigo de deploy da `main`.
 
+## Procedimentos de trabalho, recuperação e continuidade
+
+**Roteiro para começar em outra sessão:** consultar o [índice da documentação](docs/INDICE_DA_DOCUMENTACAO.md) e o [guia de continuidade](docs/GUIA_DE_CONTINUIDADE.md). Eles registram **não só o deploy**, mas também o uso de GitHub, Desktop Commander, GitHub CLI, ZERO Browser/TinyFish, autorizações, PRs, backups, testes, ambiente publicado, decisões de produto e o padrão de registro de trabalho.
+
+**Não iniciar nova publicação sem dois backups atuais**, dos arquivos completos de `htdocs/` e do banco via phpMyAdmin, verificados segundo [BACKUP_E_RECUPERACAO.md](docs/BACKUP_E_RECUPERACAO.md). A pasta privada de 16/11 tinha somente um aviso de pendência na última conferência. Os backups de 13/11 são anteriores aos testes de 16/11.
+
+Guias separados: [QA e testes](docs/TESTES_E_QUALIDADE.md), [mapa técnico e decisões](docs/ARQUITETURA_E_DECISOES.md), [procedimento de deploy](docs/PUBLICACAO_AUTOMATICA.md) e [estado real/pendências](docs/STATUS.md). Se um guia histórico divergir do repositório, revalidar em vez de assumir.
+
 ## Documentação complementar
 
 - [Instruções para agentes e fluxo de trabalho](AGENTS.md)
+- [Índice de toda a documentação e ordem de leitura](docs/INDICE_DA_DOCUMENTACAO.md)
+- [Continuidade entre sessões e como a equipe trabalhava](docs/GUIA_DE_CONTINUIDADE.md)
+- [Backups e recuperação, com roteiro completo](docs/BACKUP_E_RECUPERACAO.md)
+- [Testes e QA, níveis de evidência e bugs](docs/TESTES_E_QUALIDADE.md)
+- [Mapa técnico, decisões feitas e pendentes](docs/ARQUITETURA_E_DECISOES.md)
 - [Status consolidado, prazos, publicação e próximos passos](docs/STATUS.md)
 
 - [Autenticação — 3.1](docs/AUTENTICACAO_3_1.md)
