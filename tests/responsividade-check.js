@@ -47,6 +47,10 @@ verificar(css.includes('@media (max-width: 991.98px)') &&
     css.includes('@media (max-width: 390px)'), 'Breakpoints esperados ausentes');
 verificar(css.includes('#offcanvasDarkNavbar.offcanvas') &&
     css.includes('width: min(340px, 88vw) !important'), 'Menu mobile não ajustado');
+// QA-01: estado visível deve neutralizar o deslocamento do offcanvas-start.
+// Teste estrutural: a abertura/fechamento real ainda exige regressão visual.
+verificar(/\.agenday-app\s+#offcanvasDarkNavbar\.offcanvas\.show:not\(\.hiding\)\s*,\s*\.agenday-app\s+#offcanvasDarkNavbar\.offcanvas\.showing\s*\{[^}]*transform:\s*none\s*!important;/m.test(css),
+    'QA-01: menu aberto pode continuar com transform para fora da tela');
 verificar(css.includes('.modal-body .row > [class*="col-"]'), 'Campos do modal não responsivos');
 verificar(css.includes('#agenda-calendario .agenda-dia-botao'), 'Calendário mobile não ajustado');
 verificar((css.match(/\{/g) || []).length === (css.match(/\}/g) || []).length,
