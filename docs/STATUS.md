@@ -6,6 +6,14 @@
 **Último commit da branch consultado antes desta revisão documental:** `ac53c8ea9b8be206c032d4072bf07213a9769698` (16/11/2026; merge do PR #5, documentação QA-01). **Após integrar este PR documental, consultar o SHA atual novamente.**  
 **Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
 
+## Verificação de backups e correção do artifact — 16/11/2026 (PR #8)
+
+**Verificação direta nesta sessão, somente leitura:** backups privados em `Documents/AgenDay-Backups/2026-11-16` com `htdocs-2026-11-16.zip` (73 arquivos, incluindo configuração privada e uploads) e `agenday-db-2026-11-16.sql.zip` (8 tabelas com estrutura, dados em 6), ambos com CRC ZIP válido e SHA-256 correspondente ao relatório local. **Não foi feito teste de restauração.** Os arquivos e seus hashes permanecem privados, fora do repositório.
+
+**Pendência identificada:** nenhum `.htaccess` aparece no ZIP obtido da hospedagem; isso **não prova ausência no servidor**, pois o método de download pode omitir arquivos ocultos. O artifact da [CI 43965721301](https://github.com/Emds96/AgenDay-PI/actions/runs/43965721301) também foi inspecionado diretamente: continha 68 arquivos e **nenhum dos dois** `arquivos/clientes/.htaccess` e `arquivos/funcionarios/.htaccess`. Os dois arquivos estão no GitHub e o empacotador os inclui; a etapa `actions/upload-artifact@v4` omitira arquivos ocultos.
+
+**Correção proposta:** [PR #8](https://github.com/Emds96/AgenDay-PI/pull/8) acrescenta `include-hidden-files: true` ao upload do artifact e verificação dos dois `.htaccess` após download, antes de qualquer conexão FTPS. Revisão estática confirma a alteração restrita ao workflow, sem mudanças em código PHP/MySQL, Secrets ou publicador. **PR ainda sem merge; não houve deploy, nem confirmação de proteção na hospedagem.** Após integrar com autorização, validar o novo artifact em CI e só depois solicitar autorização específica para publicar o SHA exato.
+
 ## Auditoria transversal de documentação e continuidade — 16/11/2026
 
 **Motivo:** a documentação anterior explicava o workflow, mas omitia a sequência concreta de trabalho entre sessões e o **modo de obtenção dos backups**. A revisão abrangente analisou todos os `.md` existentes (`AGENTS.md`, `README.md`, 13 documentos históricos de microtarefas e `docs/STATUS.md`/`docs/PUBLICACAO_AUTOMATICA.md`), os workflows e scripts operacionais. Mantiveram-se os documentos históricos; o estado mais recente continua neste STATUS. Esta auditoria **não executou deploy, QA de escrita, backup, SQL ou mudança de infraestrutura**.

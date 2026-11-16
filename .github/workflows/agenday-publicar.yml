@@ -57,6 +57,7 @@ jobs:
           path: deploy-package/
           retention-days: 1
           if-no-files-found: error
+          include-hidden-files: true
 
 
   diagnosticar_ftp:
@@ -118,6 +119,12 @@ jobs:
         with:
           name: agenday-publicavel
           path: deploy-package/
+      - name: Confirmar protecoes de uploads no artifact recuperado
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f deploy-package/arquivos/clientes/.htaccess
+          test -f deploy-package/arquivos/funcionarios/.htaccess
       - name: Publicar por FTP com TLS obrigatorio
         env:
           AGENDAY_DEPLOY_ENABLED: ${{ vars.AGENDAY_DEPLOY_ENABLED }}
