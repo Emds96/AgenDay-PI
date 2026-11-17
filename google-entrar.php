@@ -78,8 +78,17 @@ try {
     $stmt->close();
 
     if ($emailJaUsado) {
+        // Vinculação somente depois de uma autenticação local por senha.
+        // O login pelo Google isolado NÃO concede acesso à conta existente.
+        session_regenerate_id(true);
+        $_SESSION['google_link_pending'] = [
+            'sub' => $identidade['sub'],
+            'email' => $identidade['email'],
+            'created_at' => time(),
+        ];
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         agenday_google_erro_login(
-            'Este e-mail já possui cadastro no AgenDay. Entre com seu e-mail e senha; não vinculamos contas automaticamente.'
+            'Este e-mail já possui cadastro. Entre com sua senha do AgenDay para vincular o Google com segurança.'
         );
     }
 
