@@ -8,6 +8,22 @@
 
 > Marque [x] apenas após execução real e verificação. Este documento é o acompanhamento persistente. QA-03 (recuperação por e-mail) é outra tarefa, sem implementação neste escopo.
 
+## Testes reais informados pelo responsável — 17/11/2026
+
+**Origem da evidência:** testes executados manualmente pelo responsável no site publicado e relatados na conversa. **Não são testes repetidos por automação nesta etapa.**
+
+- [x] Cadastro com uma conta Google de teste, primeiro acesso com pop-up de complemento, nome do estabelecimento informado e opção **Agora não** (sem senha AgenDay).
+- [x] Saída da conta criada sem senha local e novo login com a **mesma conta Google**, chegando ao sistema.
+- [x] Cadastro com **outra conta Google**, definindo uma **senha própria do AgenDay** no primeiro acesso.
+- [x] Saída dessa segunda conta e novo login usando **e-mail e senha no formulário tradicional**, sem depender do botão Google; acesso funcionou, conforme relato do responsável.
+- [ ] Na conta criada com senha local, verificar que o **login pelo Google também continua funcionando** após logout.
+- [ ] Avaliar aparência, legibilidade e responsividade do pop-up no celular (além do funcionamento).
+- [ ] Testar conta manual já existente vinculando Google após comprovar a senha da conta; não presumir concluído.
+- [ ] Testar rejeição de credenciais inválidas, repetição de cadastros e isolamento de dados.
+- [ ] Confirmar regressão geral de cadastro/login tradicionais e rotinas da agenda com mais de uma conta.
+
+**Conclusão limitada:** há evidência prática relatada de cadastro/login Google **com e sem senha local** e de login com e-mail e senha em conta Google. Não considerar toda a integração auditada nem o aplicativo liberado para todos no Google Cloud.
+
 ## Publicação direta e incidente — 17/11/2026
 
 - [x] Responsável autorizou **publicação direta no site oficial** para realizar seus testes, dispensando ambiente de teste separado.
@@ -18,7 +34,7 @@
 - [x] Hotfix PR #13, commit `b06ae1f1019cee78ebdc90285ea808f6c6062730`, corrigiu dependência do arquivo local usando fallback do **Client ID público** e proteção por `try/catch`. Deploy #44067516631 aprovado (`validar`, `diagnosticar_ftp`, `publicar` success).
 - [x] Página inicial conferida no site oficial após hotfix: carregou **Login** com login/cadastro e os 2 componentes Google, sem HTTP 500.
 - [x] Flags de deploy desligadas ao final (`false` e `disabled`).
-- [ ] Testar no navegador **autenticação real com a conta Google liberada**, primeiro cadastro, pop-up, senha opcional e entrada subsequente; usuário realizará esse teste.
+- [x] Testado manualmente pelo responsável no site publicado: autenticação real Google, primeiro cadastro, pop-up, senha opcional, retorno via Google sem senha e segundo cadastro com senha + login tradicional. Ver detalhes em **Testes reais informados pelo responsável**.
 - [ ] Testar retorno do Google para conta tradicional existente: autenticar e-mail e senha uma vez para vincular; não vincular automaticamente por e-mail igual.
 - [ ] Confirmar autenticação legada e verificação do token Google no InfinityFree (rede cURL/Google certificados), inclusive falhas e proteção contra duplicidade.
 - [ ] Fazer QA visual em desktop/celular e corrigir regressões; não marcar integração concluída só porque a tela foi renderizada.
