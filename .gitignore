@@ -1,3 +1,4 @@
 *.log
 *.tmp
 conexao.php
+google-oauth-config.php
