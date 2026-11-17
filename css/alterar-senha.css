@@ -1,5 +1,6 @@
 .boxOne{
-  height: 490px;
+  height: auto;
+  min-height: 490px;
 }
 
 .titulo-body {
@@ -19,7 +20,8 @@ input {
 }
 
 .form-floating{
-  width: 50%;
+  width: 100%;
+  max-width: 560px;
 }
 
 

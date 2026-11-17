@@ -6,6 +6,20 @@
 **Commit publicado comprovado:** `7980db9c3c371f66fb86881cae4bba86cafd3317` via GitHub Actions em 16/11/2026. **Consultar o HEAD atual da `dev-feira-uninorte` antes de novas tarefas; esta documentação também será integrada por PR.**  
 **Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
 
+## QA-02 — alteração de senha ([PR #10](https://github.com/Emds96/AgenDay-PI/pull/10) aberto, 16/11/2026)
+
+**Problema confirmado no código:** `alterar-senha.php` mostrava formulário legado de cliente (nome, contato, e-mail, foto), sem ação para trocar a senha.
+
+**Implementação em branch de tarefa** `fix/qa02-alteracao-senha-20261116`, derivada da `dev-feira-uninorte` no SHA `e2f5d61e5289261b8b74dc31ebbdf1f7aa82cce3`:
+- `alterar-senha.php`: formulário autenticado com senha atual, nova senha e confirmação; `POST` com CSRF, tratamento seguro de falhas e sucesso, `303` após envio válido, mensagem acessível. Consulta o hash somente da conta autenticada, usa `password_verify`, grava `password_hash(PASSWORD_DEFAULT)` com `UPDATE` preparado e verificação do hash anterior para evitar sobrescrita simultânea; renova o ID de sessão e token CSRF após sucesso.
+- `lib/alteracao-senha.php`: valida entrada e aplica o limite de 8–72 bytes compatível com o cadastro, rejeita repetição e divergência.
+- `css/alterar-senha.css`: remove altura fixa para acomodar campos/mensagens em celular.
+- `tests/alteracao-senha-validacao.php`: testes sem banco dos dados válidos/inválidos, limite multibyte, confirmação e comportamento dos hashes.
+
+**Testes efetivamente executados:** PHP CLI 8.4.24 em ambiente isolado: `php -l` nos arquivos de validação/teste e **16 verificações aprovadas**; hashes dos dois arquivos comparados aos blobs do GitHub. Workflow existente de **lint PHP** disparado somente na branch de tarefa: [run 43988658296](https://github.com/Emds96/AgenDay-PI/actions/runs/43988658296), **success**, sem publicação ou alteração do workflow.
+
+**Não comprovado ainda:** atualização real da senha no MySQL do InfinityFree, rejeição da senha antiga em login, persistência após recarga, comportamento do formulário visual em dispositivo real e política de invalidação de outras sessões. O código renova a sessão **atual**, mas **não revoga outras sessões** já autenticadas; essa ampliação exigiria controle de versão de sessão e decisão arquitetural separada. Sem migração SQL. **PR #10 aberto, sem merge; alteração ainda não publicada.** QA-03 (esqueceu a senha) permanece separado.
+
 ## Publicação FTPS autorizada e validação pós-deploy — 16/11/2026
 
 - **Alvo e autorização:** responsável autorizou publicar exclusivamente o commit `7980db9c3c371f66fb86881cae4bba86cafd3317` da `dev-feira-uninorte`, no site independente `https://agenday-sistema.infinityfree.io/`, via workflow existente `.github/workflows/agenday-publicar.yml`, ambiente `producao-agenday`. Não houve promoção à `main`, alteração no repositório original, banco, Secrets ou scripts do publicador.
