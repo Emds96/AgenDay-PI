@@ -34,6 +34,18 @@ jobs:
           php tests/google-identidade-validacao.php
           php tests/recuperacao-senha-test.php
           node tests/responsividade-check.js
+      - name: Testar backup efemero offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -p backup_test.py -v
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('scripts/backup_php_template.txt').read_text(encoding='utf-8')
+          rendered = source.replace('__ID__', 'a' * 32).replace('__EXPIRES__', '1899999999')
+          Path('/tmp/agenday-backup-export.php').write_text(rendered, encoding='utf-8')
+          PY
+          php -l /tmp/agenday-backup-export.php
       - name: Preparar pacote permitido
         run: python3 scripts/preparar_publicacao.py
       - name: Confirmar exclusao de arquivos privados

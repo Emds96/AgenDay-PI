@@ -1,0 +1,5 @@
+# Exemplo SEM senha real; apenas para MySQL/MariaDB instalado no PC.
+# Salvar como Documents\AgenDay-Backups\.mysql-local.cnf (fora do Git).
+[client]
+user=USUARIO_LOCAL
+password=SENHA_LOCAL
