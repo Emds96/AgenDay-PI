@@ -1,6 +1,6 @@
 # Backup, verificação e recuperação — AgenDay 2.0
 
-**Procedimento operacional — 16/11/2026.** Backup é requisito para publicação controlada, não é realizado pelo workflow. **Não executar restauração, upload, exportação, mudanças na hospedagem ou banco sem autorização.** Veja também [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md).
+**Procedimento atualizado em 17/11/2026.** A rotina automática de backup foi validada no PC autorizado. Backup é requisito para publicação controlada e não é realizado pelo workflow de deploy. **Não executar restauração, upload, exportação, mudanças na hospedagem ou banco sem autorização.** Veja também [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md).
 
 ## 1. O que precisa ser protegido e por quê
 
@@ -11,7 +11,7 @@ A aplicação PHP/MySQL usa a hospedagem independente https://agenday-sistema.in
 
 A equipe deve manter cópias **privadas, fora do GitHub/ChatGPT**, com proteção de acesso (criptografia se disponível). Arquivos `.sql` e `conexao.php` contêm dados/segredos. Não incluir backup em artifact público do GitHub Actions ou em PR.
 
-## 2. Estado realmente encontrado em 16/11/2026
+## 2. Histórico de falhas observado em 16/11/2026 (superado pelo backup de 17/11)
 
 - Diretório privado: `%USERPROFILE%\Documents\AgenDay-Backups\2026-11-16`. **Inspeção somente leitura confirmou somente `STATUS_BACKUP_PENDENTE.txt`**.
 - Em `%USERPROFILE%\Documents\AgenDay-Backups\2026-11-13` há `htdocs.zip` e `agenday-db-2026-11-13-pre-deploy.sql.zip`. Segundo a verificação do arquivo de status do computador, os ZIPs passaram na checagem de integridade, mas `htdocs.zip` tem apenas **3 entradas**, e a exportação SQL precede o QA/cadastros de 16/11. **Não são backup atual recuperável do ambiente completo.**
@@ -24,8 +24,26 @@ Fontes do provedor (consultadas em 16/11/2026):
 - [How to backup your website](https://forum.infinityfree.com/t/how-to-backup-your-website/49304): copiar `htdocs/` por cliente FTP de desktop, exportar banco pelo phpMyAdmin; repetir transferências que falharem.
 - [Connecting to MySQL from an external application](https://forum.infinityfree.com/t/connecting-to-mysql-from-an-external-application/49339): o plano gratuito **não permite MySQL externo**; não planejar `mysqldump` remoto direto do computador.
 
-O provedor não mantém backups automáticos do plano gratuito. Não criar um PHP improvisado de backup no servidor, não usar plugins de backup em produção e não tentar compactar arquivos remotamente como substituto de um download verificado.
+O provedor não mantém backups automáticos do plano gratuito e desaconselha scripts pesados de backup. O AgenDay usa uma solução **efêmera e validada em 17/11/2026**, com limite de tamanho, proteção HTTP comprovada, remoção do PHP e SQL remotos, download FTPS e restauração local. Não usar plugins de backup nem compactar todo o site no servidor.
 
+## 3A. Rotina automática validada — PHP temporário + FTPS + MariaDB local
+
+**Estado comprovado em 17/11/2026:** backup real gerado com sucesso em `Documents/AgenDay-Backups/2026-11-17_174312_82e123c1`, contendo `82` arquivos de `htdocs/` e exportação de `9` tabelas (incluindo `estabelecimento_google`, com 51 registros no total). Importação em MariaDB 11.8.9 local temporário aprovada com comparação de tabelas e contagens. ZIP com 83 entradas, CRC e hashes SHA-256 conferidos. Verificação FTPS posterior: nenhum temporário de backup restou na hospedagem.
+
+**Uso normal no PC autorizado (Windows):**
+
+1. Clicar no atalho **Backup AgenDay** na área de trabalho, ou executar `scripts/Executar-Backup-AgenDay.ps1` pelo PowerShell. O iniciador verifica e inicia o MariaDB portátil em `127.0.0.1` se necessário; ao terminar, encerra somente a instância que iniciou.
+2. O Python usa o arquivo privado `Documents/AgenDay-Backups/.env.backup` (credenciais FTPS), fora do GitHub, e o arquivo `.mysql-local.cnf` com credenciais **somente do MariaDB local**. Não colar valores no chat nem em logs.
+3. O script envia um exportador PHP temporário com nome aleatório e nonce de uso único. O navegador padrão abre a URL temporária para executar a exportação, sem entrar no phpMyAdmin. Dados exportados ficam em pasta protegida com `.htaccess` (HTTP 403 comprovado em teste real).
+4. FTPS baixa o SQL e toda a árvore `htdocs` atual; o exportador, nonce e SQL temporários são removidos da hospedagem. O PHP só permite tabelas/objetos compatíveis com a versão testada e falha explicitamente caso não consiga exportar com segurança.
+5. O script valida o SQL e importa em **banco temporário local**, comparando nomes/contagens de tabelas. Verifica ZIP e hashes e só imprime **BACKUP OK** após essas etapas. Falhas são registradas sem substituir um backup anterior.
+6. Conferir a pasta datada do backup e o `relatorio.json`. Guardar o ZIP em local privado com cópia adicional protegida, pois contém configuração privada, uploads e dados de usuários. **Não enviar o backup ao GitHub, PR, Actions ou chats.**
+
+**Diagnóstico sem backup:** `powershell -NoProfile -File scripts/Executar-Backup-AgenDay.ps1 -CheckOnly` testa MariaDB local/FTPS. **Plano B manual:** `python scripts/backup_agenday.py --manual-sql CAMINHO_DO_SQL --mysql-cli CAMINHO_MARIADB_EXE` (com MariaDB local ligado).
+
+**Limites honestos:** o arquivo SQL temporário tem limite conservador de 8 MiB; não foram testadas bases maiores, VIEW/TRIGGER/ROUTINE ou motores fora de InnoDB. A restauração comprovada abrange esquema/contagens do banco e integridade ZIP, **não** um teste completo do AgenDay em servidor restaurado. Repetir backup antes de cada deploy, pois um backup antigo não cobre alterações posteriores. O PHP de backup não é permanente no servidor; o workflow do deploy não gera backups.
+
+---
 ## 4. Procedimento de backup de arquivos — sem alterar produção
 
 **Requer acesso legítimo à conta InfinityFree e autorização do responsável.** Se as credenciais FTP não estão no computador, o usuário pode recuperá-las/confirmá-las **no painel da própria conta** e digitá-las **diretamente no cliente FTP**, sem revelar valores no chat, terminal com logs, repositório ou prints.
@@ -44,7 +62,7 @@ O provedor não mantém backups automáticos do plano gratuito. Não criar um PH
 1. Abrir **painel da conta correta no InfinityFree**, selecionar **MySQL Databases / phpMyAdmin** e conectar ao banco **independente AgenDay 2.0**. Confirmar visualmente nome e existência das tabelas antes de prosseguir.
 2. No phpMyAdmin, selecionar o banco correto (não somente uma tabela), abrir **Exportar**. Usar método **Rápido** quando oferecer estrutura e dados do banco, formato **SQL**, e iniciar o download. Se for necessário utilizar “Personalizado”, garantir seleção de **todas as tabelas, estrutura e dados**, sem opções destrutivas.
 3. Guardar o arquivo `.sql`/`.sql.gz` em pasta privada `%USERPROFILE%\Documents\AgenDay-Backups\AAAA-MM-DD\banco\`. Não enviar o conteúdo ao GitHub, chats ou páginas de terceiros.
-4. Verificar que o arquivo existe, tem tamanho não nulo, contém instruções de **estrutura de todas as 8 tabelas esperadas** e, quando existirem registros, os respectivos dados exportados. Evitar divulgar nomes, clientes, e-mails, senhas/hash e dados sensíveis na verificação. Uma exportação válida **pode** ter tabela vazia; a ausência de `INSERT` isoladamente não prova falha.
+4. Verificar que o arquivo existe, tem tamanho não nulo, contém instruções de **estrutura de todas as tabelas existentes na data da exportação** e, quando existirem registros, os respectivos dados exportados. Evitar divulgar nomes, clientes, e-mails, senhas/hash e dados sensíveis na verificação. Uma exportação válida **pode** ter tabela vazia; a ausência de `INSERT` isoladamente não prova falha.
 5. Identificar versão e data do backup; manter o arquivo intacto. **Não executar SQL**, importar, “reparar” ou reconfigurar o banco na etapa de backup.
 
 Tabelas de referência do `BD_v2.sql`: `proprietario`, `estabelecimento`, `endereco`, `clientes`, `funcionarios`, `servicos`, `funcionario_servico` e `agendamentos`. A presença e compatibilidade reais precisam ser confirmadas na exportação da hospedagem.
@@ -102,4 +120,4 @@ Não há recuperação automática implementada hoje. A documentação deste pla
 
 ## 9. Na passagem para outra sessão
 
-> Antes de publicar, leia `docs/BACKUP_E_RECUPERACAO.md`. Na pasta privada `%USERPROFILE%\Documents\AgenDay-Backups\2026-11-16` havia apenas `STATUS_BACKUP_PENDENTE.txt`; os ZIPs de 13/11 são antigos. Confirme se surgiram cópias atuais, faça auditoria somente leitura, e não publique antes de validação e autorização. Nunca exiba FTP/SQL/conexao.php no chat.
+> O procedimento automático foi validado em 17/11/2026: `Backup AgenDay` no Desktop do PC ou `scripts/Executar-Backup-AgenDay.ps1`. Consultar o relatório privado em `Documents/AgenDay-Backups/`, confirmar backup recente conforme data do deploy e jamais publicar sem autorização do responsável. Não exibir FTP, SQL ou `conexao.php` no chat. `dev-feira-uninorte` é a referência; `main` permanece intocada.

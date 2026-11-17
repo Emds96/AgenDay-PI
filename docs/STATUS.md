@@ -6,15 +6,15 @@
 **Commit publicado comprovado:** `b06ae1f1019cee78ebdc90285ea808f6c6062730` via [GitHub Actions #44067516631](https://github.com/Emds96/AgenDay-PI/actions/runs/44067516631) em 17/11/2026. Conferir HEAD atual da `dev-feira-uninorte` antes de próximas tarefas.  
 **Fonte da evidência funcional:** auditoria de 16/11/2026 relatada pelo responsável e **testes manuais de login Google realizados por ele em produção em 17/11/2026**, registrados em [`LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md). As evidências são identificadas por origem; este documento não afirma que a automação repetiu os testes manuais.
 
-## POC de backup PHP efemero + FTPS (17/11/2026; nao ativada)
+## Backup PHP efêmero + FTPS (17/11/2026; teste real aprovado)
 
 - [PR #19](https://github.com/Emds96/AgenDay-PI/pull/19) em **rascunho**, branch `feat/backup-efemero`, baseada em `dev-feira-uninorte`. Nao integrada na dev, nao publicada na InfinityFree.
 - Criados `scripts/backup_agenday.py`, `scripts/backup_php_template.txt`, configuracoes de exemplo sem credenciais, testes e `docs/BACKUP_EFEMERO_POC.md`. O template PHP nao entra no pacote de deploy.
-- Script previsto: gera endpoint e nonce temporarios, abre URL propria do site com formulario GET/POST no mesmo dominio, exporta MySQL usando `mysqli` e `utf8mb4`, baixa por FTPS e espelha htdocs, valida SQL, testa restauracao apenas em MySQL local, gera ZIP/relatorio privado. Ha fallback `--manual-sql`.
-- **Testes locais:** 10 testes Python aprovados; lint Python aprovado. [CI #44161806896](https://github.com/Emds96/AgenDay-PI/actions/runs/44161806896) `validar=success`, incluindo lint PHP do template renderizado e pacote publico; FTPS/produção `skipped`.
-- **Bloqueios para teste real:** PC sem credenciais FTPS locais e sem MySQL/MariaDB local; ainda nao testados HTTP 403 da pasta do SQL, execucao PHP no InfinityFree, download FTPS e restauracao do banco verdadeiro. **Nao houve backup novo.**
+- Script validado: gera endpoint e nonce temporarios, abre URL propria do site com formulario GET/POST no mesmo dominio, exporta MySQL usando `mysqli` e `utf8mb4`, baixa por FTPS e espelha htdocs, valida SQL, testa restauracao apenas em MySQL local, gera ZIP/relatorio privado. Ha fallback `--manual-sql`.
+- **Testes:** 10 testes Python aprovados, lint Python, [CI #44182620469](https://github.com/Emds96/AgenDay-PI/actions/runs/44182620469) `validar=success` com PHP-lint e pacote público; deploy `skipped`. Após isso, exportação e restauração reais no PC passaram.
+- **Execução real VALIDADA:** usuário configurou FTPS diretamente no PC via Pairdesk (sem compartilhar credenciais). MariaDB 11.8.9 portátil configurado apenas em `127.0.0.1`. Teste HTTP 403 em pasta com `.htaccess` passou; PHP HTTP 200 passou. Backup `2026-11-17_174312_82e123c1`: `82` arquivos (incluindo `conexao.php`, configuração privada Google e uploads), SQL de `9` tabelas / `51` linhas, restauração local com contagens aprovada, ZIP de `83` entradas, SHA-256 SQL/ZIP conferidos, sem temporários no servidor. O primeiro teste do exportador teve timeout; código foi ajustado com diagnóstico por fase, e o segundo concluiu.
 - O provedor recomenda FTP + phpMyAdmin; a POC PHP e uma alternativa experimental com risco de timeout/tamanho. Nao assumir backup valido antes de verificacao e restauracao. Nao guardar dumps nem segredos em repositorio ou artifacts.
-- Procedimento oficial existente em `docs/BACKUP_E_RECUPERACAO.md` continua vigente ate a POC ser validada e aprovada. A publicacao da QA-03 segue bloqueada pelo backup atual.
+- Procedimento oficial atualizado em `docs/BACKUP_E_RECUPERACAO.md` com modo automático validado, atalho **Backup AgenDay** na área de trabalho e fallback manual. A publicação da QA-03 ainda depende de autorização/revisão de secrets e migração SQL; backup anterior deixou de ser o bloqueio imediato.
 
 ---
 

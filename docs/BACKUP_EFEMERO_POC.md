@@ -1,6 +1,6 @@
 # AgenDay Backup Efemero — prova de conceito
 
-**Status: EM DESENVOLVIMENTO, NAO ATIVADO EM PRODUCAO.**
+**Status: PROVA REAL VALIDADA EM 17/11/2026; NAO HÁ EXPORTADOR PERMANENTE PUBLICADO.**
 Branch de trabalho: feat/backup-efemero, baseada em dev-feira-uninorte.
 Nao substitui docs/BACKUP_E_RECUPERACAO.md ate prova de restauracao real.
 
@@ -39,6 +39,7 @@ O script NAO altera dados nem esquema do banco de producao.
 
 ## Comandos (na pasta do repositorio no PC)
 
+- Uso cotidiano no Windows: atalho **Backup AgenDay** (Desktop), ou PowerShell com `scripts/Executar-Backup-AgenDay.ps1`. O iniciador liga/desliga o MariaDB local quando necessario.
 - Testes offline: python -m unittest discover -s tests -p backup_test.py -v
 - Diagnostico FTPS sem alteracoes:
   python scripts/backup_agenday.py --check-ftps
@@ -69,14 +70,16 @@ O script NAO altera dados nem esquema do banco de producao.
 - Arquivos privados conexao.php, config, OAuth e uploads devem estar no ZIP privado;
   o GitHub sozinho nao representa uma copia completa.
 
-## Limites e pendencias reais em 17/11/2026
+## Resultado real em 17/11/2026 e limites
 
 - Python e GitHub CLI estavam disponiveis no PC.
-- MySQL local e arquivo privado de credenciais FTPS nao estavam configurados
-  quando a verificacao inicial foi feita; teste real condicionado a isso.
-- Backup atual **NAO foi gerado** por estes testes de codigo.
-- Nao usar o novo script como condicao automatica de deploy antes de testar
-  exportacao real, HTTP 403 dos dados, limpeza, importacao e restauracao.
+- Credenciais FTPS configuradas diretamente no PC pelo responsavel, sem acesso a valores no chat.
+- MariaDB 11.8.9 portatil em 127.0.0.1, com senha local privada e ciclo liga/desliga verificado.
+- FTP diagnostico OK, pasta privada bloqueada HTTP 403 pelo Edge, PHP teste HTTP 200.
+- Backup real gerado em `Documents/AgenDay-Backups/2026-11-17_174312_82e123c1`: 82 arquivos, 9 tabelas incluindo `estabelecimento_google`, 51 linhas, SQL importado sem erro e comparado em banco temporario local.
+- ZIP e SQL passaram SHA-256, ZIP tem 83 entradas e CRC OK; 0 arquivos temporarios remotos pendentes.
+- Um primeiro teste de exportacao expirou sem SQL; diagnostico por fase implementado e teste posterior aprovado.
+- O script continua sendo ferramenta separada do deploy, que exige autorizacao propia e backup recente.
 - Para banco maior/charset especial, gerar casos de teste representativos.
 - Backup de arquivos e SQL nao garante snapshot atomico em uploads concorrentes;
   preferir janela sem alteracoes durante a copia.
@@ -90,5 +93,5 @@ O script NAO altera dados nem esquema do banco de producao.
 - Exportacao de banco real conclui e o SQL restaura num MySQL/MariaDB local.
 - Nenhum token, SQL ou exportador ficam no servidor depois da conclusao.
 - Relatorio privado contem BACKUP OK, hashes, contagens e pasta datada.
-- Atualizar docs/BACKUP_E_RECUPERACAO.md e docs/STATUS.md somente
-  depois da validacao real e decisao de adocao.
+- Os documentos `docs/BACKUP_E_RECUPERACAO.md` e `docs/STATUS.md` foram atualizados apos a validacao real.
+- Ainda nao foi executado um teste completo do aplicativo PHP em servidor restaurado; isso nao invalida a importacao/contagens, mas limita a prova de recuperacao funcional.
