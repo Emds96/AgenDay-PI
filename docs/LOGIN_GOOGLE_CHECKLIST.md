@@ -16,13 +16,14 @@
 - [x] Saída da conta criada sem senha local e novo login com a **mesma conta Google**, chegando ao sistema.
 - [x] Cadastro com **outra conta Google**, definindo uma **senha própria do AgenDay** no primeiro acesso.
 - [x] Saída dessa segunda conta e novo login usando **e-mail e senha no formulário tradicional**, sem depender do botão Google; acesso funcionou, conforme relato do responsável.
-- [ ] Na conta criada com senha local, verificar que o **login pelo Google também continua funcionando** após logout.
+- [x] Na segunda conta, criada com senha local, o responsável saiu e voltou a entrar pelo botão **Entrar com Google**, com sucesso.
+- [x] O responsável, com duas sessões/contas Google disponíveis, escolheu a **outra conta** no seletor do Google e também entrou com sucesso, retornando à primeira conta criada sem senha AgenDay.
 - [ ] Avaliar aparência, legibilidade e responsividade do pop-up no celular (além do funcionamento).
 - [ ] Testar conta manual já existente vinculando Google após comprovar a senha da conta; não presumir concluído.
 - [ ] Testar rejeição de credenciais inválidas, repetição de cadastros e isolamento de dados.
 - [ ] Confirmar regressão geral de cadastro/login tradicionais e rotinas da agenda com mais de uma conta.
 
-**Conclusão limitada:** há evidência prática relatada de cadastro/login Google **com e sem senha local** e de login com e-mail e senha em conta Google. Não considerar toda a integração auditada nem o aplicativo liberado para todos no Google Cloud.
+**Conclusão limitada:** o responsável confirmou cadastro/login Google **com e sem senha local**, login tradicional com senha da conta Google previamente cadastrada no AgenDay e **alternância entre duas contas Google distintas**, incluindo a que não possui senha local. Essa alternância demonstra escolha de identidade na autenticação, mas não prova isolamento de dados. Não considerar toda a integração auditada nem o aplicativo liberado para todos no Google Cloud.
 
 ## Publicação direta e incidente — 17/11/2026
 
@@ -86,7 +87,8 @@
 
 - [ ] Criar testes automatizados pertinentes e rodar `php -l` / suíte de validações.
 - [ ] Testar cadastro e login tradicionais sem regressão, incluindo e-mail corporativo.
-- [ ] Testar primeiro acesso Google com senha e sem senha, retorno direto e isolamento por estabelecimento.
+- [x] Testado primeiro acesso com e sem senha local e retorno via Google em ambas as contas, conforme relato do responsável.
+- [ ] Verificar formalmente o **isolamento dos dados** entre estabelecimentos (clientes, funcionários, agendamentos); alternar contas não comprova sozinho o isolamento.
 - [ ] Testar tentativas de duplicação/vinculação indevida e rejeições de acesso.
 - [ ] Revisar diff completo, cenários e CI do PR; manter sem merge automático.
 - [ ] Preparar **backup novo** de arquivos e banco e validar antes de qualquer mudança em produção.
