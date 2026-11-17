@@ -32,6 +32,7 @@ jobs:
           php tests/agendamento-validacao.php
           php tests/agendamento-cancelamento.php
           php tests/google-identidade-validacao.php
+          php tests/recuperacao-senha-test.php
           node tests/responsividade-check.js
       - name: Preparar pacote permitido
         run: python3 scripts/preparar_publicacao.py
@@ -45,6 +46,8 @@ jobs:
           test ! -e deploy-package/conexao.exemplo.php
           test -f deploy-package/arquivos/clientes/.htaccess
           test -f deploy-package/arquivos/funcionarios/.htaccess
+          test -f deploy-package/config/.htaccess
+          test ! -e deploy-package/config/brevo-api-config.php
           test ! -e deploy-package/arquivos/clientes/*.jpg
           test ! -e deploy-package/arquivos/funcionarios/*.jpg
           test ! -e deploy-package/sql
@@ -126,6 +129,7 @@ jobs:
           set -euo pipefail
           test -f deploy-package/arquivos/clientes/.htaccess
           test -f deploy-package/arquivos/funcionarios/.htaccess
+          test -f deploy-package/config/.htaccess
       - name: Publicar por FTP com TLS obrigatorio
         env:
           AGENDAY_DEPLOY_ENABLED: ${{ vars.AGENDAY_DEPLOY_ENABLED }}
@@ -133,4 +137,5 @@ jobs:
           AGENDAY_FTP_HOST: ${{ secrets.AGENDAY_FTP_HOST }}
           AGENDAY_FTP_USERNAME: ${{ secrets.AGENDAY_FTP_USERNAME }}
           AGENDAY_FTP_PASSWORD: ${{ secrets.AGENDAY_FTP_PASSWORD }}
+          AGENDAY_BREVO_API_KEY: ${{ secrets.AGENDAY_BREVO_API_KEY }}
         run: python3 scripts/publicar_ftp.py
