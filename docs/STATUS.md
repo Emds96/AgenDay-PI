@@ -6,16 +6,17 @@
 **Commit publicado comprovado:** `b06ae1f1019cee78ebdc90285ea808f6c6062730` via [GitHub Actions #44067516631](https://github.com/Emds96/AgenDay-PI/actions/runs/44067516631) em 17/11/2026. Conferir HEAD atual da `dev-feira-uninorte` antes de próximas tarefas.  
 **Fonte da evidência funcional:** auditoria de 16/11/2026 relatada pelo responsável e **testes manuais de login Google realizados por ele em produção em 17/11/2026**, registrados em [`LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md). As evidências são identificadas por origem; este documento não afirma que a automação repetiu os testes manuais.
 
-## QA-03 — Recuperação de senha com Brevo (17/11/2026; proposta em PR)
+## QA-03 — Recuperação de senha com Brevo (17/11/2026; PR #18 integrado)
 
-- Branch de tarefa: feat/qa03-recuperacao-senha-brevo, derivada de dev-feira-uninorte. Não integrada, publicada ou ativada.
-- Código preparado: telas esqueci-senha.php/redefinir-senha.php, funções de token/hash, integração HTTP Brevo e migração incremental sql/QA03_recuperacao_senha.sql.
-- Garantias propostas: tokens de uso único válidos por 30 min, mensagem genérica sem enumeração, limite por conta e sessão, redefinição transacional, senha AgenDay independente de Google.
-- **Secret GitHub configurado:** nome `AGENDAY_BREVO_API_KEY` confirmado no Environment `producao-agenday` em 17/11 (valor inacessível e não verificado). PR #18 agora prepara sua transferência apenas no job protegido de publicação, via FTPS, para `htdocs/config/brevo-api-config.php` com bloqueio HTTP por `config/.htaccess`. Nenhum segredo entra em Git/artifact e a credencial ainda NÃO está configurada na hospedagem. Arquivo transitório do Drive apresentou formato de chave; recomendada rotação antes de publicar.
-- **Atenção antes da ativação:** revogar/rotacionar a chave exposta em armazenamento de texto transitório (Keep/Drive) e configurar a nova chave diretamente no local privado da hospedagem. Nunca publicar ou registrar a chave.
-- **CI validada na branch em 17/11:** [Actions #44134280461](https://github.com/Emds96/AgenDay-PI/actions/runs/44134280461) `success` no job de validação (lint PHP, testes e pacote); FTP/produção `skipped`. Isso não é QA de ponta a ponta.
-- Pendente: backups recentes, aprovação de migração e deploy, rotação do Secret e teste de envio real pela InfinityFree, incluindo bloqueio HTTP do arquivo privado; validar fluxo em produção.
-- Detalhes da ativação e riscos em docs/QA03_RECUPERACAO_SENHA_BREVO.md.
+- [PR #18](https://github.com/Emds96/AgenDay-PI/pull/18) **integrado** em `dev-feira-uninorte` no commit `4ebaffea224e2a825723af3de1b513c52b978f60`, autorizado pelo responsável em 17/11/2026. A `main` permanece preservada.
+- Código integrado: botão Esqueceu a senha, telas `esqueci-senha.php`/`redefinir-senha.php`, token de 30 minutos com SHA-256 e uso único, envio HTTPS Brevo e migração incremental `sql/QA03_recuperacao_senha.sql`.
+- **GitHub Actions:** [validação #44135396309](https://github.com/Emds96/AgenDay-PI/actions/runs/44135396309) e [PHP lint #44135396273](https://github.com/Emds96/AgenDay-PI/actions/runs/44135396273) reportaram sucesso no merge; publicação foi pulada. As variáveis `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled` foram conferidas.
+- Nome do Secret `AGENDAY_BREVO_API_KEY` confirmado no Environment `producao-agenday` sem inspecionar valor. Job protegido de publicação foi ajustado para preparar o arquivo de configuração privado, mas **não foi executado**.
+- **Ainda NÃO concluído em produção:** o SQL de recuperação não foi aplicado; não houve novo deploy; nenhum e-mail de recuperação foi testado. O botão no site publicado pode continuar inoperante.
+- **Bloqueio operacional para próximos passos:** backups localizados no PC de 16/11 (arquivos + SQL) e 17/11 pré-Google (SQL), sem backup integral atual posterior ao hotfix de Google em 17/11; painel InfinityFree apresentou desafio interativo Cloudflare. Não burlar o desafio. Obter e verificar backups atuais antes de alterar banco ou publicar.
+- **Segurança:** recomendada rotação da chave que passou temporariamente por Google Keep/Drive antes de ativá-la. O novo valor deve ser colado diretamente no Environment Secret, nunca no repositório ou chat.
+- Próximos passos autorizados nesta tarefa: obter backups atuais, executar a migração no banco independente, publicar o commit exato com autorização já dada e validar por navegador + e-mail. Nenhum desses passos deve ser presumido concluído por ter CI verde.
+- Procedimento de ativação em `docs/QA03_RECUPERACAO_SENHA_BREVO.md`.
 
 ---
 ## Login com Google — publicação direta autorizada e hotfix (17/11/2026)
