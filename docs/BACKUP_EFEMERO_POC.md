@@ -1,7 +1,7 @@
 # AgenDay Backup Efemero — prova de conceito
 
 **Status: PROVA REAL VALIDADA EM 17/11/2026; NAO HÁ EXPORTADOR PERMANENTE PUBLICADO.**
-Branch de trabalho: feat/backup-efemero, baseada em dev-feira-uninorte.
+Origem: branch feat/backup-efemero, integrada na dev-feira-uninorte pelo PR #19 (merge 2885411e, 17/11/2026).
 Nao substitui docs/BACKUP_E_RECUPERACAO.md ate prova de restauracao real.
 
 ## Objetivo
