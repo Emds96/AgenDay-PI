@@ -229,6 +229,12 @@ if (!is_array($googlePending)
     ?>
 
 
+    <?php if (isset($_SESSION['erro_google_login'])) : ?>
+        <div class="alert alert-danger col-4 container fixed-bottom" role="alert">
+            <?= htmlspecialchars((string) $_SESSION['erro_google_login'], ENT_QUOTES, 'UTF-8') ?>
+        </div>
+    <?php endif; unset($_SESSION['erro_google_login']); ?>
+
     <?php if (isset($_SESSION['erro_cadastro'])) : ?>
         <div class="alert alert-danger col-4 container fixed-bottom" role="alert">
             <?= htmlspecialchars($_SESSION['erro_cadastro'], ENT_QUOTES, 'UTF-8') ?>
