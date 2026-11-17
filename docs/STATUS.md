@@ -1,12 +1,12 @@
 # STATUS — AgenDay 2.0
 
-**Atualizado em:** 16/11/2026 (publicação FTPS concluída e validação pós-deploy)  
+**Atualizado em:** 16/11/2026 (QA-02 publicada e validação parcial; pendência de credenciais)  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
 **Commit publicado comprovado:** `7980db9c3c371f66fb86881cae4bba86cafd3317` via GitHub Actions em 16/11/2026. **Consultar o HEAD atual da `dev-feira-uninorte` antes de novas tarefas; esta documentação também será integrada por PR.**  
 **Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
 
-## QA-02 — alteração de senha ([PR #10](https://github.com/Emds96/AgenDay-PI/pull/10) aberto, 16/11/2026)
+## QA-02 — alteração de senha ([PR #10](https://github.com/Emds96/AgenDay-PI/pull/10) integrado e publicado, 16/11/2026)
 
 **Problema confirmado no código:** `alterar-senha.php` mostrava formulário legado de cliente (nome, contato, e-mail, foto), sem ação para trocar a senha.
 
@@ -18,7 +18,17 @@
 
 **Testes efetivamente executados:** PHP CLI 8.4.24 em ambiente isolado: `php -l` nos arquivos de validação/teste e **16 verificações aprovadas**; hashes dos dois arquivos comparados aos blobs do GitHub. Workflow existente de **lint PHP** disparado somente na branch de tarefa: [run 43988658296](https://github.com/Emds96/AgenDay-PI/actions/runs/43988658296), **success**, sem publicação ou alteração do workflow.
 
-**Não comprovado ainda:** atualização real da senha no MySQL do InfinityFree, rejeição da senha antiga em login, persistência após recarga, comportamento do formulário visual em dispositivo real e política de invalidação de outras sessões. O código renova a sessão **atual**, mas **não revoga outras sessões** já autenticadas; essa ampliação exigiria controle de versão de sessão e decisão arquitetural separada. Sem migração SQL. **PR #10 aberto, sem merge; alteração ainda não publicada.** QA-03 (esqueceu a senha) permanece separado.
+**Não comprovado ainda:** atualização real da senha no MySQL do InfinityFree, rejeição da senha antiga em login, persistência após recarga, comportamento do formulário visual em dispositivo real e política de invalidação de outras sessões. O código renova a sessão **atual**, mas **não revoga outras sessões** já autenticadas; essa ampliação exigiria controle de versão de sessão e decisão arquitetural separada. Sem migração SQL. **PR #10 integrado no commit `e3174bc713b2b4c286066b9b4c8abb622bc3b766` e publicado com sucesso.** A comprovação de persistência/segurança da troca de senha em MySQL permanece pendente. QA-03 (esqueceu a senha) permanece separado.
+
+
+
+### Publicação e QA parcial da alteração de senha — 16/11/2026
+
+- **Backup fresco pré-deploy:** obtidos pelo ZERO Browser MCP do InfinityFree, em `Documents/AgenDay-Backups/2026-11-16-pre-QA02-deploy` do computador autorizado. Arquivo `htdocs-pre-QA02-2026-11-16.zip`: **75 arquivos**, inclui `conexao.php`, `index.php`, uploads e **dois `.htaccess`**; CRC válido. Exportação `agenday-db-pre-QA02-2026-11-16.sql.zip`: estrutura de **8 tabelas**, dados de estabelecimento presentes, CRC válido. SHA-256 dos dois arquivos registrados no relatório privado `STATUS_BACKUP_VALIDADO_PRE_QA02.txt`. **Restauração não testada.** Nenhum backup, senha ou conexão privada enviado ao repositório.
+- **Deploy:** responsável autorizou o SHA exato `e3174bc713b2b4c286066b9b4c8abb622bc3b766` de `dev-feira-uninorte`, publicado somente pelo workflow `.github/workflows/agenday-publicar.yml` no ambiente protegido `producao-agenday`. [Run 43991172102](https://github.com/Emds96/AgenDay-PI/actions/runs/43991172102): **`validar=success`, `diagnosticar_ftp=success`, `publicar=success`**. Duas Variables de gate restauradas e conferidas: `AGENDAY_DEPLOY_ENABLED=false`, `AGENDAY_DEPLOY_MODE=disabled`. Sem alteração de banco/SQL, Secrets, workflow, `main` ou repositório original.
+- **QA com ZERO Browser MCP em conta fictícia anteriormente autenticada:** `/alterar-senha.php` acessível; exibe senha atual, nova senha, confirmação, token CSRF oculto e botão de envio. Formulário visível sem overflow horizontal em **320, 390, 768 e 1366 px**. Nenhum dado existente foi alterado por essa inspeção.
+- **Bloqueio de credenciais:** a ferramenta de segurança bloqueou a tentativa automatizada de gerar/armazenar uma credencial de QA. **Não foi criada nova conta nem senha; não há credencial armazenada por esta sessão.** Não tentar contornar o controle. Como ainda não houve POST legítimo de troca, permanecem **não testados em produção**: rejeição da senha atual incorreta, confirmação divergente, persistência real do hash no MySQL, login com senha antiga/nova e comportamento de outras sessões. Para concluir, usar uma credencial de QA armazenada pelo responsável em gerenciador seguro, sem compartilhá-la no GitHub ou no chat.
+- **Conclusão estrita:** QA-02 **código integrado, CI aprovado e publicado; interface validada; fluxo de alteração real pendente de QA autenticado com senha disponível**. Não marcar como plenamente concluído até confirmar o cenário ponta a ponta.
 
 ## Publicação FTPS autorizada e validação pós-deploy — 16/11/2026
 
