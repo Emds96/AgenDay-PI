@@ -17,6 +17,8 @@
 - [x] Inspecionados `index.php`, `css/login.css`, `css/design-system.css`, `css/responsivo.css`, `js/login.js`, `cadastrar.php`, `login.php`, `sessao.php` e `sql/BD_v2.sql` na branch correta.
 - [x] Criada branch de tarefa a partir do SHA exato da `dev-feira-uninorte`.
 - [ ] Verificar configuração/viabilidade prática do Google Identity Services no InfinityFree (HTTPS externo, biblioteca PHP e extensões).
+- [x] Criado projeto independente **AgenDay** no Google Cloud: `agenday-515003`, sem ativar faturamento.
+- [ ] Concluir Google Auth Platform: branding iniciado com nome `AgenDay`, público **Externo** e endereço de suporte/contato selecionado da própria conta Google, mas **pendente o aceite da política de dados do usuário pelo responsável**, exigido no passo final do assistente.
 - [ ] Criar e configurar **OAuth Web Client ID** no Google Cloud, incluindo origem autorizada de produção e consentimento; credenciais/configurações fora do repositório quando aplicável.
 
 - [x] Implementados inicialmente os endpoints PHP de login e cadastro Google, validação de assinatura por OpenSSL, controle CSRF e sessão temporária, **sem configurar ou usar em produção**. Falta validação de segurança e testes integrados.
@@ -58,6 +60,10 @@
 - [ ] Atualizar `docs/STATUS.md` com evidências reais, estado final e pendências.
 
 ## Histórico verificável desta execução
+
+**Configuração Google Cloud, 16/11/2026:** ZERO Browser MCP conectado à conta existente; novo projeto `agenday-515003` criado e confirmado no Console. Tela `https://console.cloud.google.com/auth/overview/create?project=agenday-515003` exige no passo 4 assinalar a declaração de concordância com a política de dados de usuário dos serviços de API do Google. **Não foi assinalada e o formulário não foi submetido.** Nenhum OAuth Web Client ID foi criado nesta etapa. Aguardar o responsável aceitar expressamente a política ou concluir esse passo por conta própria. O nome do projeto `AgenDay 2.0` foi rejeitado por caracteres inválidos; usado `AgenDay`. Nenhuma cobrança, banco, deploy ou segredo foi alterado.
+
+
 
 **16/11/2026:** implementação inicial salva apenas na branch `feat/login-google-primeiro-acesso-20261116`: `index.php`, `css/google-auth.css`, `js/google-auth.js`, `lib/google-identidade.php`, `google-entrar.php`, `google-cadastro-concluir.php`, `login.php`, `.gitignore`, `sql/migracao-google-login.sql`, `tests/google-identidade-validacao.php`, `docs/GOOGLE_LOGIN_SETUP.md`. **Sem alteração do banco de produção, configuração do Google Cloud, deploy, merge ou QA-03**. O teste PHP de token foi escrito, mas **não executado**; o único teste automatizado efetivamente concluído nesta etapa é o lint PHP do workflow.
 
