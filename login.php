@@ -30,6 +30,34 @@ try {
     $stmt->close();
 
     if ($encontrado && is_string($hash) && password_verify($senha, $hash)) {
+        // Só vincular o Google após provar posse da senha desta conta.
+        // A associação pendente é efêmera e restrita ao mesmo e-mail verificado.
+        $vinculo = $_SESSION['google_link_pending'] ?? null;
+        unset($_SESSION['google_link_pending']);
+        if (is_array($vinculo)
+            && isset($vinculo['email'], $vinculo['sub'], $vinculo['created_at'])
+            && is_string($vinculo['email']) && is_string($vinculo['sub'])
+            && is_int($vinculo['created_at'])
+            && $vinculo['created_at'] <= time()
+            && time() - $vinculo['created_at'] <= 600
+            && strlen($vinculo['sub']) > 0 && strlen($vinculo['sub']) <= 255
+            && hash_equals(strtolower($emailBanco), strtolower($vinculo['email']))) {
+            try {
+                $stmtVinculo = $conexao->prepare(
+                    'INSERT INTO estabelecimento_google
+                     (google_sub, id_estabelecimento, email_google)
+                     VALUES (?, ?, ?)'
+                );
+                $idVinculo = (int) $id;
+                $stmtVinculo->bind_param('sis', $vinculo['sub'], $idVinculo, $vinculo['email']);
+                $stmtVinculo->execute();
+                $stmtVinculo->close();
+                $_SESSION['google_vinculo_concluido'] = true;
+            } catch (mysqli_sql_exception $e) {
+                // Não bloquear a autenticação tradicional se a associação falhar.
+                error_log('AgenDay vinculo Google: erro SQL ' . $e->getCode());
+            }
+        }
         session_regenerate_id(true);
         $_SESSION['id_estabelecimento'] = (int) $id;
         $_SESSION['nome_estabelecimento'] = $nome;
