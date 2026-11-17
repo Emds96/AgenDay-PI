@@ -4,9 +4,24 @@
 **Repositório:** `Emds96/AgenDay-PI`  
 **Branch-base:** `dev-feira-uninorte` (base inicial `e3174bc713b2b4c286066b9b4c8abb622bc3b766`)  
 **Branch de trabalho:** `feat/login-google-primeiro-acesso-20261116`  
-**Estado:** desenvolvimento inicial; **não publicado**.
+**Estado em 17/11/2026:** **publicado para testes com a conta Google autorizada** no site oficial; login completo ainda não validado de ponta a ponta. Hotfix de HTTP 500 aplicado e site reaberto com sucesso.
 
 > Marque [x] apenas após execução real e verificação. Este documento é o acompanhamento persistente. QA-03 (recuperação por e-mail) é outra tarefa, sem implementação neste escopo.
+
+## Publicação direta e incidente — 17/11/2026
+
+- [x] Responsável autorizou **publicação direta no site oficial** para realizar seus testes, dispensando ambiente de teste separado.
+- [x] Exportado e validado backup SQL atualizado de 17/11, privado, com estrutura das 8 tabelas. **Arquivos completos: backup mais recente é de 16/11**, sem nova cópia integral da mesma janela.
+- [x] Aplicada migração no MySQL real: `estabelecimento_google` e `senha_estabelecimento` anulável; não alterados registros existentes.
+- [x] PR #12 integrado à `dev-feira-uninorte`, commit `ce8358018ff06e24786064d489741f312df04c68`.
+- [x] Primeiro deploy GitHub Actions #44065895502: upload concluído, mas **index.php retornou HTTP 500**. Evento não ocultado; requer registro.
+- [x] Hotfix PR #13, commit `b06ae1f1019cee78ebdc90285ea808f6c6062730`, corrigiu dependência do arquivo local usando fallback do **Client ID público** e proteção por `try/catch`. Deploy #44067516631 aprovado (`validar`, `diagnosticar_ftp`, `publicar` success).
+- [x] Página inicial conferida no site oficial após hotfix: carregou **Login** com login/cadastro e os 2 componentes Google, sem HTTP 500.
+- [x] Flags de deploy desligadas ao final (`false` e `disabled`).
+- [ ] Testar no navegador **autenticação real com a conta Google liberada**, primeiro cadastro, pop-up, senha opcional e entrada subsequente; usuário realizará esse teste.
+- [ ] Testar retorno do Google para conta tradicional existente: autenticar e-mail e senha uma vez para vincular; não vincular automaticamente por e-mail igual.
+- [ ] Confirmar autenticação legada e verificação do token Google no InfinityFree (rede cURL/Google certificados), inclusive falhas e proteção contra duplicidade.
+- [ ] Fazer QA visual em desktop/celular e corrigir regressões; não marcar integração concluída só porque a tela foi renderizada.
 
 ## 1. Requisitos e segurança
 
@@ -73,7 +88,7 @@
 
 ## Dependências e decisões técnicas
 
-1. A coluna atual `estabelecimento.senha_estabelecimento VARCHAR(255) NOT NULL` **não suporta conta sem senha**; requer migração antes do recurso entrar em produção.
+1. A coluna `estabelecimento.senha_estabelecimento` **era NOT NULL**. Foi alterada em produção em 17/11/2026 para permitir senha opcional; integração funcional ainda precisa de teste real.
 2. O Google exige **OAuth Web Client ID** e origem autorizada; o botão oficial deve ser produzido pela Google Identity Services (não imitar o botão com JavaScript não suportado).
 3. A recomendação oficial é validar ID tokens na aplicação PHP com a biblioteca Google e identificar usuários pelo `sub` (referências: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token e https://developers.google.com/identity/gsi/web/guides/display-button).
-4. `main`, banco/hospedagem e QA-03 permanecem **intocados** até autorização e conclusão das verificações necessárias.
+4. `main`, repositório original e QA-03 permanecem intocados. O **banco independente e o site oficial** foram alterados com autorização de publicação direta em 17/11/2026.
