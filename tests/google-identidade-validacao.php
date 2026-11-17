@@ -75,7 +75,10 @@ foreach ($alterados as $alteracao) {
 
 $errado = gerarJwt($base, $privada, ['alg' => 'HS256']);
 teste(agenday_google_validar_token($errado, $client, $nonce, $certs, $agora) === null, 'Algoritmo diferente de RS256');
-$adulterado = substr($jwt, 0, -1) . ($jwt[-1] === 'A' ? 'B' : 'A');
+$partesJwt = explode('.', $jwt);
+$parteAssinatura = $partesJwt[2];
+$partesJwt[2] = ($parteAssinatura[0] === 'A' ? 'B' : 'A') . substr($parteAssinatura, 1);
+$adulterado = implode('.', $partesJwt);
 teste(agenday_google_validar_token($adulterado, $client, $nonce, $certs, $agora) === null, 'Assinatura adulterada');
 
 echo 'Validação offline de identidade Google concluída.' . PHP_EOL;
