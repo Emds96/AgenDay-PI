@@ -6,7 +6,7 @@
 **Commit publicado comprovado:** `7980db9c3c371f66fb86881cae4bba86cafd3317` via GitHub Actions em 16/11/2026. **Consultar o HEAD atual da `dev-feira-uninorte` antes de novas tarefas; esta documentação também será integrada por PR.**  
 **Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
 
-## QA-02 — alteração de senha (PR em preparação, 16/11/2026)
+## QA-02 — alteração de senha ([PR #10](https://github.com/Emds96/AgenDay-PI/pull/10) aberto, 16/11/2026)
 
 **Problema confirmado no código:** `alterar-senha.php` mostrava formulário legado de cliente (nome, contato, e-mail, foto), sem ação para trocar a senha.
 
@@ -18,7 +18,7 @@
 
 **Testes efetivamente executados:** PHP CLI 8.4.24 em ambiente isolado: `php -l` nos arquivos de validação/teste e **16 verificações aprovadas**; hashes dos dois arquivos comparados aos blobs do GitHub. Workflow existente de **lint PHP** disparado somente na branch de tarefa: [run 43988658296](https://github.com/Emds96/AgenDay-PI/actions/runs/43988658296), **success**, sem publicação ou alteração do workflow.
 
-**Não comprovado ainda:** atualização real da senha no MySQL do InfinityFree, rejeição da senha antiga em login, persistência após recarga, comportamento do formulário visual em dispositivo real e política de invalidação de outras sessões. O código renova a sessão **atual**, mas **não revoga outras sessões** já autenticadas; essa ampliação exigiria controle de versão de sessão e decisão arquitetural separada. Sem migração SQL. **PR ainda não integrado e alteração não publicada.** QA-03 (esqueceu a senha) permanece separado.
+**Não comprovado ainda:** atualização real da senha no MySQL do InfinityFree, rejeição da senha antiga em login, persistência após recarga, comportamento do formulário visual em dispositivo real e política de invalidação de outras sessões. O código renova a sessão **atual**, mas **não revoga outras sessões** já autenticadas; essa ampliação exigiria controle de versão de sessão e decisão arquitetural separada. Sem migração SQL. **PR #10 aberto, sem merge; alteração ainda não publicada.** QA-03 (esqueceu a senha) permanece separado.
 
 ## Publicação FTPS autorizada e validação pós-deploy — 16/11/2026
 
