@@ -11,7 +11,7 @@ STATIC = {
     "icon": {".png", ".jpg", ".jpeg", ".webp", ".gif", ".jfif", ".svg", ".ico"},
     "api": {".php"}, "lib": {".php"},
 }
-PROHIBITED = {"conexao.php", "conexao.exemplo.php"}
+PROHIBITED = {"conexao.php", "conexao.exemplo.php", "brevo-api-config.php"}
 
 def copy_safe(source: Path, relative: Path) -> None:
     if source.is_symlink() or not source.is_file() or ".." in relative.parts:
@@ -42,13 +42,20 @@ def build_package() -> None:
             raise RuntimeError("Protecao de uploads ausente: " + folder)
         copy_safe(guard, Path("arquivos") / folder / ".htaccess")
 
+    # Uma regra Apache publica é a unica parte do diretorio de configuracao no artifact.
+    config_guard = ROOT / "config" / ".htaccess"
+    if not config_guard.is_file():
+        raise RuntimeError("Protecao do diretorio de configuracao ausente")
+    copy_safe(config_guard, Path("config") / ".htaccess")
+
     files = sorted(p.relative_to(OUT).as_posix() for p in OUT.rglob("*") if p.is_file())
     assert "index.php" in files and "agenda.php" in files, "Pacote incompleto"
     assert "lib/agendamento-gravar.php" in files, "Biblioteca ausente"
     assert "cancelar-agendamento.php" in files, "Cancelamento ausente"
-    guard_files = {"arquivos/clientes/.htaccess", "arquivos/funcionarios/.htaccess"}
+    guard_files = {"arquivos/clientes/.htaccess", "arquivos/funcionarios/.htaccess", "config/.htaccess"}
     assert guard_files.issubset(set(files)), "Protecoes do diretorio de uploads ausentes"
     assert not any((p.startswith("arquivos/") and p not in guard_files)
+                   or (p.startswith("config/") and p != "config/.htaccess")
                    or p.startswith(("sql/", "tests/", "docs/", "notas/", ".github/"))
                    or p in PROHIBITED or p.endswith(".env") for p in files), "Arquivo sensível no pacote"
     print(f"Pacote preparado: {len(files)} arquivos, sem SQL, senhas ou uploads.")
