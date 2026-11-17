@@ -71,6 +71,8 @@ class ValidacaoDump(unittest.TestCase):
         self.assertIn('document.forms[0].submit()', text)
         self.assertIn("START TRANSACTION WITH CONSISTENT SNAPSHOT", text)
         self.assertIn("AGENDAY_BACKUP_SUCCESS", text)
+        self.assertIn("ERRO:", text)
+        self.assertIn("status.txt", text)
 
     def test_limpeza_ftp_inclui_arquivos_ocultos(self):
         class FTPFalso:

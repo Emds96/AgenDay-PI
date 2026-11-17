@@ -234,7 +234,7 @@ def remove_remote(ftp, root, folder, php_name):
     try:
         ftp.cwd(folder)
         # Remover nomes conhecidos inclusive arquivos ocultos omitidos por NLST.
-        for name in (".htaccess", "nonce.txt", "nonce.txt.used", "database.sql", "database.partial"):
+        for name in (".htaccess", "nonce.txt", "nonce.txt.used", "database.sql", "database.partial", "status.txt"):
             try:
                 ftp.delete(name)
             except error_perm as e:
@@ -344,6 +344,20 @@ def backup(args):
                 except error_perm:
                     size = None
                 ftp.cwd(remote_root)
+                if size is None:
+                    ftp.cwd(folder)
+                    try:
+                        ftp.voidcmd("TYPE I")
+                        state_size = ftp.size("status.txt")
+                    except error_perm:
+                        state_size = None
+                    if state_size:
+                        state_path = work / "exportador-estado.txt"
+                        download(ftp, "status.txt", state_path, state_size)
+                        status = state_path.read_text(encoding="utf-8", errors="replace").strip()
+                        if status.startswith("ERRO:"):
+                            raise BackupError("PHP_FALHOU: " + status)
+                    ftp.cwd(remote_root)
                 if size is not None:
                     if size <= 0 or size >= 8 * 1024 * 1024:
                         raise BackupError("SQL_REMOTO: tamanho inesperado")

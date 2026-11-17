@@ -82,10 +82,12 @@ if (!@rename($nonceFile, $nonceFile . '.used')) {
     exit("Ja utilizado\n");
 }
 $handle = null;
+$phase = 'autorizacao';
 try {
     if (!is_file($workingDir . '/.htaccess')) {
         throw new RuntimeException('Bloqueio HTTP ausente');
     }
+    $phase = 'conexao';
     require_once __DIR__ . '/conexao.php';
     if (!isset($conexao) || !($conexao instanceof mysqli)) {
         throw new RuntimeException('Conexao MySQL indisponivel');
@@ -95,6 +97,7 @@ try {
     if (!$db->set_charset('utf8mb4')) {
         throw new RuntimeException('Charset nao suportado');
     }
+    $phase = 'objetos';
     $fullTables = $db->query('SHOW FULL TABLES');
     $tables = [];
     while ($obj = $fullTables->fetch_row()) {
@@ -117,6 +120,7 @@ try {
     if (count($tables) < 1) throw new RuntimeException('Nenhuma tabela encontrada');
     sort($tables, SORT_STRING);
 
+    $phase = 'arquivo';
     $handle = fopen($partialFile, 'wb');
     if ($handle === false) throw new RuntimeException('Nao foi possivel criar SQL temporario');
     backup_write($handle, "-- AGENDAY_BACKUP_BEGIN\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n", $maxBytes);
@@ -132,6 +136,7 @@ try {
     $db->query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     $db->query('START TRANSACTION WITH CONSISTENT SNAPSHOT');
 
+    $phase = 'dados';
     foreach ($tables as $table) {
         $quoted = backup_quote_table($table);
         $ddlResult = $db->query('SHOW CREATE TABLE ' . $quoted);
@@ -159,14 +164,17 @@ try {
     fflush($handle);
     fclose($handle);
     $handle = null;
+    $phase = 'finalizacao';
     if (!rename($partialFile, $completedFile)) {
         throw new RuntimeException('Nao foi possivel concluir arquivo SQL');
     }
+    @file_put_contents($workingDir . '/status.txt', 'SUCESSO');
     echo "EXPORTACAO_CONCLUIDA\n";
 } catch (Throwable $e) {
     if (is_resource($handle)) fclose($handle);
     @unlink($partialFile);
     @unlink($completedFile);
+    @file_put_contents($workingDir . '/status.txt', 'ERRO:' . $phase);
     error_log('AgenDay backup temporario: ' . $e->getMessage());
     http_response_code(500);
     echo "Falha no backup; verifique status local.\n";
