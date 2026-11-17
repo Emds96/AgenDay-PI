@@ -28,7 +28,7 @@ O provedor não mantém backups automáticos do plano gratuito e desaconselha sc
 
 ## 3A. Rotina automática validada — PHP temporário + FTPS + MariaDB local
 
-**Estado comprovado em 17/11/2026:** backup real gerado com sucesso em `Documents/AgenDay-Backups/2026-11-17_174312_82e123c1`, contendo `82` arquivos de `htdocs/` e exportação de `9` tabelas (incluindo `estabelecimento_google`, com 51 registros no total). Importação em MariaDB 11.8.9 local temporário aprovada com comparação de tabelas e contagens. ZIP com 83 entradas, CRC e hashes SHA-256 conferidos. Verificação FTPS posterior: nenhum temporário de backup restou na hospedagem.
+**Estado comprovado em 17/11/2026:** backup real gerado com sucesso em `Documents/AgenDay-Backups/2026-11-17_174312_82e123c1`, contendo `82` arquivos de `htdocs/` e exportação de `9` tabelas (incluindo `estabelecimento_google`, com 51 registros no total). Importação em MariaDB 11.8.9 local temporário aprovada com comparação de tabelas e contagens. ZIP com 83 entradas, CRC e hashes SHA-256 conferidos. **Repetição pelo iniciador Windows também aprovada**: `Documents/AgenDay-Backups/2026-11-17_175147_81686ab8` (82 arquivos e 9 tabelas), iniciando o MariaDB desligado e encerrando-o automaticamente depois. Verificação FTPS posterior: nenhum temporário de backup restou na hospedagem.
 
 **Uso normal no PC autorizado (Windows):**
 

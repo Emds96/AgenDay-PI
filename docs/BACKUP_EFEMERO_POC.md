@@ -78,6 +78,7 @@ O script NAO altera dados nem esquema do banco de producao.
 - FTP diagnostico OK, pasta privada bloqueada HTTP 403 pelo Edge, PHP teste HTTP 200.
 - Backup real gerado em `Documents/AgenDay-Backups/2026-11-17_174312_82e123c1`: 82 arquivos, 9 tabelas incluindo `estabelecimento_google`, 51 linhas, SQL importado sem erro e comparado em banco temporario local.
 - ZIP e SQL passaram SHA-256, ZIP tem 83 entradas e CRC OK; 0 arquivos temporarios remotos pendentes.
+- Repeticao integral pelo launcher, iniciando com o MariaDB desligado, tambem aprovada: `2026-11-17_175147_81686ab8`. O banco local foi desligado apos o backup.
 - Um primeiro teste de exportacao expirou sem SQL; diagnostico por fase implementado e teste posterior aprovado.
 - O script continua sendo ferramenta separada do deploy, que exige autorizacao propia e backup recente.
 - Para banco maior/charset especial, gerar casos de teste representativos.
