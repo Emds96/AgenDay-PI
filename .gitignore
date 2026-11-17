@@ -2,3 +2,4 @@
 *.tmp
 conexao.php
 google-oauth-config.php
+brevo-api-config.php
