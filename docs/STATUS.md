@@ -11,9 +11,10 @@
 - Branch de tarefa: feat/qa03-recuperacao-senha-brevo, derivada de dev-feira-uninorte. Não integrada, publicada ou ativada.
 - Código preparado: telas esqueci-senha.php/redefinir-senha.php, funções de token/hash, integração HTTP Brevo e migração incremental sql/QA03_recuperacao_senha.sql.
 - Garantias propostas: tokens de uso único válidos por 30 min, mensagem genérica sem enumeração, limite por conta e sessão, redefinição transacional, senha AgenDay independente de Google.
-- Credencial NÃO versionada, NÃO configurada na hospedagem e NÃO salva de forma definitiva no computador. Arquivo transitório fornecido pelo responsável no Drive apresentou formato de chave; não utilizar como substituto de configuração segura nem divulgar seu conteúdo.
+- **Secret GitHub configurado:** nome `AGENDAY_BREVO_API_KEY` confirmado no Environment `producao-agenday` em 17/11 (valor inacessível e não verificado). PR #18 agora prepara sua transferência apenas no job protegido de publicação, via FTPS, para `htdocs/config/brevo-api-config.php` com bloqueio HTTP por `config/.htaccess`. Nenhum segredo entra em Git/artifact e a credencial ainda NÃO está configurada na hospedagem. Arquivo transitório do Drive apresentou formato de chave; recomendada rotação antes de publicar.
 - **Atenção antes da ativação:** revogar/rotacionar a chave exposta em armazenamento de texto transitório (Keep/Drive) e configurar a nova chave diretamente no local privado da hospedagem. Nunca publicar ou registrar a chave.
-- Pendente: executar testes unitários/CI, backups recentes, aprovação de migração e deploy, configurar credencial, testar envio real pela InfinityFree e validar todo fluxo em produção.
+- **CI validada na branch em 17/11:** [Actions #44134280461](https://github.com/Emds96/AgenDay-PI/actions/runs/44134280461) `success` no job de validação (lint PHP, testes e pacote); FTP/produção `skipped`. Isso não é QA de ponta a ponta.
+- Pendente: backups recentes, aprovação de migração e deploy, rotação do Secret e teste de envio real pela InfinityFree, incluindo bloqueio HTTP do arquivo privado; validar fluxo em produção.
 - Detalhes da ativação e riscos em docs/QA03_RECUPERACAO_SENHA_BREVO.md.
 
 ---
