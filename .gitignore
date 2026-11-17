@@ -3,3 +3,8 @@
 conexao.php
 google-oauth-config.php
 brevo-api-config.php
+__pycache__/
+.env.backup
+.mysql-local.cnf
+backups/
+*.partial

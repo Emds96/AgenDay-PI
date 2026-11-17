@@ -1,0 +1,181 @@
+<?php
+declare(strict_types=1);
+/*
+ * AgenDay Backup: exportador EFEMERO. Gerado pelo script local; nunca pelo CI.
+ * Marcadores substituidos pelo Python: __ID__ e __EXPIRES__.
+ */
+@ini_set('display_errors', '0');
+@ini_set('log_errors', '1');
+@set_time_limit(20);
+header('Cache-Control: no-store, max-age=0');
+header('Referrer-Policy: no-referrer');
+header('X-Content-Type-Options: nosniff');
+header('Content-Type: text/plain; charset=utf-8');
+
+$workingDir = __DIR__ . '/.agenday-backup-__ID__';
+$nonceFile = $workingDir . '/nonce.txt';
+$partialFile = $workingDir . '/database.partial';
+$completedFile = $workingDir . '/database.sql';
+$expiry = __EXPIRES__;
+$maxBytes = 8 * 1024 * 1024; // Limite seguro abaixo dos 10 MB do provedor.
+
+function backup_write($handle, string $payload, int $maxBytes): void {
+    $length = strlen($payload);
+    $written = 0;
+    while ($written < $length) {
+        $part = fwrite($handle, substr($payload, $written));
+        if ($part === false || $part === 0) {
+            throw new RuntimeException('Erro de escrita do SQL');
+        }
+        $written += $part;
+    }
+    if (ftell($handle) > $maxBytes) {
+        throw new RuntimeException('Dump excede limite seguro da hospedagem');
+    }
+}
+function backup_quote_table(string $table): string {
+    return chr(96) . str_replace(chr(96), chr(96) . chr(96), $table) . chr(96);
+}
+function backup_sql_value(mysqli $db, mixed $value, object $field): string {
+    if ($value === null) return 'NULL';
+    if (($field->flags & MYSQLI_BINARY_FLAG) !== 0 || $field->type === MYSQLI_TYPE_BIT) {
+        return '0x' . bin2hex((string)$value);
+    }
+    return "'" . $db->real_escape_string((string)$value) . "'";
+}
+
+if (time() >= $expiry) {
+    http_response_code(404);
+    exit("Nao disponivel\n");
+}
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $secret = @file_get_contents($nonceFile);
+    if ($secret === false) {
+        http_response_code(404);
+        exit("Nao disponivel\n");
+    }
+    // Formulario mesmo dominio: cookies SameSite podem bloquear POST a partir de file://.
+    // O endpoint aleatorio funciona como caminho secreto valido por poucos minutos.
+    header('Content-Type: text/html; charset=utf-8');
+    $escaped = htmlspecialchars(trim($secret), ENT_QUOTES, 'UTF-8');
+    echo '<!doctype html><html lang="pt-BR"><meta charset="utf-8">';
+    echo '<meta name="referrer" content="no-referrer"><title>Backup AgenDay</title>';
+    echo '<p>Iniciando exportacao autorizada.</p><form method="POST">';
+    echo '<input type="hidden" name="nonce" value="' . $escaped . '">';
+    echo '<button type="submit">Iniciar exportacao</button></form>';
+    echo '<script>document.forms[0].submit();</script></html>';
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(404);
+    exit("Nao disponivel\n");
+}
+$provided = $_POST['nonce'] ?? '';
+$stored = @file_get_contents($nonceFile);
+if (!is_string($provided) || !preg_match('/^[a-f0-9]{64}$/D', $provided)
+    || $stored === false || !hash_equals(trim($stored), $provided)) {
+    http_response_code(404);
+    exit("Nao disponivel\n");
+}
+if (!@rename($nonceFile, $nonceFile . '.used')) {
+    http_response_code(409);
+    exit("Ja utilizado\n");
+}
+$handle = null;
+$phase = 'autorizacao';
+try {
+    if (!is_file($workingDir . '/.htaccess')) {
+        throw new RuntimeException('Bloqueio HTTP ausente');
+    }
+    $phase = 'conexao';
+    require_once __DIR__ . '/conexao.php';
+    if (!isset($conexao) || !($conexao instanceof mysqli)) {
+        throw new RuntimeException('Conexao MySQL indisponivel');
+    }
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    $db = $conexao;
+    if (!$db->set_charset('utf8mb4')) {
+        throw new RuntimeException('Charset nao suportado');
+    }
+    $phase = 'objetos';
+    $fullTables = $db->query('SHOW FULL TABLES');
+    $tables = [];
+    while ($obj = $fullTables->fetch_row()) {
+        if (strtoupper((string)$obj[1]) !== 'BASE TABLE') {
+            throw new RuntimeException('Banco tem VIEW; exportacao especial necessaria');
+        }
+        $tables[] = (string)$obj[0];
+    }
+    $fullTables->free();
+    $triggers = $db->query('SHOW TRIGGERS');
+    if ($triggers->num_rows !== 0) {
+        throw new RuntimeException('Banco tem TRIGGER; exportacao especial necessaria');
+    }
+    $triggers->free();
+    $routines = $db->query('SELECT ROUTINE_NAME FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = DATABASE()');
+    if ($routines->num_rows !== 0) {
+        throw new RuntimeException('Banco tem ROUTINE; exportacao especial necessaria');
+    }
+    $routines->free();
+    if (count($tables) < 1) throw new RuntimeException('Nenhuma tabela encontrada');
+    sort($tables, SORT_STRING);
+
+    $phase = 'arquivo';
+    $handle = fopen($partialFile, 'wb');
+    if ($handle === false) throw new RuntimeException('Nao foi possivel criar SQL temporario');
+    backup_write($handle, "-- AGENDAY_BACKUP_BEGIN\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n", $maxBytes);
+
+    // Snapshot coerente apenas para tabelas InnoDB; falha fechada para outros motores.
+    $engines = $db->query('SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = "BASE TABLE"');
+    while ($engine = $engines->fetch_assoc()) {
+        if (strcasecmp((string)$engine['ENGINE'], 'InnoDB') !== 0) {
+            throw new RuntimeException('Tabela nao-InnoDB requer exportacao especial');
+        }
+    }
+    $engines->free();
+    $db->query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+    $db->query('START TRANSACTION WITH CONSISTENT SNAPSHOT');
+
+    $phase = 'dados';
+    foreach ($tables as $table) {
+        $quoted = backup_quote_table($table);
+        $ddlResult = $db->query('SHOW CREATE TABLE ' . $quoted);
+        $ddl = $ddlResult->fetch_assoc();
+        $ddlResult->free();
+        if (!isset($ddl['Create Table'])) throw new RuntimeException('Estrutura indisponivel');
+        backup_write($handle, "\n" . $ddl['Create Table'] . ";\n", $maxBytes);
+
+        $result = $db->query('SELECT * FROM ' . $quoted, MYSQLI_USE_RESULT);
+        $fields = $result->fetch_fields();
+        $rows = 0;
+        while ($values = $result->fetch_row()) {
+            $parts = [];
+            foreach ($values as $i => $val) {
+                $parts[] = backup_sql_value($db, $val, $fields[$i]);
+            }
+            backup_write($handle, 'INSERT INTO ' . $quoted . ' VALUES (' . implode(',', $parts) . ");\n", $maxBytes);
+            $rows++;
+        }
+        $result->free();
+        backup_write($handle, '-- AGENDAY_TABLE ' . base64_encode($table) . ' ' . $rows . "\n", $maxBytes);
+    }
+    $db->query('COMMIT');
+    backup_write($handle, "\nSET FOREIGN_KEY_CHECKS=1;\n-- AGENDAY_BACKUP_SUCCESS tables=" . count($tables) . "\n", $maxBytes);
+    fflush($handle);
+    fclose($handle);
+    $handle = null;
+    $phase = 'finalizacao';
+    if (!rename($partialFile, $completedFile)) {
+        throw new RuntimeException('Nao foi possivel concluir arquivo SQL');
+    }
+    @file_put_contents($workingDir . '/status.txt', 'SUCESSO');
+    echo "EXPORTACAO_CONCLUIDA\n";
+} catch (Throwable $e) {
+    if (is_resource($handle)) fclose($handle);
+    @unlink($partialFile);
+    @unlink($completedFile);
+    @file_put_contents($workingDir . '/status.txt', 'ERRO:' . $phase);
+    error_log('AgenDay backup temporario: ' . $e->getMessage());
+    http_response_code(500);
+    echo "Falha no backup; verifique status local.\n";
+}
