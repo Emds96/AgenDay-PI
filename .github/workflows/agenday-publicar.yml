@@ -31,6 +31,7 @@ jobs:
           set -euo pipefail
           php tests/agendamento-validacao.php
           php tests/agendamento-cancelamento.php
+          php tests/google-identidade-validacao.php
           node tests/responsividade-check.js
       - name: Preparar pacote permitido
         run: python3 scripts/preparar_publicacao.py
