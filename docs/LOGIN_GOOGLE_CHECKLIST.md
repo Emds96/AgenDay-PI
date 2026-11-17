@@ -1,0 +1,60 @@
+# Checklist de implementação — Login com Google (AgenDay 2.0)
+
+**Iniciado:** 16/11/2026  
+**Repositório:** `Emds96/AgenDay-PI`  
+**Branch-base:** `dev-feira-uninorte` (base inicial `e3174bc713b2b4c286066b9b4c8abb622bc3b766`)  
+**Branch de trabalho:** `feat/login-google-primeiro-acesso-20261116`  
+**Estado:** desenvolvimento inicial; **não publicado**.
+
+> Marque [x] apenas após execução real e verificação. Este documento é o acompanhamento persistente. QA-03 (recuperação por e-mail) é outra tarefa, sem implementação neste escopo.
+
+## 1. Requisitos e segurança
+
+- [x] Alinhado com o responsável: manter **exatamente a identidade visual atual** do login e cadastro, sem redesenhar as telas nem eliminar os campos existentes.
+- [x] Alinhado: dois botões distintos: **Criar conta com Google** no cadastro e **Entrar com Google** no login, preservando o acesso tradicional (inclusive e-mail corporativo).
+- [x] Alinhado: primeiro acesso Google com **pop-up no mesmo design do login/cadastro**, nome obrigatório, senha do AgenDay opcional e confirmar senha se definida; opção **Agora não** para não definir senha.
+- [x] Alinhado: texto do pop-up informa claramente que a senha é **exclusivamente para o AgenDay**, **não é a senha do Google**.
+- [x] Inspecionados `index.php`, `css/login.css`, `css/design-system.css`, `css/responsivo.css`, `js/login.js`, `cadastrar.php`, `login.php`, `sessao.php` e `sql/BD_v2.sql` na branch correta.
+- [x] Criada branch de tarefa a partir do SHA exato da `dev-feira-uninorte`.
+- [ ] Verificar configuração/viabilidade prática do Google Identity Services no InfinityFree (HTTPS externo, biblioteca PHP e extensões).
+- [ ] Criar e configurar **OAuth Web Client ID** no Google Cloud, incluindo origem autorizada de produção e consentimento; credenciais/configurações fora do repositório quando aplicável.
+
+## 2. Interface e design — identidade visual é requisito de aceite
+
+- [ ] Adicionar renderização oficial do botão **Criar conta com Google**, sem alterar os campos atuais.
+- [ ] Adicionar renderização oficial do botão **Entrar com Google**, sem alterar os campos atuais.
+- [ ] Criar pop-up com a mesma paleta e tipografia do login: `#A2ECE4`, `#7AD6CC`, `#18544D`, branco, campos arredondados, sombra e gradiente; seguir `css/design-system.css`.
+- [ ] Pop-up: nome obrigatório; senha opcional (8–72 bytes); confirmação somente com senha; botão de concluir e opção de prosseguir sem senha.
+- [ ] Mostrar aviso explícito: **"Esta senha é exclusiva para acessar o AgenDay com seu e-mail. Não é a senha da sua conta Google. Nunca informe sua senha do Google aqui."**
+- [ ] Adaptar alturas/rolagem dos formulários no desktop e mobile sem quebrar animação/alternância existentes.
+- [ ] Testar visual e acessibilidade em 320, 390, 768 e 1366 px, teclado e mensagens de erro.
+
+## 3. Autenticação e banco (sem tocar produção sem backup/validação)
+
+- [ ] Validar ID token Google **no servidor** (assinatura, `aud`, `iss`, `exp`, `sub`) com implementação confiável; nunca confiar só no JS ou no e-mail.
+- [ ] Desenhar e revisar migração SQL reversível: identidade Google (`sub` único) e senha do estabelecimento opcional; preservar todas as linhas existentes.
+- [ ] Impedir vinculação automática de Google a conta existente por igualdade de e-mail; requerer autenticação prévia e confirmação apropriada.
+- [ ] Implementar criação incompleta sem conceder acesso à agenda antes do nome do estabelecimento.
+- [ ] Concluir cadastro com nome, com ou sem senha, e liberar agenda; tornar pop-up desnecessário nos próximos logins.
+- [ ] Manter login com e-mail/senha funcionando; contas exclusivamente Google sem senha não podem autenticar por esse caminho.
+- [ ] Tratar token inválido/expirado, cancelamento, corrida de cadastros, CSRF e erros sem expor tokens.
+- [ ] Testar a criação de senha posterior/vinculação pelo usuário autenticado de forma segura (se aplicável).
+
+## 4. Testes, revisão e entrega
+
+- [ ] Criar testes automatizados pertinentes e rodar `php -l` / suíte de validações.
+- [ ] Testar cadastro e login tradicionais sem regressão, incluindo e-mail corporativo.
+- [ ] Testar primeiro acesso Google com senha e sem senha, retorno direto e isolamento por estabelecimento.
+- [ ] Testar tentativas de duplicação/vinculação indevida e rejeições de acesso.
+- [ ] Criar PR para `dev-feira-uninorte`, revisar diff e CI; sem merge automático.
+- [ ] Preparar **backup novo** de arquivos e banco e validar antes de qualquer mudança em produção.
+- [ ] Solicitar autorização específica para migração/alteração do banco em produção e deploy; não mudar gates/Secrets por conta própria.
+- [ ] Publicar versão aprovada via fluxo vigente e testar fim a fim no InfinityFree.
+- [ ] Atualizar `docs/STATUS.md` com evidências reais, estado final e pendências.
+
+## Dependências e decisões técnicas
+
+1. A coluna atual `estabelecimento.senha_estabelecimento VARCHAR(255) NOT NULL` **não suporta conta sem senha**; requer migração antes do recurso entrar em produção.
+2. O Google exige **OAuth Web Client ID** e origem autorizada; o botão oficial deve ser produzido pela Google Identity Services (não imitar o botão com JavaScript não suportado).
+3. A recomendação oficial é validar ID tokens na aplicação PHP com a biblioteca Google e identificar usuários pelo `sub` (referências: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token e https://developers.google.com/identity/gsi/web/guides/display-button).
+4. `main`, banco/hospedagem e QA-03 permanecem **intocados** até autorização e conclusão das verificações necessárias.
