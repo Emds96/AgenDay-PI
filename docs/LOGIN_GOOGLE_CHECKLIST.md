@@ -19,13 +19,18 @@
 - [ ] Verificar configuração/viabilidade prática do Google Identity Services no InfinityFree (HTTPS externo, biblioteca PHP e extensões).
 - [ ] Criar e configurar **OAuth Web Client ID** no Google Cloud, incluindo origem autorizada de produção e consentimento; credenciais/configurações fora do repositório quando aplicável.
 
+- [x] Implementados inicialmente os endpoints PHP de login e cadastro Google, validação de assinatura por OpenSSL, controle CSRF e sessão temporária, **sem configurar ou usar em produção**. Falta validação de segurança e testes integrados.
+- [x] Preparada proposta de migração `sql/migracao-google-login.sql` **sem executar no banco**.
+- [x] Criado [PR #12 em rascunho](https://github.com/Emds96/AgenDay-PI/pull/12), com destino exclusivo à `dev-feira-uninorte`.
+- [x] Executado o workflow de **sintaxe PHP** do GitHub Actions na branch, [run 44007263333](https://github.com/Emds96/AgenDay-PI/actions/runs/44007263333): **success** no commit `1510b6c36828602db8bd8718b48a62271a9565d8`. **Isso não executa os testes funcionais da integração Google**.
+
 ## 2. Interface e design — identidade visual é requisito de aceite
 
-- [ ] Adicionar renderização oficial do botão **Criar conta com Google**, sem alterar os campos atuais.
-- [ ] Adicionar renderização oficial do botão **Entrar com Google**, sem alterar os campos atuais.
-- [ ] Criar pop-up com a mesma paleta e tipografia do login: `#A2ECE4`, `#7AD6CC`, `#18544D`, branco, campos arredondados, sombra e gradiente; seguir `css/design-system.css`.
-- [ ] Pop-up: nome obrigatório; senha opcional (8–72 bytes); confirmação somente com senha; botão de concluir e opção de prosseguir sem senha.
-- [ ] Mostrar aviso explícito: **"Esta senha é exclusiva para acessar o AgenDay com seu e-mail. Não é a senha da sua conta Google. Nunca informe sua senha do Google aqui."**
+- [x] Codificada a renderização oficial do botão **Criar conta com Google**, condicional ao OAuth Client ID privado; sem retirar os campos atuais. **Ainda não testada no site.**
+- [x] Codificada a renderização oficial do botão **Entrar com Google**, condicional ao OAuth Client ID privado. **Ainda não testada no site.**
+- [x] Criado no código o pop-up com a mesma paleta e tipografia do login (QA visual ainda pendente): `#A2ECE4`, `#7AD6CC`, `#18544D`, branco, campos arredondados, sombra e gradiente; seguir `css/design-system.css`.
+- [x] Codificados campos do pop-up: nome obrigatório; senha opcional (8–72 bytes); confirmação somente com senha; concluir e prosseguir sem senha. **Integração com o banco não testada.**
+- [x] Incluído no pop-up o aviso explícito: **"Esta senha é exclusiva para acessar o AgenDay com seu e-mail. Não é a senha da sua conta Google. Nunca informe sua senha do Google aqui."**
 - [ ] Adaptar alturas/rolagem dos formulários no desktop e mobile sem quebrar animação/alternância existentes.
 - [ ] Testar visual e acessibilidade em 320, 390, 768 e 1366 px, teclado e mensagens de erro.
 
@@ -46,11 +51,15 @@
 - [ ] Testar cadastro e login tradicionais sem regressão, incluindo e-mail corporativo.
 - [ ] Testar primeiro acesso Google com senha e sem senha, retorno direto e isolamento por estabelecimento.
 - [ ] Testar tentativas de duplicação/vinculação indevida e rejeições de acesso.
-- [ ] Criar PR para `dev-feira-uninorte`, revisar diff e CI; sem merge automático.
+- [ ] Revisar diff completo, cenários e CI do PR; manter sem merge automático.
 - [ ] Preparar **backup novo** de arquivos e banco e validar antes de qualquer mudança em produção.
 - [ ] Solicitar autorização específica para migração/alteração do banco em produção e deploy; não mudar gates/Secrets por conta própria.
 - [ ] Publicar versão aprovada via fluxo vigente e testar fim a fim no InfinityFree.
 - [ ] Atualizar `docs/STATUS.md` com evidências reais, estado final e pendências.
+
+## Histórico verificável desta execução
+
+**16/11/2026:** implementação inicial salva apenas na branch `feat/login-google-primeiro-acesso-20261116`: `index.php`, `css/google-auth.css`, `js/google-auth.js`, `lib/google-identidade.php`, `google-entrar.php`, `google-cadastro-concluir.php`, `login.php`, `.gitignore`, `sql/migracao-google-login.sql`, `tests/google-identidade-validacao.php`, `docs/GOOGLE_LOGIN_SETUP.md`. **Sem alteração do banco de produção, configuração do Google Cloud, deploy, merge ou QA-03**. O teste PHP de token foi escrito, mas **não executado**; o único teste automatizado efetivamente concluído nesta etapa é o lint PHP do workflow.
 
 ## Dependências e decisões técnicas
 
