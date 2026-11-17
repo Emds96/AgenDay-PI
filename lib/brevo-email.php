@@ -9,7 +9,7 @@ function agenday_brevo_enviar_recuperacao(string $destinatario, string $link): b
 {
     $chave = getenv('AGENDAY_BREVO_API_KEY');
     if (!is_string($chave) || $chave === '') {
-        $configFile = __DIR__ . '/../brevo-api-config.php';
+        $configFile = __DIR__ . '/../config/brevo-api-config.php';
         if (!is_file($configFile)) {
             error_log('AgenDay Brevo: configuracao privada ausente.');
             return false;
