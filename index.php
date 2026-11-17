@@ -151,7 +151,7 @@ if (!is_array($googlePending)
                     </div>
                 </div>
 
-                <a href="#">Esqueceu a senha?</a>
+                <a href="esqueci-senha.php">Esqueceu a senha?</a>
 
                 <button class=" rounded rounded-4">Entrar</button>
                 <?php if ($googleClientId !== '') : ?>
