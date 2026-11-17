@@ -22,7 +22,7 @@
 - [x] Implementados inicialmente os endpoints PHP de login e cadastro Google, validação de assinatura por OpenSSL, controle CSRF e sessão temporária, **sem configurar ou usar em produção**. Falta validação de segurança e testes integrados.
 - [x] Preparada proposta de migração `sql/migracao-google-login.sql` **sem executar no banco**.
 - [x] Criado [PR #12 em rascunho](https://github.com/Emds96/AgenDay-PI/pull/12), com destino exclusivo à `dev-feira-uninorte`.
-- [x] Executado o workflow de **sintaxe PHP** do GitHub Actions na branch, [run 44007263333](https://github.com/Emds96/AgenDay-PI/actions/runs/44007263333): **success** no commit `1510b6c36828602db8bd8718b48a62271a9565d8`. **Isso não executa os testes funcionais da integração Google**.
+- [x] Executado o workflow de **sintaxe PHP** do GitHub Actions na branch: [run 44007574268](https://github.com/Emds96/AgenDay-PI/actions/runs/44007574268): **success** no commit `8fca310e7cdc33f211fc3bcd646d799103753abd` (segunda execução, após ajuste nos testes). **Isso não executa os testes funcionais da integração Google**.
 
 ## 2. Interface e design — identidade visual é requisito de aceite
 
