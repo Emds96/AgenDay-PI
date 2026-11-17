@@ -18,13 +18,17 @@
 - [x] Criada branch de tarefa a partir do SHA exato da `dev-feira-uninorte`.
 - [ ] Verificar configuração/viabilidade prática do Google Identity Services no InfinityFree (HTTPS externo, biblioteca PHP e extensões).
 - [x] Criado projeto independente **AgenDay** no Google Cloud: `agenday-515003`, sem ativar faturamento.
-- [ ] Concluir Google Auth Platform: branding iniciado com nome `AgenDay`, público **Externo** e endereço de suporte/contato selecionado da própria conta Google, mas **pendente o aceite da política de dados do usuário pelo responsável**, exigido no passo final do assistente.
-- [ ] Criar e configurar **OAuth Web Client ID** no Google Cloud, incluindo origem autorizada de produção e consentimento; credenciais/configurações fora do repositório quando aplicável.
+- [x] Google Auth Platform configurado com nome **AgenDay**, público **Externo**, e-mail de suporte/contato e **aceite da política de dados**, com autorização explícita do responsável. Confirmado na tela de Branding.
+- [x] Criado cliente OAuth **AgenDay Web - InfinityFree** (Aplicativo da Web) no projeto `agenday-515003`; confirmadas nas configurações a origem `https://agenday-sistema.infinityfree.io` e o redirecionamento `https://agenday-sistema.infinityfree.io/google-entrar.php`. **Client ID criado no Google Cloud, mas ainda não instalado em produção.**
 
 - [x] Implementados inicialmente os endpoints PHP de login e cadastro Google, validação de assinatura por OpenSSL, controle CSRF e sessão temporária, **sem configurar ou usar em produção**. Falta validação de segurança e testes integrados.
 - [x] Preparada proposta de migração `sql/migracao-google-login.sql` **sem executar no banco**.
 - [x] Criado [PR #12 em rascunho](https://github.com/Emds96/AgenDay-PI/pull/12), com destino exclusivo à `dev-feira-uninorte`.
 - [x] Executado o workflow de **sintaxe PHP** do GitHub Actions na branch: [run 44007574268](https://github.com/Emds96/AgenDay-PI/actions/runs/44007574268): **success** no commit `8fca310e7cdc33f211fc3bcd646d799103753abd` (segunda execução, após ajuste nos testes). **Isso não executa os testes funcionais da integração Google**.
+
+- [ ] Adicionar e confirmar conta autorizada na lista de **usuários de teste** do Google Auth Platform. A lista permanece em **0 usuários de teste** após tentativas de salvar no navegador; **não marcar como concluído** até a inclusão ser observada na tela.
+- [ ] Verificar os requisitos para mudar o app de **Testando** para **Produção** (branding completo, política de privacidade pública, termos e validação de domínio, quando exigidos). Não publicar antes da preparação do site e da autorização.
+- [ ] Registrar o OAuth Client ID no arquivo privado `htdocs/google-oauth-config.php` apenas após o backend e a migração de banco estarem testados e autorizados.
 
 ## 2. Interface e design — identidade visual é requisito de aceite
 
@@ -61,7 +65,7 @@
 
 ## Histórico verificável desta execução
 
-**Configuração Google Cloud, 16/11/2026:** ZERO Browser MCP conectado à conta existente; novo projeto `agenday-515003` criado e confirmado no Console. Tela `https://console.cloud.google.com/auth/overview/create?project=agenday-515003` exige no passo 4 assinalar a declaração de concordância com a política de dados de usuário dos serviços de API do Google. **Não foi assinalada e o formulário não foi submetido.** Nenhum OAuth Web Client ID foi criado nesta etapa. Aguardar o responsável aceitar expressamente a política ou concluir esse passo por conta própria. O nome do projeto `AgenDay 2.0` foi rejeitado por caracteres inválidos; usado `AgenDay`. Nenhuma cobrança, banco, deploy ou segredo foi alterado.
+**Configuração Google Cloud, 16/11/2026 (atualização após autorização):** ZERO Browser MCP criou e confirmou o projeto `agenday-515003`. Após aceite **expressamente autorizado** pelo responsável, o formulário Google Auth Platform foi concluído: nome do app `AgenDay`, público `Externo`, contato/e-mail de suporte da conta conectada. Criado e confirmado na lista o cliente OAuth **AgenDay Web - InfinityFree** (Aplicativo da Web). A página de detalhes do cliente contém exatamente a origem `https://agenday-sistema.infinityfree.io` e o URI `https://agenday-sistema.infinityfree.io/google-entrar.php`. **Status de publicação: Testando. Usuários de teste: 0 confirmados**; tentativas de adicionar o próprio e-mail de suporte pelo navegador não persistiram (formulário continuou aberto); pendente investigar. O Client ID permanece no Google Cloud; nenhuma configuração privada foi enviada ao repositório. O nome do projeto `AgenDay 2.0` foi rejeitado por caracteres inválidos; usado `AgenDay`. **Sem cobrança, banco, deploy ou alteração no site.**
 
 
 
