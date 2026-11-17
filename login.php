@@ -29,7 +29,7 @@ try {
     $encontrado = $stmt->fetch();
     $stmt->close();
 
-    if ($encontrado && password_verify($senha, $hash)) {
+    if ($encontrado && is_string($hash) && password_verify($senha, $hash)) {
         session_regenerate_id(true);
         $_SESSION['id_estabelecimento'] = (int) $id;
         $_SESSION['nome_estabelecimento'] = $nome;
