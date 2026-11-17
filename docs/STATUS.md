@@ -6,6 +6,17 @@
 **Commit publicado comprovado:** `b06ae1f1019cee78ebdc90285ea808f6c6062730` via [GitHub Actions #44067516631](https://github.com/Emds96/AgenDay-PI/actions/runs/44067516631) em 17/11/2026. Conferir HEAD atual da `dev-feira-uninorte` antes de próximas tarefas.  
 **Fonte da evidência funcional:** auditoria de 16/11/2026 relatada pelo responsável e **testes manuais de login Google realizados por ele em produção em 17/11/2026**, registrados em [`LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md). As evidências são identificadas por origem; este documento não afirma que a automação repetiu os testes manuais.
 
+## QA-03 — Recuperação de senha com Brevo (17/11/2026; proposta em PR)
+
+- Branch de tarefa: feat/qa03-recuperacao-senha-brevo, derivada de dev-feira-uninorte. Não integrada, publicada ou ativada.
+- Código preparado: telas esqueci-senha.php/redefinir-senha.php, funções de token/hash, integração HTTP Brevo e migração incremental sql/QA03_recuperacao_senha.sql.
+- Garantias propostas: tokens de uso único válidos por 30 min, mensagem genérica sem enumeração, limite por conta e sessão, redefinição transacional, senha AgenDay independente de Google.
+- Credencial NÃO versionada, NÃO configurada na hospedagem e NÃO salva de forma definitiva no computador. Arquivo transitório fornecido pelo responsável no Drive apresentou formato de chave; não utilizar como substituto de configuração segura nem divulgar seu conteúdo.
+- **Atenção antes da ativação:** revogar/rotacionar a chave exposta em armazenamento de texto transitório (Keep/Drive) e configurar a nova chave diretamente no local privado da hospedagem. Nunca publicar ou registrar a chave.
+- Pendente: executar testes unitários/CI, backups recentes, aprovação de migração e deploy, configurar credencial, testar envio real pela InfinityFree e validar todo fluxo em produção.
+- Detalhes da ativação e riscos em docs/QA03_RECUPERACAO_SENHA_BREVO.md.
+
+---
 ## Login com Google — publicação direta autorizada e hotfix (17/11/2026)
 
 **Autorização:** responsável pediu publicação direta para teste no site oficial, sem criar ambiente de testes separado. **Alvo:** somente `agenday-sistema.infinityfree.io`, branch `dev-feira-uninorte`, sem mexer na `main` ou na conta do repositório original.
