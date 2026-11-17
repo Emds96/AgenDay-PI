@@ -10,16 +10,22 @@ declare(strict_types=1);
  */
 function agenday_google_config(): array
 {
+    // O OAuth Client ID é identificador público, NÃO é um Client Secret.
+    // Fallback evita derrubar o login tradicional caso o arquivo privado falhe.
+    $fallback = ['client_id' => '963412158648-a2pu83k36jbp99h2cgifhfg42o0lqctd.apps.googleusercontent.com'];
     $path = dirname(__DIR__) . '/google-oauth-config.php';
     if (!is_file($path)) {
-        return [];
+        return $fallback;
     }
-    $config = require $path;
-    if (!is_array($config) || !isset($config['client_id']) || !is_string($config['client_id'])) {
-        return [];
+    try {
+        $config = require $path;
+    } catch (Throwable $e) {
+        error_log('AgenDay Google: arquivo local inválido, usando Client ID público.');
+        return $fallback;
     }
-    if (!preg_match('/^[0-9]+-[a-z0-9-]+\\.apps\\.googleusercontent\\.com$/i', $config['client_id'])) {
-        return [];
+    if (!is_array($config) || !isset($config['client_id']) || !is_string($config['client_id'])
+        || !preg_match('/^[0-9]+-[a-z0-9-]+\\.apps\\.googleusercontent\\.com$/i', $config['client_id'])) {
+        return $fallback;
     }
     return $config;
 }

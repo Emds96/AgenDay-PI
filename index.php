@@ -7,17 +7,11 @@ if (isset($_SESSION['id_estabelecimento']) && is_int($_SESSION['id_estabelecimen
 $csrfToken = agenday_token_csrf();
 $abrirCadastro = isset($_SESSION['erro_cadastro']) || isset($_SESSION['usuario_existe']);
 
-// Configuração privada e opcional: sem ela, o login tradicional não muda.
-$googleClientId = '';
-$googleConfigPath = __DIR__ . '/google-oauth-config.php';
-if (is_file($googleConfigPath)) {
-    $googleConfig = require $googleConfigPath;
-    if (is_array($googleConfig) && isset($googleConfig['client_id'])
-        && is_string($googleConfig['client_id'])
-        && preg_match('/^[0-9]+-[a-z0-9-]+\\.apps\\.googleusercontent\\.com$/i', $googleConfig['client_id'])) {
-        $googleClientId = $googleConfig['client_id'];
-    }
-}
+// O Client ID é público. O helper tolera falhas no arquivo privado,
+// preservando a tela de login mesmo que a configuração local esteja corrompida.
+require_once __DIR__ . '/lib/google-identidade.php';
+$googleConfig = agenday_google_config();
+$googleClientId = $googleConfig['client_id'] ?? '';
 $googleNonce = '';
 if ($googleClientId !== '') {
     if (empty($_SESSION['google_nonce']) || !is_string($_SESSION['google_nonce'])) {
