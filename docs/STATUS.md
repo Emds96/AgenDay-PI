@@ -6,6 +6,18 @@
 **Commit publicado comprovado:** `b06ae1f1019cee78ebdc90285ea808f6c6062730` via [GitHub Actions #44067516631](https://github.com/Emds96/AgenDay-PI/actions/runs/44067516631) em 17/11/2026. Conferir HEAD atual da `dev-feira-uninorte` antes de próximas tarefas.  
 **Fonte da evidência funcional:** auditoria de 16/11/2026 relatada pelo responsável e **testes manuais de login Google realizados por ele em produção em 17/11/2026**, registrados em [`LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md). As evidências são identificadas por origem; este documento não afirma que a automação repetiu os testes manuais.
 
+## POC de backup PHP efemero + FTPS (17/11/2026; nao ativada)
+
+- [PR #19](https://github.com/Emds96/AgenDay-PI/pull/19) em **rascunho**, branch `feat/backup-efemero`, baseada em `dev-feira-uninorte`. Nao integrada na dev, nao publicada na InfinityFree.
+- Criados `scripts/backup_agenday.py`, `scripts/backup_php_template.txt`, configuracoes de exemplo sem credenciais, testes e `docs/BACKUP_EFEMERO_POC.md`. O template PHP nao entra no pacote de deploy.
+- Script previsto: gera endpoint e nonce temporarios, abre URL propria do site com formulario GET/POST no mesmo dominio, exporta MySQL usando `mysqli` e `utf8mb4`, baixa por FTPS e espelha htdocs, valida SQL, testa restauracao apenas em MySQL local, gera ZIP/relatorio privado. Ha fallback `--manual-sql`.
+- **Testes locais:** 10 testes Python aprovados; lint Python aprovado. [CI #44161806896](https://github.com/Emds96/AgenDay-PI/actions/runs/44161806896) `validar=success`, incluindo lint PHP do template renderizado e pacote publico; FTPS/produção `skipped`.
+- **Bloqueios para teste real:** PC sem credenciais FTPS locais e sem MySQL/MariaDB local; ainda nao testados HTTP 403 da pasta do SQL, execucao PHP no InfinityFree, download FTPS e restauracao do banco verdadeiro. **Nao houve backup novo.**
+- O provedor recomenda FTP + phpMyAdmin; a POC PHP e uma alternativa experimental com risco de timeout/tamanho. Nao assumir backup valido antes de verificacao e restauracao. Nao guardar dumps nem segredos em repositorio ou artifacts.
+- Procedimento oficial existente em `docs/BACKUP_E_RECUPERACAO.md` continua vigente ate a POC ser validada e aprovada. A publicacao da QA-03 segue bloqueada pelo backup atual.
+
+---
+
 ## QA-03 — Recuperação de senha com Brevo (17/11/2026; PR #18 integrado)
 
 - [PR #18](https://github.com/Emds96/AgenDay-PI/pull/18) **integrado** em `dev-feira-uninorte` no commit `4ebaffea224e2a825723af3de1b513c52b978f60`, autorizado pelo responsável em 17/11/2026. A `main` permanece preservada.
