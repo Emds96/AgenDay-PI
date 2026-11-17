@@ -10,7 +10,7 @@
 - **Origem JavaScript autorizada:** `https://agenday-sistema.infinityfree.io`.
 - **URI de redirecionamento autorizado:** `https://agenday-sistema.infinityfree.io/google-entrar.php`.
 - **Publicação do aplicativo:** **Testando**, não liberado para qualquer usuário.
-- **Usuários de teste:** inclusão tentada com o e-mail de suporte, porém a página continuou mostrando **0 usuários de teste**; tratar como pendente até validação independente.
+- **Usuários de teste:** conta de suporte adicionada com sucesso via ZERO Browser MCP; a tela **Público-alvo** mostra **1 usuário (1 de teste, 0 outros)** após reabertura, com status **Testando**. O primeiro clique em **Salvar** não submetia o formulário porque o campo ainda perdia foco; a submissão só ocorreu no segundo clique, com o campo já validado. **Isso autoriza somente o teste no Google Cloud e não significa que o login do AgenDay foi testado.**
 - **Não configurado:** arquivo privado de produção `google-oauth-config.php`, migração de banco e publicação do código. **Não exibir nem versionar nenhum Client Secret.**
 
 A página de configuração do cliente é `https://console.cloud.google.com/auth/clients?project=agenday-515003`. A integração não está liberada em produção.
