@@ -1,6 +1,6 @@
 # Configuração de login com Google — AgenDay 2.0
 
-**Estado em 16/11/2026:** código preparado em branch de desenvolvimento. **Não habilitar em produção** sem as verificações, migração, backup e autorização de publicação.
+**Estado em 17/11/2026:** código publicado **no site oficial para testes autorizados**; migração SQL realizada e cliente OAuth configurado. **Página de login e botões Google confirmados, mas autenticação Google real, onboarding e persistência ainda não testados de ponta a ponta.**
 
 ## Configuração confirmada no Google Cloud — 16/11/2026
 
@@ -11,7 +11,7 @@
 - **URI de redirecionamento autorizado:** `https://agenday-sistema.infinityfree.io/google-entrar.php`.
 - **Publicação do aplicativo:** **Testando**, não liberado para qualquer usuário.
 - **Usuários de teste:** conta de suporte adicionada com sucesso via ZERO Browser MCP; a tela **Público-alvo** mostra **1 usuário (1 de teste, 0 outros)** após reabertura, com status **Testando**. O primeiro clique em **Salvar** não submetia o formulário porque o campo ainda perdia foco; a submissão só ocorreu no segundo clique, com o campo já validado. **Isso autoriza somente o teste no Google Cloud e não significa que o login do AgenDay foi testado.**
-- **Não configurado:** arquivo privado de produção `google-oauth-config.php`, migração de banco e publicação do código. **Não exibir nem versionar nenhum Client Secret.**
+- **17/11/2026:** arquivo privado `google-oauth-config.php` criado no servidor e migração do banco aplicada após exportação de backup SQL. O primeiro deploy encontrou HTTP 500 na página inicial; o hotfix PR #13 captura falhas do arquivo local e usa fallback com o **OAuth Client ID público** no código (não é Client Secret). O site voltou a carregar e mostrou os dois botões Google. **A integridade do arquivo privado e o login completo ainda precisam de revisão. Não expor nenhum Client Secret.**
 
 A página de configuração do cliente é `https://console.cloud.google.com/auth/clients?project=agenday-515003`. A integração não está liberada em produção.
 
@@ -38,6 +38,16 @@ return [
 
 **Nome exato:** `google-oauth-config.php`. Esse arquivo está no `.gitignore`. A rotina automática de publicação não o deve recriar nem sobrescrever; validar e manter essa separação.
 
+## Evidências da publicação de 17/11/2026
+
+- PR #12: integração de código em `dev-feira-uninorte`, commit `ce8358018ff06e24786064d489741f312df04c68`.
+- Deploy inicial: [run #44065895502](https://github.com/Emds96/AgenDay-PI/actions/runs/44065895502) — arquivos enviados, porém HTTP 500 na página de login.
+- Hotfix PR #13: commit `b06ae1f1019cee78ebdc90285ea808f6c6062730`, deploy [run #44067516631](https://github.com/Emds96/AgenDay-PI/actions/runs/44067516631) success.
+- ZERO Browser MCP confirmou após hotfix: login, cadastro, `g_id_onload` e dois componentes Google, sem HTTP 500.
+- Fluxo real Google **ainda não comprovado**. Google Auth Platform permanece em `Testando` com apenas uma conta autorizada.
+- Flags de deploy restauradas para `AGENDAY_DEPLOY_ENABLED=false`, `AGENDAY_DEPLOY_MODE=disabled`.
+- Backup SQL privado de 17/11 validado; último backup completo de arquivos confirmado é de 16/11; restauração não testada.
+
 ## Pré-requisitos antes de disponibilizar os botões
 
 - Banco de produção com **backup fresco validado**. Executar em cópia de teste a migração proposta em `sql/migracao-google-login.sql` e conferir integridade, incluindo dados preexistentes. Depois da aprovação específica, aplicar em produção.
@@ -55,7 +65,7 @@ return [
 3. **Google conhecido:** consultar associação pelo `sub` verificado e entrar diretamente na agenda.
 4. **Google novo:** guardar só `sub` e e-mail verificado em sessão temporária e mostrar o pop-up com o visual original do AgenDay. Exigir nome, oferecer senha local opcional e aviso explícito de que não é a senha Google.
 5. **Concluir cadastro:** criar estabelecimento e associação Google dentro da mesma transação; mostrar a agenda.
-6. **E-mail já cadastrado sem vínculo Google:** recusar criação ou vinculação automática. Implementar fluxo de vinculação protegida antes de considerar esse cenário concluído.
+6. **E-mail já cadastrado sem vínculo Google:** o código solicita login tradicional por senha para efetivar a associação com o `sub` verificado. **Não vincula somente porque os e-mails são iguais.** O fluxo foi implementado, mas ainda precisa ser testado no site.
 
 **Fora de escopo:** QA-03 (esqueceu a senha), alterações em `main` ou banco/site de outro integrante.
 
