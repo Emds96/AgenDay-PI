@@ -1,25 +1,38 @@
 # STATUS — AgenDay 2.0
 
-**Atualizado em:** 17/11/2026 (Google em produção para teste, hotfix de recuperação do login)  
+**Atualizado em:** 17/11/2026 (fluxos principais do login Google validados manualmente em produção; auditoria de isolamento ainda parcial)  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
 **Commit publicado comprovado:** `b06ae1f1019cee78ebdc90285ea808f6c6062730` via [GitHub Actions #44067516631](https://github.com/Emds96/AgenDay-PI/actions/runs/44067516631) em 17/11/2026. Conferir HEAD atual da `dev-feira-uninorte` antes de próximas tarefas.  
-**Fonte da evidência funcional:** relatório detalhado da auditoria de 16/11/2026 executada em outra sessão com ZERO Browser MCP, fornecido pelo responsável. **Esta atualização registra os resultados relatados; não repete os testes autenticados.** A leitura estática do código confirmou alguns problemas.
+**Fonte da evidência funcional:** auditoria de 16/11/2026 relatada pelo responsável e **testes manuais de login Google realizados por ele em produção em 17/11/2026**, registrados em [`LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md). As evidências são identificadas por origem; este documento não afirma que a automação repetiu os testes manuais.
 
 ## Login com Google — publicação direta autorizada e hotfix (17/11/2026)
 
 **Autorização:** responsável pediu publicação direta para teste no site oficial, sem criar ambiente de testes separado. **Alvo:** somente `agenday-sistema.infinityfree.io`, branch `dev-feira-uninorte`, sem mexer na `main` ou na conta do repositório original.
 
 **Código e banco:**
-- [PR #12](https://github.com/Emds96/AgenDay-PI/pull/12) integrado à dev no commit `ce8358018ff06e24786064d489741f312df04c68`: botões Google via GIS, token verificado no PHP, cadastro inicial com pop-up de visual AgenDay, senha opcional, aviso de que não é senha Google, sessões e vinculação segura a conta existente após login por senha; testes de ID token no workflow. **Ainda não houve teste completo de login real com conta Google.**
+- [PR #12](https://github.com/Emds96/AgenDay-PI/pull/12) integrado à dev no commit `ce8358018ff06e24786064d489741f312df04c68`: botões Google via GIS, token verificado no PHP, cadastro inicial com pop-up de visual AgenDay, senha opcional, aviso de que não é senha Google, sessões e vinculação segura a conta existente após login por senha; testes de ID token no workflow. **Os fluxos principais de cadastro/login Google foram validados manualmente em produção em 17/11/2026, após o hotfix**, conforme registro abaixo.
 - Google Auth Platform: projeto `agenday-515003`, público Externo, status **Testando**, **1 conta de teste** autorizada. O client ID é identificador público, não Client Secret.
 - No phpMyAdmin do banco independente, após exportar backup SQL privado, aplicado com retorno sem erro: `CREATE TABLE IF NOT EXISTS estabelecimento_google` (sub único, FK estabelecimento), e `ALTER TABLE estabelecimento MODIFY senha_estabelecimento VARCHAR(255) NULL DEFAULT NULL`. **Não foram executados DELETE, DROP ou UPDATE em registros existentes.**
 - Backup SQL de 17/11, pasta privada `Documents/AgenDay-Backups/2026-11-17-pre-google/`, verificado por leitura ZIP, 8 definições de tabelas e SHA-256. **Backup completo de arquivos mais recente confirmado permanece de 16/11**, de antes desta publicação. Não afirmar backup integral da mesma janela temporal nem restauração testada.
 - Criado `htdocs/google-oauth-config.php` por File Manager. O upload original do PR #12 foi concluído no [run #44065895502](https://github.com/Emds96/AgenDay-PI/actions/runs/44065895502), mas a inspeção do navegador encontrou **HTTP 500 em `index.php`**. Suspeita principal: carregamento direto do arquivo privado de configuração, **causa exata não confirmada por log PHP**.
 - [PR #13](https://github.com/Emds96/AgenDay-PI/pull/13) corrige carregamento: centraliza no helper, captura exceções do arquivo privado e fornece fallback com **OAuth Client ID público**, sem expor Client Secret; merge `b06ae1f1019cee78ebdc90285ea808f6c6062730`. [Deploy hotfix #44067516631](https://github.com/Emds96/AgenDay-PI/actions/runs/44067516631): `validar=success`, `diagnosticar_ftp=success`, `publicar=success`. Após terminar, flags conferidas: `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`.
-- **Validação real pós-hotfix via ZERO Browser MCP**: `https://agenday-sistema.infinityfree.io/index.php` retornou página `Login` em vez de HTTP 500, com login e cadastro tradicionais presentes, script oficial GIS, `g_id_onload` e **2 contêineres de botões Google**. **Não afirmar cadastro, token, gravação SQL ou redirecionamento Google testados**, nem compatibilidade cURL com certificados Google validada.
+- **Verificação inicial pós-hotfix via ZERO Browser MCP**: `https://agenday-sistema.infinityfree.io/index.php` retornou página `Login` em vez de HTTP 500, com login e cadastro tradicionais presentes, script oficial GIS, `g_id_onload` e **2 contêineres de botões Google**. **Essa inspeção isolada não executou cadastro nem autenticação Google**; os testes manuais posteriores do responsável estão registrados a seguir. A inspeção não comprovou separadamente a compatibilidade cURL com os certificados Google.
 
-**Próximo passo:** o responsável testa diretamente no site oficial com a conta Google autorizada, incluindo e-mail já cadastrado (vinculação exigirá senha tradicional), novo estabelecimento, senha do AgenDay opcional, pop-up visual, entrada posterior e regressão de cadastro/login manual. Registrar problemas e corrigir antes de mudar o Google Cloud de `Testando` para `Produção`. Não executar outro deploy sem autorização.
+### Validação manual dos fluxos principais do login Google — 17/11/2026
+
+**Evidência:** testes executados no site publicado e informados diretamente pelo responsável. Não houve repetição desses cenários por automação nesta etapa. Detalhes e pendências em [`docs/LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md).
+
+- [x] Primeiro cadastro via Google, com pop-up de complemento e nome do estabelecimento, escolhendo **Agora não** para não cadastrar senha local.
+- [x] Logout e novo login pelo botão Google na conta criada sem senha do AgenDay.
+- [x] Cadastro de outra conta via Google, desta vez com **senha própria do AgenDay**.
+- [x] Logout e login tradicional usando **e-mail e senha do AgenDay** nessa segunda conta.
+- [x] Logout e login via botão **Entrar com Google** nessa segunda conta que também possui senha local.
+- [x] Alternância no seletor de contas Google, retornando com sucesso à primeira conta (sem senha local).
+
+**Resultado:** **APROVADO — fluxos principais de cadastro e login Google em produção**, conforme teste manual do responsável. Isso não equivale à aprovação de todos os casos de segurança ou de isolamento entre estabelecimentos.
+
+**Situação atual:** **login Google aprovado nos fluxos principais testados manualmente em produção**. Pendências independentes: vincular conta tradicional já existente, avaliar visual/responsividade do pop-up, casos negativos de autenticação e regressão ampla do sistema. **O isolamento de dados entre estabelecimentos não invalida a validação do login Google**: sua revisão estática e verificações de consistência foram favoráveis, mas o teste cruzado autenticado A/B permanece pendente. Não presumir Google Cloud em `Produção` sem confirmação; não executar outro deploy sem autorização.
 
 ## QA-02 — alteração de senha ([PR #10](https://github.com/Emds96/AgenDay-PI/pull/10) integrado e publicado, 16/11/2026)
 
