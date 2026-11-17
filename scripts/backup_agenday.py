@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
-import html
 import json
 import os
 from pathlib import Path
@@ -331,15 +330,10 @@ def backup(args):
                 raise BackupError("PHP_TEMPLATE: falha ao compilar template")
             upload(ftp, php_name, generated.encode("utf-8"))
             url = SITE + "/" + quote(php_name)
-            form = ('<!doctype html><html><meta charset="utf-8"><meta name="referrer" content="no-referrer">'
-                    '<p>Exportacao autorizada do AgenDay. Se o formulario nao iniciar, clique no botao.</p>'
-                    '<form method="POST" action="' + html.escape(url) + '">'
-                    '<input name="nonce" type="hidden" value="' + nonce + '">'
-                    '<button type="submit">Iniciar exportacao</button></form>'
-                    '<script>document.forms[0].submit()</script></html>')
-            trigger.write_text(form, encoding="utf-8")
-            if not webbrowser.open(trigger.as_uri()):
-                raise BackupError("NAVEGADOR: nao foi possivel abrir o formulario temporario")
+            # A pagina PHP fornece formulario GET -> POST no mesmo dominio,
+            # preservando cookies SameSite apos o desafio normal do navegador.
+            if not webbrowser.open(url):
+                raise BackupError("NAVEGADOR: nao foi possivel abrir a pagina temporaria")
             print("Navegador acionado. Verificando exportacao SQL...")
             deadline = time.monotonic() + 110
             while time.monotonic() < deadline:

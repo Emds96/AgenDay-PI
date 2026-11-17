@@ -67,8 +67,29 @@ class ValidacaoDump(unittest.TestCase):
         text = (SRC.parent / "backup_php_template.txt").read_text()
         self.assertIn("hash_equals", text)
         self.assertIn("nonce.txt", text)
+        self.assertIn("REQUEST_METHOD'] === 'GET'", text)
+        self.assertIn('document.forms[0].submit()', text)
         self.assertIn("START TRANSACTION WITH CONSISTENT SNAPSHOT", text)
         self.assertIn("AGENDAY_BACKUP_SUCCESS", text)
+
+    def test_limpeza_ftp_inclui_arquivos_ocultos(self):
+        class FTPFalso:
+            def __init__(self):
+                self.removidos = []
+                self.pastas = []
+            def cwd(self, path):
+                pass
+            def delete(self, path):
+                self.removidos.append(path)
+            def rmd(self, path):
+                self.pastas.append(path)
+        ftp = FTPFalso()
+        problemas = backup.remove_remote(ftp, "/htdocs", ".agenday-backup-abc", "_agenday_export_abc.php")
+        self.assertEqual(problemas, [])
+        self.assertIn(".htaccess", ftp.removidos)
+        self.assertIn("nonce.txt.used", ftp.removidos)
+        self.assertIn("database.sql", ftp.removidos)
+        self.assertEqual(ftp.pastas, [".agenday-backup-abc"])
 
 
 if __name__ == "__main__":

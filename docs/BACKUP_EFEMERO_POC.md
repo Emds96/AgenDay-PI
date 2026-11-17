@@ -50,7 +50,9 @@ O script NAO altera dados nem esquema do banco de producao.
 ## Seguranca e comportamento
 
 - Geracao de identificador aleatorio de 128 bits e nonce aleatorio de 256 bits;
-  token enviado por POST de pagina HTML local, nao em query string.
+  GET de URL temporaria abre formulario no proprio dominio, que envia token por POST,
+  nunca na query string. Quem conhece a URL aleatoria pode ver o token no formulario;
+  por isso ela expira em poucos minutos e o nonce e de uso unico.
 - PHP exige nonce, validade de cinco minutos e consumo unico por rename.
 - SQL e nonce ficam em pasta com Require all denied (Apache).
 - **O diretorio precisa ter protecao HTTP comprovada antes do primeiro teste**.
