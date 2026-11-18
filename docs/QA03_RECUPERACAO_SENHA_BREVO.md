@@ -22,7 +22,7 @@
 ## Validação funcional relatada e verificações restantes
 
 - **Relato manual do responsável (17/11/2026):** solicitação de recuperação para conta própria, mensagem entregue com atraso na pasta de spam, link utilizado para cadastrar nova senha, autenticação aprovada com a senha nova e senha antiga rejeitada. Não houve automação independente desse teste de caixa de entrada.
-- **Experiência de uso:** o aviso de que o e-mail pode demorar e chegar ao spam/lixo eletrônico foi incorporado à solicitação, juntamente com a identidade visual do login nas páginas de solicitação e redefinição. Validar visualmente após publicação autorizada.
+- **Experiência de uso (publicada):** o aviso sobre possível atraso e spam/lixo eletrônico está visível antes e depois do envio, e as páginas de solicitação/redefinição usam a identidade do login. [PR #21](https://github.com/Emds96/AgenDay-PI/pull/21) publicado no commit `393b281e` pelo [workflow #44207273591](https://github.com/Emds96/AgenDay-PI/actions/runs/44207273591), com backup `2026-11-17_201733_0559724e` validado anteriormente. Conferência no Edge: HTTP 200 em ambas as telas e no novo CSS, teste 390px sem rolagem horizontal, mensagem genérica com aviso de spam, token inválido rejeitado; config Brevo permanece HTTP 403. Flags de deploy desligadas depois.
 - **Ainda testar:** tentativa de reutilizar o link, expiração de 30 minutos, limites de solicitações e regressão do login Google.
 - Em falhas futuras de entrega, consultar os logs transacionais Brevo sem expor token ou credenciais.
 
