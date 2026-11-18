@@ -25,7 +25,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $erro = 'Informe um e-mail válido.';
         } else {
             // Resposta idêntica para conta existente ou inexistente.
-            $mensagem = 'Se o e-mail estiver cadastrado, enviaremos um link de recuperação. Verifique a caixa de entrada e o spam.';
+            $mensagem = 'Se o e-mail estiver cadastrado, enviaremos um link de recuperação. O recebimento pode levar alguns minutos; confira também o spam ou lixo eletrônico.';
             // Uma requisição por sessão a cada 60 s; o banco limita por conta a 15 min.
             $agora = time();
             $ultima = $_SESSION['recuperacao_ultima_solicitacao'] ?? 0;
@@ -119,27 +119,56 @@ $csrf = agenday_token_csrf();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="no-referrer">
     <title>Recuperar senha — AgenDay</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/recuperacao-senha.css">
 </head>
-<body class="bg-light">
-<main class="container py-5" style="max-width:520px">
-    <section class="bg-white rounded shadow-sm p-4">
-        <h1 class="h3 mb-3">Esqueceu a senha?</h1>
-        <p>Informe o e-mail cadastrado no seu estabelecimento. Enviaremos um link válido por 30 minutos.</p>
+<body class="agenday-auth agenday-recovery">
+<main class="ad-recovery-layout">
+    <section class="ad-recovery-content" aria-labelledby="titulo-recuperacao">
+        <a class="ad-recovery-brand" href="index.php" aria-label="AgenDay — voltar para o login">
+            <span class="ad-recovery-brand-mark" aria-hidden="true">A</span>
+            <span>Agen<span class="ad-recovery-brand-accent">Day</span></span>
+        </a>
+        <p class="ad-recovery-kicker">Acesso à sua conta</p>
+        <h1 id="titulo-recuperacao">Esqueceu a senha?</h1>
+        <p class="ad-recovery-description">Informe o e-mail cadastrado no seu estabelecimento. Enviaremos um link para você criar uma nova senha, válido por 30 minutos.</p>
+
         <?php if ($mensagem !== ''): ?>
             <div class="alert alert-success" role="status"><?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
         <?php if ($erro !== ''): ?>
             <div class="alert alert-danger" role="alert"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
-        <form action="esqueci-senha.php" method="post">
+
+        <form class="ad-recovery-form" action="esqueci-senha.php" method="post">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-            <label class="form-label" for="email">E-mail do estabelecimento</label>
-            <input class="form-control mb-3" type="email" id="email" name="email" maxlength="190" required autocomplete="email">
-            <button type="submit" class="btn btn-primary w-100">Enviar link de recuperação</button>
+            <label for="email">E-mail do estabelecimento</label>
+            <input type="email" id="email" name="email" maxlength="190" placeholder="seuemail@exemplo.com"
+                   autocomplete="email" inputmode="email" required>
+            <button type="submit" class="ad-recovery-submit">Enviar link de recuperação</button>
         </form>
-        <p class="mt-3 mb-0"><a href="index.php">Voltar para o login</a></p>
+
+        <div class="ad-recovery-notice" role="note">
+            <span class="ad-recovery-notice-icon" aria-hidden="true">i</span>
+            <span><strong>Não encontrou o e-mail?</strong> O envio pode levar alguns minutos. Verifique também a pasta de spam ou lixo eletrônico.</span>
+        </div>
+        <a class="ad-recovery-back" href="index.php"><span aria-hidden="true">←</span> Voltar para o login</a>
     </section>
+
+    <aside class="ad-recovery-side" aria-label="Informações sobre recuperação de senha">
+        <div class="ad-recovery-side-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+                 fill="none" stroke="#18544d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="10" width="14" height="11" rx="2"></rect>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                <circle cx="12" cy="15.5" r="1"></circle>
+            </svg>
+        </div>
+        <h2>Recupere seu acesso com segurança</h2>
+        <p>Você receberá um link exclusivo para redefinir sua senha. Simples, seguro e no mesmo padrão do AgenDay.</p>
+    </aside>
 </main>
 </body>
 </html>
