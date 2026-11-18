@@ -1,6 +1,6 @@
 # QA-03 — Recuperação de senha via Brevo
 
-**Estado (17/11/2026):** migração e deploy executados em produção; envio Brevo validado em sandbox (HTTP 201). **O responsável relatou recebimento real do e-mail no spam, redefinição concluída, acesso com senha nova e rejeição da senha antiga.** A interface das telas está sendo alinhada à identidade do login na tarefa QA-03 visual, sem alterar o fluxo de segurança.
+**Estado (17/11/2026):** migração, telas visuais e novo remetente publicados. O responsável validou manualmente recebimento do e-mail anterior (no spam), redefinição de senha e login com a nova senha; o remetente novo foi verificado na Brevo e aceito pelo endpoint de envio em sandbox (HTTP 201). Ainda falta confirmar a aparência do endereço novo em um e-mail real.
 
 ## Implementado
 - Link de index.php leva a esqueci-senha.php.
@@ -18,6 +18,14 @@
 3. Publicado o commit `43676874d7a3abeba3de72ec00da62af2cd8bc68` via [GitHub Actions #44197680873](https://github.com/Emds96/AgenDay-PI/actions/runs/44197680873); jobs de validação, diagnóstico FTPS e publicação `success`. Travas de deploy restabelecidas em `false` / `disabled`.
 4. Páginas de solicitação e redefinição testadas por navegador: HTTP 200; token inválido rejeitado, pasta privada de configuração Brevo retorna HTTP 403.
 5. `AGENDAY_BREVO_API_KEY` instalado pelo deploy protegido; não houve leitura/divulgação de valores. Painel Brevo: política de IPs autorizados ativada; após autorização pelo responsável, 1 IP autorizado e nenhum não autorizado. A chamada sandbox ao endpoint de e-mail foi aceita (HTTP 201); sem entrega real, log de e-mail ou envio ao usuário.
+
+## Mudança de remetente (17/11/2026)
+
+- O responsável criou e verificou no painel Brevo o endereço `agendaysistema@gmail.com` com nome **AgenDay Sistema**. O remetente anterior continua cadastrado, sem modificação.
+- [PR #23](https://github.com/Emds96/AgenDay-PI/pull/23) alterou apenas o remetente em `lib/brevo-email.php`, sem mexer na chave API ou nas regras de IP. Commit `5749f333338e599c67c9e6050e39caa684091bac` publicado pelo [workflow #44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922), com validação, diagnóstico FTPS e envio aprovados.
+- Backup pré-deploy `2026-11-17_205855_4f8c886e` foi aprovado (`BACKUP OK`, restauração local). Confirmação FTPS: código publicado usa o e-mail/nome novos e não contém o endereço antigo como remetente.
+- Teste de envio em **sandbox** pela hospedagem, com novo remetente, recebeu HTTP 201; nenhum e-mail real foi enviado. O executor temporário foi removido. Login e tela de recuperação HTTP 200, configuração privada Brevo HTTP 403. Flags de deploy voltaram para `false`/`disabled`.
+- **Ainda validar:** mensagem real recebida, endereço From gerado pela Brevo (inclusive possível reescrita para `brevosend.com`) e entregabilidade. Não afirmar que o prefixo/domínio exatos estão confirmados por teste de caixa de entrada.
 
 ## Validação funcional relatada e verificações restantes
 
