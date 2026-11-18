@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## UI-07 — Padronização do cabeçalho autenticado (18/11/2026; proposta em branch de tarefa)
+
+- **Escopo autorizado:** padronização do nome real da conta no cabeçalho, layout desktop/mobile e simplificação do dropdown. Nada de alterações nas páginas internas de Empresa, Perfil ou Alterar senha, agendamentos, banco, infraestrutura ou deploy.
+- **Origem do dado verificada no código:** login.php, google-entrar.php e google-cadastro-concluir.php definem `$_SESSION['nome_estabelecimento']` a partir da conta autenticada; config.php atualiza o valor ao salvar o nome. O cabeçalho antes era replicado, com texto `Barbearia` fixo em páginas legadas.
+- **Código proposto:** componente `lib/menu-conta.php` reutilizado pelas 10 páginas protegidas; avatar de conta local em SVG; nome escapado e exibido no botão somente no desktop, sempre identificado dentro do dropdown; opções limitadas a Configurações e Sair. Regras CSS de grid e breakpoint 767,98px em `css/responsivo.css`, preservando os offcanvas existentes.
+- **Validação de código:** smoke checks estruturais adicionados em `tests/responsividade-check.js`. Execução manual do workflow de validação [#44409803682](https://github.com/Emds96/AgenDay-PI/actions/runs/44409803682) no commit `c65bcf59` com `validar=success`: PHP lint, testes automatizados, preparo e verificação do pacote aprovados; `diagnosticar_ftp=skipped` e `publicar=skipped`. Os checks não simulam navegação nem provam renderização PHP/Bootstrap.
+- **Estado:** [PR #29](https://github.com/Emds96/AgenDay-PI/pull/29) aberto da branch `feat/cabecalho-conta-responsivo-20261118` para `dev-feira-uninorte`; sem merge/deploy. O site InfinityFree continua com a versão publicada anterior até autorização específica.
+- **Pendente:** revisão do PR; conferir cabeçalho no navegador em 320/390/~412/768/1366px, foco por teclado, dropdown por toque, identidade das contas A/B, Configurações e Sair depois de eventual deploy autorizado. Validar em dispositivo real e documentar retorno do responsável.
+
+---
+
+
 ## QA operacional — login automático DeskBrowse com duas contas (18/11/2026)
 
 - **VALIDADO em produção na sessão atual, usando o plugin DeskBrowse:** `bridge_status` confirmou browser e desktop conectados; o novo `login_salvo` foi executado apenas com o nome das contas, sem senhas expostas.

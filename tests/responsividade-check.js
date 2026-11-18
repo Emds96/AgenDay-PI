@@ -58,4 +58,37 @@ verificar((css.match(/\{/g) || []).length === (css.match(/\}/g) || []).length,
 verificar(ler('agenda.php').includes('action="salvar-agendamento.php"'),
     'Endpoint de agendamentos alterado sem necessidade');
 
-console.log('OK: ' + verificacoes + ' verificações estruturais da microtarefa 5.2.');
+
+/* UI-07: smoke test do cabeçalho compartilhado (sem renderização no navegador). */
+const paginasAutenticadas = paginas.filter(pagina => pagina !== 'index.php');
+const menuConta = ler('lib/menu-conta.php');
+verificar(ler('scripts/preparar_publicacao.py').includes('"lib": {".php"}'),
+    'Componente PHP fora dos diretórios incluídos no pacote publicado');
+verificar(menuConta.includes("$_SESSION['nome_estabelecimento']"),
+    'Cabeçalho não utiliza a identificação da sessão autenticada');
+verificar(menuConta.includes('htmlspecialchars('), 'Nome da conta não recebe escape HTML');
+verificar(menuConta.includes('href="config.php"') && menuConta.includes('href="logout.php"'),
+    'Dropdown não contém Configurações e Sair');
+verificar(!menuConta.includes('href="perfil.php"') && !menuConta.includes('href="alterar-senha.php"'),
+    'Atalhos de Perfil e Alterar senha não devem estar no dropdown');
+for (const pagina of paginasAutenticadas) {
+    const html = ler(pagina);
+    const inicio = html.indexOf('<header class="navbar');
+    const fim = html.indexOf('</header>', inicio);
+    const cabecalho = html.slice(inicio, fim);
+    verificar(inicio !== -1 && fim > inicio, pagina + ': cabeçalho ausente');
+    verificar(cabecalho.includes("require __DIR__ . '/lib/menu-conta.php'"),
+        pagina + ': não usa o componente compartilhado');
+    verificar(cabecalho.includes('class="ad-header-brand'),
+        pagina + ': marca não está na estrutura centralizada');
+    verificar(!cabecalho.includes('Barbearia'),
+        pagina + ': nome fictício encontrado no cabeçalho');
+}
+verificar(/@media \(max-width: 767\.98px\)\s*\{[\s\S]*?\.agenday-app > header\.navbar \.ad-account-name\s*\{\s*display:\s*none;/m.test(css),
+    'Nome do estabelecimento não é ocultado no cabeçalho mobile');
+verificar(css.includes('grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)'),
+    'Cabeçalho não centraliza a marca em três colunas');
+verificar(css.includes('.ad-account-dropdown .dropdown-item') && css.includes('min-height: 44px'),
+    'Áreas de toque do dropdown não estão documentadas no CSS');
+
+console.log('OK: ' + verificacoes + ' verificações estruturais de responsividade e cabeçalho.');
