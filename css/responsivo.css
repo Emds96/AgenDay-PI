@@ -529,3 +529,141 @@
         animation: none;
     }
 }
+
+/* UI-07: cabeçalho do painel com conta responsiva e marca centralizada. */
+.agenday-app > header.navbar > .container-fluid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: .5rem;
+    padding-block: .4rem;
+}
+
+.agenday-app > header.navbar .navbar-toggler {
+    justify-self: start;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.agenday-app > header.navbar .ad-header-brand {
+    grid-column: 2;
+    margin: 0;
+    color: var(--ad-primary);
+    font-size: 1.35rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.agenday-app > header.navbar .ad-header-account {
+    grid-column: 3;
+    justify-self: end;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.agenday-app > header.navbar .ad-account-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 44px;
+    min-width: 44px;
+    max-width: 100%;
+    padding: .35rem .65rem;
+    overflow: visible;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-radius: .75rem;
+    color: var(--ad-text);
+}
+
+.agenday-app > header.navbar .ad-account-trigger:hover,
+.agenday-app > header.navbar .ad-account-trigger:focus-visible {
+    background-color: var(--ad-surface-muted);
+    border-color: var(--ad-border);
+}
+
+.agenday-app > header.navbar .ad-account-trigger::after {
+    flex-shrink: 0;
+    margin-left: 0;
+}
+
+.agenday-app > header.navbar .ad-account-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    color: var(--ad-primary);
+}
+
+.agenday-app > header.navbar .ad-account-avatar svg {
+    display: block;
+    width: 30px;
+    height: 30px;
+}
+
+.agenday-app > header.navbar .ad-account-name {
+    display: inline-block;
+    min-width: 0;
+    max-width: min(27vw, 260px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agenday-app > header.navbar .ad-account-dropdown {
+    min-width: 230px;
+    max-width: calc(100vw - 24px);
+    padding: .4rem;
+    border: 1px solid var(--ad-border);
+    border-radius: .75rem;
+    box-shadow: 0 8px 20px rgba(24, 84, 77, .12);
+}
+
+.agenday-app > header.navbar .ad-account-identity {
+    padding: .65rem .75rem;
+    color: var(--ad-text);
+    font-weight: 700;
+}
+
+.agenday-app > header.navbar .ad-account-identity-name {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.agenday-app > header.navbar .ad-account-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    border-radius: .5rem;
+}
+
+@media (max-width: 767.98px) {
+    .agenday-app > header.navbar > .container-fluid {
+        gap: 4px;
+        padding-inline: 10px;
+    }
+
+    .agenday-app > header.navbar .ad-header-brand {
+        font-size: 1.25rem;
+    }
+
+    .agenday-app > header.navbar .ad-account-trigger {
+        max-width: none;
+        gap: .3rem;
+        padding: .35rem .5rem;
+        overflow: visible;
+    }
+
+    .agenday-app > header.navbar .ad-account-name {
+        display: none;
+    }
+}
+
+@media (max-width: 390px) {
+    .agenday-app > header.navbar .ad-header-brand {
+        font-size: 1.15rem;
+    }
+}

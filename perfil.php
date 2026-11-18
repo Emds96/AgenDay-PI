@@ -32,30 +32,16 @@
 <header class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <button class="navbar-toggler bg-light" type="button" data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">
+                data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Abrir menu principal">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <h3 class="offcanvas-title fw-bold text-center" id="offcanvasDarkNavbarLabel">
+            <h3 class="ad-header-brand fw-bold text-center mb-0">
                 AgenDay</h3>
-            <div class="dropdown">
-                <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-                    Barbearia
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item fw-bold" href="config.php">Configurações</a></li>
-                    <li><a class="dropdown-item fw-bold" href="perfil.php">Perfil</a></li>
-                    <li><a class="dropdown-item fw-bold" href="alterar-senha.php">Alterar senha</a></li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item fw-bold" href="logout.php">Sair</a></li>
-                </ul>
-            </div>
-            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasDarkNavbar"
+            <?php require __DIR__ . '/includes/menu-conta.php'; ?>
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasDarkNavbar"
                 aria-labelledby="offcanvasDarkNavbarLabel" style="width:20%">
                 <div class="offcanvas-header">
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar menu"></button>
                     <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">AgenDay</h5>
                 </div>
                 <div class="offcanvas-body ">

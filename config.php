@@ -107,7 +107,6 @@ if ($metodo === 'POST') {
 }
 
 $csrfToken = agenday_token_csrf();
-$nomeCabecalho = $dadosCarregados ? $nomeAtual : ($_SESSION['nome_estabelecimento'] ?? 'Estabelecimento');
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -136,8 +135,6 @@ $nomeCabecalho = $dadosCarregados ? $nomeAtual : ($_SESSION['nome_estabeleciment
         .config-tabs { flex-wrap: wrap; gap: .35rem; }
         .config-tabs .nav-link { white-space: nowrap; }
         .config-navigation { width: min(82vw, 315px) !important; }
-        .config-user-label { display: inline-block; max-width: min(34vw, 260px); overflow: hidden;
-            text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
         @media (max-width: 576px) {
             .config-container { margin: .75rem auto 2rem; padding: 0 .7rem; }
             .config-card .card-body { padding: 1rem; }
@@ -157,21 +154,8 @@ $nomeCabecalho = $dadosCarregados ? $nomeAtual : ($_SESSION['nome_estabeleciment
                 aria-label="Abrir menu">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <h3 class="offcanvas-title fw-bold text-center mb-0">AgenDay</h3>
-        <div class="dropdown">
-            <button class="btn dropdown-toggle d-flex align-items-center" type="button"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="img/icon-agenda.png" alt="" width="30" height="30" class="rounded-circle me-2">
-                <span class="config-user-label"><?= agenday_config_html((string) $nomeCabecalho) ?></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item fw-bold" href="config.php">Configurações</a></li>
-                <li><a class="dropdown-item fw-bold" href="perfil.php">Perfil</a></li>
-                <li><a class="dropdown-item fw-bold" href="alterar-senha.php">Alterar senha</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item fw-bold" href="logout.php">Sair</a></li>
-            </ul>
-        </div>
+        <h3 class="ad-header-brand fw-bold text-center mb-0">AgenDay</h3>
+        <?php require __DIR__ . '/includes/menu-conta.php'; ?>
         <div class="offcanvas offcanvas-start config-navigation" tabindex="-1"
              id="offcanvasDarkNavbar" aria-labelledby="menuAgenDay">
             <div class="offcanvas-header">
