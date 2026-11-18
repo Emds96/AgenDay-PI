@@ -1,6 +1,6 @@
 # QA-03 — Recuperação de senha via Brevo
 
-**Estado (17/11/2026):** migração e deploy executados em produção; envio Brevo validado em sandbox (HTTP 201, sem entrega real). **Teste de recebimento e redefinição real pelo responsável ainda pendente.**
+**Estado (17/11/2026):** migração e deploy executados em produção; envio Brevo validado em sandbox (HTTP 201). **O responsável relatou recebimento real do e-mail no spam, redefinição concluída, acesso com senha nova e rejeição da senha antiga.** A interface das telas está sendo alinhada à identidade do login na tarefa QA-03 visual, sem alterar o fluxo de segurança.
 
 ## Implementado
 - Link de index.php leva a esqueci-senha.php.
@@ -19,16 +19,15 @@
 4. Páginas de solicitação e redefinição testadas por navegador: HTTP 200; token inválido rejeitado, pasta privada de configuração Brevo retorna HTTP 403.
 5. `AGENDAY_BREVO_API_KEY` instalado pelo deploy protegido; não houve leitura/divulgação de valores. Painel Brevo: política de IPs autorizados ativada; após autorização pelo responsável, 1 IP autorizado e nenhum não autorizado. A chamada sandbox ao endpoint de e-mail foi aceita (HTTP 201); sem entrega real, log de e-mail ou envio ao usuário.
 
-## Validação que falta ao responsável
+## Validação funcional relatada e verificações restantes
 
-- Abrir `https://agenday-sistema.infinityfree.io/esqueci-senha.php` e solicitar recuperação usando **conta de teste cadastrada que controle**.
-- Conferir caixa de entrada e spam, clicar no link de recuperação e criar nova senha (não altera senha Google).
-- Confirmar que a nova senha permite login, que a antiga é rejeitada e que o link já usado não pode ser reutilizado.
-- Conferir login com Google e, quando conveniente, validade de 30 minutos e limites de solicitações.
-- Se o e-mail não chegar, consultar logs transacionais Brevo e reportar, sem expor token ou credenciais no chat.
+- **Relato manual do responsável (17/11/2026):** solicitação de recuperação para conta própria, mensagem entregue com atraso na pasta de spam, link utilizado para cadastrar nova senha, autenticação aprovada com a senha nova e senha antiga rejeitada. Não houve automação independente desse teste de caixa de entrada.
+- **Experiência de uso:** o aviso de que o e-mail pode demorar e chegar ao spam/lixo eletrônico foi incorporado à solicitação, juntamente com a identidade visual do login nas páginas de solicitação e redefinição. Validar visualmente após publicação autorizada.
+- **Ainda testar:** tentativa de reutilizar o link, expiração de 30 minutos, limites de solicitações e regressão do login Google.
+- Em falhas futuras de entrega, consultar os logs transacionais Brevo sem expor token ou credenciais.
 
 ## Riscos e limitações
-- HTTPS da InfinityFree para `api.brevo.com/v3/smtp/email` comprovado por teste sandbox HTTP 201 após autorização de IP. A entrega de mensagem real ainda não foi verificada.
+- HTTPS da InfinityFree para `api.brevo.com/v3/smtp/email` comprovado por sandbox HTTP 201 após autorização de IP. O responsável confirmou entrega real (com atraso, no spam); entregabilidade consistente para diferentes provedores ainda não foi avaliada.
 - Limitação por IP não foi implementada; existem limites por conta e sessão, que não substituem defesa distribuída.
 - Troca de senha não revoga sessões preexistentes em outros dispositivos.
 - Remetente Gmail verificado pode ter limitações de entregabilidade; revisar DNS/remetente em fase posterior.
@@ -38,4 +37,4 @@
 - O job de validação não recebe a credencial; só o job `publicar` em ambiente `producao-agenday` a recebe.
 - O artifact inclui apenas `config/.htaccess`, não o arquivo privado com a chave.
 - Na InfinityFree, acessar arquivos PHP fora de `htdocs` é restringido; a configuração será mantida em `config/` com bloqueio Apache para acesso HTTP.
-- O bloqueio da URL privada HTTP 403 foi verificado. Ainda falta confirmar entrega e troca de senha com uma conta de teste real.
+- O bloqueio da URL privada HTTP 403 foi verificado. Entrega e troca de senha foram relatadas pelo responsável em conta própria; faltam os testes de reutilização e expiração de token.
