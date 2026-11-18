@@ -63,7 +63,7 @@ Registro-fonte: [STATUS.md](STATUS.md). Situação na última revisão:
 | QA-04 | Perfil e configurações ilustrativos | Configuração básica publicada via PR #26/deploy #44367305044, testada em produção com QA01: edição, persistência, CSRF, inválidos e layout. Perfil e configurações avançadas pendentes; ver guia QA-04 |
 | QA-05 | Comandas, histórico e financeiro sem fluxo funcional comprovado | Definir escopo MVP ou ocultar da demonstração com autorização |
 | QA-06 | Erro JavaScript em `js/button-add.js` | Pendente |
-| QA-07 | Nome “Barbearia” fixo em cabeçalhos legados | Pendente |
+| QA-07 | Nome “Barbearia” fixo em cabeçalhos legados | Correção proposta no [PR #29](https://github.com/Emds96/AgenDay-PI/pull/29), com PHP lint, testes e pacote aprovados no [run #44409803682](https://github.com/Emds96/AgenDay-PI/actions/runs/44409803682); sem merge/deploy. QA visual e validação em produção pendentes. |
 | QA-08 | Pequeno overflow horizontal em modais | Pendente |
 
 **Regra de trabalho:** preferir um bug por branch/PR e integração sequencial na dev. Depois de publicar QA-01, verificar menu visualmente antes de declarar resolvido. Priorizar o prazo de 24/11 sem ocultar pendências.
