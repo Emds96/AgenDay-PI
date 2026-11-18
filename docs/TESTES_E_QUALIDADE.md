@@ -1,6 +1,6 @@
 # Testes e qualidade (QA) — AgenDay 2.0
 
-**Revisado em 16/11/2026.** Complementa [STATUS.md](STATUS.md), onde constam os resultados e defeitos reportados. Este documento é um **roteiro**: nenhuma etapa marcada aqui significa que um novo teste foi executado.
+**Revisado em 17/11/2026** após a validação da QA-03. Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
 
 ## 1. Quatro níveis diferentes de evidência
 
@@ -55,9 +55,9 @@ Registro-fonte: [STATUS.md](STATUS.md). Situação na última revisão:
 
 | ID | Problema | Situação |
 | --- | --- | --- |
-| QA-01 | Menu offcanvas fora da tela | **PR #4 integrado no GitHub; não publicado/validado na produção na última verificação** |
-| QA-02 | `alterar-senha.php` apresenta formulário de cliente, não troca de senha | Pendente |
-| QA-03 | Link “Esqueceu a senha?” sem recuperação | Pendente; não oferecer reset inseguro |
+| QA-01 | Menu offcanvas fora da tela | PR #4 integrado e incluído nos deploys posteriores; falta regressão visual completa do menu em múltiplos tamanhos |
+| QA-02 | `alterar-senha.php` não trocava senha | **Fluxo principal corrigido, publicado e aprovado manualmente** em produção; faltam testes negativos/CSRF e sessões paralelas |
+| QA-03 | Recuperação de senha e e-mail transacional | **Fluxo principal aprovado manualmente**, telas padronizadas com aviso de spam, novo remetente verificado e mensagem real recebida na caixa de entrada com `agendaysistema@12832884.brevosend.com` (17/11/2026). Pendentes: reutilização/expiração, limites e entregabilidade multi-provedor |
 | QA-04 | Perfil/configuração com dados ilustrativos | Pendente |
 | QA-05 | Comandas, histórico e financeiro sem fluxo funcional comprovado | Definir escopo MVP ou ocultar da demonstração com autorização |
 | QA-06 | Erro JavaScript em `js/button-add.js` | Pendente |
@@ -72,9 +72,11 @@ O [STATUS](STATUS.md) descreve auditoria autenticada em 16/11 **relatada por out
 
 Quando um relatório automatizado conflitar com código ou QA comprovado, **verificar novamente antes de afirmar**. Exemplo: um relatório TinyFish não enxergou o cadastro inicial, mas `index.php` tem formulário `Criar Conta` — não registrar ausência como fato.
 
-**Não testados integralmente:** concorrência simultânea, toda a superfície de autorização, recuperação de senha, versão PHP exata em produção e todos os dispositivos/navegadores. “Nenhum erro encontrado” na navegação não significa “sem vulnerabilidades”.
+**Não testados integralmente:** concorrência simultânea, toda a superfície de autorização, casos negativos da recuperação de senha (reutilização/expiração/limites), versão PHP exata em produção e todos os dispositivos/navegadores. O fluxo principal da recuperação **já foi aprovado manualmente**; não confundir isso com aprovação de todos os casos de segurança.
 
 ## 7. Registro padrão de conclusão de QA
+
+**Gatilho obrigatório:** ao receber confirmação ou captura de validação do responsável, conferir fonte e resultado, **integrar o registro em `STATUS.md` e no manual da funcionalidade antes de responder “concluído”**. Se houver alterações em procedimento, interface ou arquitetura, atualizar também seus resumos ativos. Não reexecutar o teste humano apenas para documentá-lo, nem confundir relato com teste automatizado.
 
 Após teste autorizado, registrar sem senhas/dados pessoais:
 
