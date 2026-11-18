@@ -25,8 +25,8 @@ function agenday_brevo_enviar_recuperacao(string $destinatario, string $link): b
 
     $payload = json_encode([
         'sender' => [
-            'name' => 'AgenDay',
-            'email' => 'eder27santos@gmail.com',
+            'name' => 'AgenDay Sistema',
+            'email' => 'agendaysistema@gmail.com',
         ],
         'to' => [['email' => $destinatario]],
         'subject' => 'AgenDay — redefinição de senha',
