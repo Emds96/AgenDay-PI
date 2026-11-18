@@ -1,6 +1,6 @@
 # Guia operacional e de continuidade — AgenDay 2.0
 
-**Revisão:** 16/11/2026 · **Status:** procedimento de trabalho e passagem de contexto; não é autorização para alterar sistemas.
+**Revisão:** 18/11/2026 · **Status:** procedimento de trabalho e passagem de contexto; não é autorização para alterar sistemas.
 
 > **Leia este guia primeiro em uma sessão nova.** Depois consulte [AGENTS.md](../AGENTS.md), [STATUS.md](STATUS.md) e o documento específico da tarefa. Revalide o estado no GitHub: estas instruções não substituem os dados atuais.
 
@@ -22,9 +22,20 @@
 | Administrar Variables, iniciar Actions e observar GitHub | **Remote Desktop Commander** → computador Windows autorizado → **PowerShell e GitHub CLI (`gh`)** autenticado como `Emds96` | O plugin GitHub desta conexão não tem todas as operações de Actions/Variables; CLI só funciona com computador online/autorizado; evitar exibir tokens |
 | Publicar site | Workflow já existente [`agenday-publicar.yml`](../.github/workflows/agenday-publicar.yml): Actions → pacote → FTPS → InfinityFree | Duas Variables temporárias + aprovação do environment; instruções completas em [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) |
 | Backup pré-publicação | Painel InfinityFree/phpMyAdmin + download integral de `htdocs/` por cliente FTP/FTPS para pasta privada no computador | **Não é feito pelo GitHub Actions**, não obter senhas a partir dos Secrets; [BACKUP_E_RECUPERACAO.md](BACKUP_E_RECUPERACAO.md) |
-| QA no sistema real | **ZERO Browser MCP** quando conectado; **TinyFish** para navegação/auditoria quando autorizado e disponível; navegador real para checagem visual | Automação sem submit é leitura exploratória, não comprova persistência; ações de escrita pedem escopo/autorização; anti-bot do InfinityFree pode exigir browser com JavaScript |
+| QA no sistema real | **DeskBrowse** para login automático usando cofre local; **ZERO Browser MCP** para navegação/QA quando disponível; **TinyFish** para auditoria exploratória | Conferir conexão, identidade da conta e sessão; escrita exige escopo próprio; não misturar cookies entre testes |
 | Pesquisa externa/documentação de provedores | Documentação oficial, fontes confiáveis e código atual | Não substituir o exame do nosso repositório por suposições; separar fatos e hipóteses |
 | Comunicação entre conversas | Documentação persistente versionada em `docs/`, especialmente `STATUS.md` | Uma sessão não acessa automaticamente todo o histórico de outra; nunca depender de chat como única memória |
+
+### Login autônomo de contas QA — procedimento vigente (18/11/2026)
+
+**Manual detalhado:** [DESKBROWSE_LOGIN_QA.md](DESKBROWSE_LOGIN_QA.md). A operação depende de Windows, Edge e DeskBrowse conectados a cada sessão; não exigir que o responsável redigite senhas quando o cofre local estiver disponível.
+
+- Primeiro chamar **DeskBrowse `bridge_status`**. Confirmar o endereço do AgenDay, a aba e se há uma sessão já autenticada.
+- Se outra conta estiver conectada, selecionar **Sair** e confirmar o formulário público em `/index.php`; abrir `index.php` sem logout não substitui esse passo.
+- Chamar **`login_salvo`** com `{"conta":"agenday-conta-a"}`; **`browser__execute`** precisa confirmar `/agenda.php`, área administrativa e cabeçalho `qa01teste`.
+- Encerrar a sessão A por **Sair**. Em seguida chamar **`login_salvo`** com `{"conta":"agenday-conta-b"}` e confirmar no navegador o cabeçalho `aq02teste`. O argumento opcional `tab` é útil para reaproveitar uma aba já desautenticada.
+- **Validação observada em 18/11/2026:** ambos os logins e o logout intermediário passaram; a tentativa inicial de A com B já autenticada não enviou login e foi resolvida por logout. Não houve leitura de credenciais nem alteração de dados de negócio. A sessão B permaneceu aberta na aba testada.
+- A mesma sessão do Edge pode ser usada em mais de uma aba. Coordenar com o responsável se ele estiver verificando alterações visuais ao mesmo tempo. Não confundir login com auditoria cruzada de acesso aos dados.
 
 **Estado do acesso observado em 16/11:** Desktop Commander online e `gh` 2.104.0 autenticado como `Emds96`. Em outra sessão, **verificar novamente**; nunca tratar conexão como permanente. Não registrar ID de dispositivo, token, senha, código OTP ou caminho de secrets no repositório.
 

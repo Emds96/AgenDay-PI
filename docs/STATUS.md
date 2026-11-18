@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## QA operacional — login automático DeskBrowse com duas contas (18/11/2026)
+
+- **VALIDADO em produção na sessão atual, usando o plugin DeskBrowse:** `bridge_status` confirmou browser e desktop conectados; o novo `login_salvo` foi executado apenas com o nome das contas, sem senhas expostas.
+- **Pré-condição observada:** a primeira tentativa de login A falhou enquanto o AgenDay já tinha a conta `aq02teste` autenticada na aba. Após logout pelo menu e retorno ao formulário público, a ferramenta funcionou. Não atribuir essa primeira falha à senha.
+- **Conta A:** `login_salvo({"conta":"agenday-conta-a"})` enviou login; `browser__execute` confirmou `/agenda.php`, área administrativa e cabeçalho `qa01teste` (**PASS**).
+- **Alternância:** logout da conta A confirmado em `/index.php` com formulário de senha (**PASS**).
+- **Conta B:** `login_salvo({"conta":"agenday-conta-b"})` enviou login; `browser__execute` confirmou `/agenda.php`, área administrativa e cabeçalho `aq02teste` (**PASS**). Sessão B mantida aberta na aba de teste.
+- **Alcance:** nenhum cadastro/agendamento/configuração foi alterado. Login A/B não comprova isolamento cruzado das operações; essa auditoria permanece pendente. A troca de contas pode interferir em outras abas do mesmo perfil Edge.
+- **Procedimento definitivo:** [docs/DESKBROWSE_LOGIN_QA.md](DESKBROWSE_LOGIN_QA.md), referenciado por AGENTS.md, guia de continuidade e QA. Não armazenar nomes de usuário do cofre, e-mails ou senhas no GitHub.
+
+---
+
 ## QA-04 — Configurações básicas do estabelecimento (18/11/2026; publicada e testada)
 
 - **PR #26 integrado** na branch dev-feira-uninorte (merge 5f2c8666df9d3e63828509b4dd923f58020aac28) em 18/11/2026. Código: config.php, lib/configuracao-estabelecimento.php, js/button-add.js e tests/configuracao-estabelecimento.php.
@@ -13,7 +25,7 @@
 
 ---
 
-**Atualizado em:** 18/11/2026 (QA-04 publicada e testada em conta fictícia; QA-03 segue aprovada; isolamento A/B ainda parcialmente auditado)
+**Atualizado em:** 18/11/2026 (login automático A/B DeskBrowse validado; QA-04 publicada; isolamento cruzado de dados ainda parcialmente auditado)
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
 **Commit publicado comprovado:** 5f2c8666df9d3e63828509b4dd923f58020aac28 (QA-04, PR #26) via [GitHub Actions #44367305044](https://github.com/Emds96/AgenDay-PI/actions/runs/44367305044) em 18/11/2026, com flags false/disabled verificadas.

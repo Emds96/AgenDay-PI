@@ -1,6 +1,6 @@
 # Testes e qualidade (QA) — AgenDay 2.0
 
-**Revisado em 17/11/2026** após a validação da QA-03. Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+**Revisado em 18/11/2026** após a validação do login automático das contas QA A/B via DeskBrowse. Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
 
 ## 1. Quatro níveis diferentes de evidência
 
@@ -23,6 +23,8 @@ node tests/responsividade-check.js
 Workflows: `.github/workflows/php-lint.yml` e `.github/workflows/agenday-publicar.yml` (job `validar`). **Testes não acessam o MySQL do InfinityFree.** O teste de responsividade é estrutural; não substitui navegador real.
 
 ## 3. Ferramentas para auditoria online
+
+- **DeskBrowse:** procedimento principal para autenticação autônoma nas contas fictícias usando apenas `agenday-conta-a` e `agenday-conta-b` no cofre Windows. Conferir `bridge_status` → logout da sessão já aberta → `login_salvo` → `browser__execute` na agenda. Em 18/11/2026 os logins A/B foram confirmados na hospedagem com identidades distintas, inclusive logout entre eles; ver [DESKBROWSE_LOGIN_QA.md](DESKBROWSE_LOGIN_QA.md). **Isso não equivale a aprovar isolamento dos endpoints.**
 
 - **ZERO Browser MCP:** preferido para QA visual/funcional no navegador autorizado; testar desktop e dimensões de celular.
 - **TinyFish:** utilizado para auditoria exploratória de leitura de páginas, sem submits. Não considerar o relatório do agente prova de gravação; conferir achados de segurança no código.

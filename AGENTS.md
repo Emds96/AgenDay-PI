@@ -11,6 +11,12 @@ Este arquivo orienta qualquer agente ou colaborador que trabalhe no **AgenDay 2.
 - **Hospedagem:** conta independente no InfinityFree (`https://agenday-sistema.infinityfree.io/`). Há evidência de publicação FTPS bem-sucedida em 13/11/2026 e de site público acessível em 16/11/2026; isso **não comprova que o último commit foi implantado nem que os fluxos PHP/MySQL funcionem**. Conferir versão e estado atual antes de afirmar.
 - **Documentação:** `README.md`, `docs/STATUS.md` e os documentos por microtarefa em `docs/`. O histórico de commits e o código atual prevalecem sobre descrições antigas.
 
+## Acesso autônomo às contas de QA via DeskBrowse (validado em 18/11/2026)
+
+O procedimento permanente de login automático está em [docs/DESKBROWSE_LOGIN_QA.md](docs/DESKBROWSE_LOGIN_QA.md). Para testar o sistema autenticado sem o responsável digitar senhas, **usar exclusivamente o plugin DeskBrowse**: `bridge_status` → conferir sessão/aba → `login_salvo({"conta":"agenday-conta-a"})` → `browser__execute` confirmando `/agenda.php` e o cabeçalho da conta A (`qa01teste`) → **logout** → `login_salvo({"conta":"agenday-conta-b"})` → confirmação em `/agenda.php` com a conta B (`aq02teste`). **Os dois logins, o logout intermediário e as verificações foram observados diretamente em 18/11/2026**; não equivalem a auditoria completa de isolamento.
+
+Se já existir uma sessão de outra conta, fazer logout antes de chamar `login_salvo`: a ferramenta não encontra formulário quando o site está autenticado. As abas do mesmo perfil Edge compartilham sessão/cookies; coordenar trocas quando o responsável estiver validando o site. Nenhum e-mail ou senha de QA pertence ao GitHub ou à conversa. A permissão para login não autoriza alteração persistente de dados; registrar escopo de cada teste.
+
 ## Continuidade operacional de todas as atividades (leitura obrigatória)
 
 Antes de qualquer tarefa, **não se limitar ao guia de deploy**. Usar [`docs/INDICE_DA_DOCUMENTACAO.md`](docs/INDICE_DA_DOCUMENTACAO.md) para localizar a informação e ler:
