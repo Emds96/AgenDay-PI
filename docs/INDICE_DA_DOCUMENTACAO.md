@@ -18,6 +18,7 @@
 | Publicar código no InfinityFree | [`PUBLICACAO_AUTOMATICA.md`](PUBLICACAO_AUTOMATICA.md) | **Workflow existente** + Desktop Commander + `gh` + aprovação/Variables/FTPS; exige backup validado |
 | QA/regressão/testes | [`TESTES_E_QUALIDADE.md`](TESTES_E_QUALIDADE.md) | Casos reais, diferenças entre evidências, ferramentas e defeitos |
 | Nova funcionalidade/bug | [`STATUS.md`](STATUS.md) + código atual | Branch curta, testes, PR direcionado à dev, merge autorizado, registro de resultados |
+| Configurações do estabelecimento (QA-04) | [`QA04_CONFIG_ESTABELECIMENTO.md`](QA04_CONFIG_ESTABELECIMENTO.md) | Nome, contato, e-mail somente leitura, segurança e evidências de deploy/QA |
 | Banco/esquema | [`MODELO_BANCO_V2.md`](MODELO_BANCO_V2.md) e [`REVISAO_BANCO.md`](REVISAO_BANCO.md) | História da modelagem, **não** autorização para importar SQL |
 | Autenticação/cadastros | [`AUTENTICACAO_3_1.md`](AUTENTICACAO_3_1.md), [`CLIENTES_3_2.md`](CLIENTES_3_2.md), [`FUNCIONARIOS_3_3.md`](FUNCIONARIOS_3_3.md), [`SERVICOS_3_4.md`](SERVICOS_3_4.md) | Evolução de cada etapa |
 | Agenda e conflitos | [`AGENDAMENTOS_4_1.md`](AGENDAMENTOS_4_1.md) a [`AGENDAMENTOS_4_5.md`](AGENDAMENTOS_4_5.md) | Evolução da API, formulário, gravação, calendário e cancelamento |

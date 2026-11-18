@@ -58,7 +58,7 @@ Registro-fonte: [STATUS.md](STATUS.md). Situação na última revisão:
 | QA-01 | Menu offcanvas fora da tela | PR #4 integrado e incluído nos deploys posteriores; falta regressão visual completa do menu em múltiplos tamanhos |
 | QA-02 | `alterar-senha.php` não trocava senha | **Fluxo principal corrigido, publicado e aprovado manualmente** em produção; faltam testes negativos/CSRF e sessões paralelas |
 | QA-03 | Recuperação de senha e e-mail transacional | **Fluxo principal aprovado manualmente**, telas padronizadas com aviso de spam, novo remetente verificado e mensagem real recebida na caixa de entrada com `agendaysistema@12832884.brevosend.com` (17/11/2026). Pendentes: reutilização/expiração, limites e entregabilidade multi-provedor |
-| QA-04 | Perfil/configuração com dados ilustrativos | Pendente |
+| QA-04 | Perfil/configuração com dados ilustrativos | Configuração básica em implementação (18/11): edição de nome e contato; perfil e demais campos ainda pendentes; conferir CI/deploy/E2E antes de marcar aprovada |
 | QA-05 | Comandas, histórico e financeiro sem fluxo funcional comprovado | Definir escopo MVP ou ocultar da demonstração com autorização |
 | QA-06 | Erro JavaScript em `js/button-add.js` | Pendente |
 | QA-07 | Nome “Barbearia” fixo em cabeçalhos legados | Pendente |
