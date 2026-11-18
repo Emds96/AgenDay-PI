@@ -28,6 +28,12 @@
 
 **Estado do acesso observado em 16/11:** Desktop Commander online e `gh` 2.104.0 autenticado como `Emds96`. Em outra sessão, **verificar novamente**; nunca tratar conexão como permanente. Não registrar ID de dispositivo, token, senha, código OTP ou caminho de secrets no repositório.
 
+## Regra de fechamento validado pelo responsável (17/11/2026)
+
+**Confirmação humana de que funcionou = gatilho imediato para registrar, antes da resposta de conclusão.** Conferir o estado real e atualizar no GitHub `docs/STATUS.md`, o manual da funcionalidade e todos os documentos ativos diretamente afetados. Incluir PR, SHA, execução de deploy, fonte da evidência (teste da ferramenta ou relato do responsável), limitações e pendências. Corrigir textos antigos que continuam marcando como pendente o que já foi aprovado, sem apagar o histórico cronológico. Usar uma branch documental curta derivada de `dev-feira-uninorte`, PR, validação e merge, com `main` preservada. Registro documental não exige novo deploy.
+
+**Ordem ao receber "funcionou", "aprovado" ou screenshot de validação:** confirmar fato → atualizar documentação ativa e integrar PR → responder ao responsável → iniciar próxima tarefa. Caso ferramentas estejam indisponíveis, declarar o registro pendente e sua causa, sem afirmar que foi concluído. Esta regra vale para **todas** as funcionalidades futuras.
+
 ## 3. Nosso ciclo de trabalho — da necessidade ao registro
 
 1. **Entender:** ler pedido e restrições; confirmar escopo, responsável, data, critérios de aceitação, repositório, branch e SHA.
