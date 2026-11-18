@@ -34,6 +34,10 @@
 
 **Nunca usar “CI success” como “site atualizado”, “página existe” como “salva no MySQL” ou “ZIP íntegro” como “backup atual completo”.** Quando houver divergência, verificar e registrar no `STATUS.md`.
 
+## Registro obrigatório ao concluir (orientação atualizada em 17/11/2026)
+
+Ao receber confirmação de teste/aprovação do responsável, **antes de responder à conclusão**, atualizar e integrar documentação no GitHub. Conferir primeiro `STATUS.md` e o documento da funcionalidade, depois ajustar `README.md`, guias operacionais e arquitetura/QA quando o estado ou procedimento mudou. Informar fonte e escopo da validação; não confundir relato de teste manual com automação. Corrigir resumos ativos que ainda exibem pendências superadas; preservar o histórico datado. Esta regra está detalhada em [`AGENTS.md`](../AGENTS.md) e [`GUIA_DE_CONTINUIDADE.md`](GUIA_DE_CONTINUIDADE.md).
+
 ## Rotina para manter o índice útil
 
 - Ao finalizar tarefa: atualizar `STATUS.md` **no PR pertinente**; se mudar procedimento, atualizar manual correspondente e links aqui.
