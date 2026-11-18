@@ -3,7 +3,7 @@
 **Data:** 18/11/2026
 **Branch de implementação:** `feat/configuracoes-duas-abas-ui08`
 **Base:** `dev-feira-uninorte`, início no commit `2ee2d43345f5a3e392ba512fec5fbc4387481c4a`
-**Estado:** implementado somente na branch de tarefa; sem merge/deploy. Ver `docs/STATUS.md` e o PR correspondente para resultados atuais.
+**Estado:** implementado no [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33), com CI de validação aprovada no [run #44424205050](https://github.com/Emds96/AgenDay-PI/actions/runs/44424205050) (commit `fe7855b8319811e27dc48c16c629150a7bceccef`); sem merge/deploy. Ver `docs/STATUS.md` para o estado atual.
 
 ## Escopo e comportamento
 
@@ -44,7 +44,7 @@ A tabela `estabelecimento` não tem coluna de avatar no esquema referencial; as 
 
 ## Operação futura
 
-1. Revisar PR e validar PHP/Node e artefato na CI **sem publicar**.
+1. Revisar o PR #33 e conferir o resultado aprovado de PHP/Node/artefato no run #44424205050, **sem publicar**. Revalidar em CI caso o código mude.
 2. Obter aprovação de merge e deploy separadamente; conferir `AGENTS.md`, `docs/BACKUP_E_RECUPERACAO.md` e `docs/PUBLICACAO_AUTOMATICA.md`.
 3. Criar backup novo e íntegro de `htdocs` + SQL, incluindo a nova pasta de fotos caso já exista.
 4. Confirmar que a regra `.htaccess` foi enviada e protege os temporários, e que a pasta aceita somente imagens JPG/PNG conforme código.
