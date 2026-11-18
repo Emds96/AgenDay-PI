@@ -1,6 +1,6 @@
 # QA-03 — Recuperação de senha via Brevo
 
-**Estado (17/11/2026):** migração, telas visuais e novo remetente publicados. O responsável validou manualmente recebimento do e-mail anterior (no spam), redefinição de senha e login com a nova senha; o remetente novo foi verificado na Brevo e aceito pelo endpoint de envio em sandbox (HTTP 201). Ainda falta confirmar a aparência do endereço novo em um e-mail real.
+**Estado validado em 17/11/2026:** migração, telas com identidade visual do login e aviso de spam, e novo remetente publicados em produção. O responsável confirmou manualmente recuperação completa (e-mail inicial recebido no spam, nova senha aceita, antiga rejeitada) e depois enviou captura do e-mail real do novo remetente **AgenDay Sistema**, entregue na **caixa de entrada**. O campo De aparece como `agendaysistema@12832884.brevosend.com`, e Responder para como `agendaysistema@gmail.com`. A evidência de caixa postal é **relato/imagem do responsável**, não teste automatizado de recebimento.
 
 ## Implementado
 - Link de index.php leva a esqueci-senha.php.
@@ -25,17 +25,17 @@
 - [PR #23](https://github.com/Emds96/AgenDay-PI/pull/23) alterou apenas o remetente em `lib/brevo-email.php`, sem mexer na chave API ou nas regras de IP. Commit `5749f333338e599c67c9e6050e39caa684091bac` publicado pelo [workflow #44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922), com validação, diagnóstico FTPS e envio aprovados.
 - Backup pré-deploy `2026-11-17_205855_4f8c886e` foi aprovado (`BACKUP OK`, restauração local). Confirmação FTPS: código publicado usa o e-mail/nome novos e não contém o endereço antigo como remetente.
 - Teste de envio em **sandbox** pela hospedagem, com novo remetente, recebeu HTTP 201; nenhum e-mail real foi enviado. O executor temporário foi removido. Login e tela de recuperação HTTP 200, configuração privada Brevo HTTP 403. Flags de deploy voltaram para `false`/`disabled`.
-- **Ainda validar:** mensagem real recebida, endereço From gerado pela Brevo (inclusive possível reescrita para `brevosend.com`) e entregabilidade. Não afirmar que o prefixo/domínio exatos estão confirmados por teste de caixa de entrada.
+- **Validação real do novo remetente concluída (17/11/2026):** o responsável mostrou a mensagem recebida às 21h40 na aba **Caixa de entrada** do Gmail, com nome **AgenDay Sistema**, De `agendaysistema@12832884.brevosend.com`, Responder para `agendaysistema@gmail.com`. Confirmada a reescrita automática para `brevosend.com` no caso testado. É uma evidência manual de uma entrega, não garantia de entregabilidade em qualquer domínio/provedor.
 
 ## Validação funcional relatada e verificações restantes
 
 - **Relato manual do responsável (17/11/2026):** solicitação de recuperação para conta própria, mensagem entregue com atraso na pasta de spam, link utilizado para cadastrar nova senha, autenticação aprovada com a senha nova e senha antiga rejeitada. Não houve automação independente desse teste de caixa de entrada.
 - **Experiência de uso (publicada):** o aviso sobre possível atraso e spam/lixo eletrônico está visível antes e depois do envio, e as páginas de solicitação/redefinição usam a identidade do login. [PR #21](https://github.com/Emds96/AgenDay-PI/pull/21) publicado no commit `393b281e` pelo [workflow #44207273591](https://github.com/Emds96/AgenDay-PI/actions/runs/44207273591), com backup `2026-11-17_201733_0559724e` validado anteriormente. Conferência no Edge: HTTP 200 em ambas as telas e no novo CSS, teste 390px sem rolagem horizontal, mensagem genérica com aviso de spam, token inválido rejeitado; config Brevo permanece HTTP 403. Flags de deploy desligadas depois.
-- **Ainda testar:** tentativa de reutilizar o link, expiração de 30 minutos, limites de solicitações e regressão do login Google.
+- **Ainda testar em QA:** reutilização de link, expiração de 30 minutos, limites de solicitações, regressão de login Google e entregabilidade com outros destinatários/provedores. **Não** repetir o teste funcional já aprovado só para atualizar documentação.
 - Em falhas futuras de entrega, consultar os logs transacionais Brevo sem expor token ou credenciais.
 
 ## Riscos e limitações
-- HTTPS da InfinityFree para `api.brevo.com/v3/smtp/email` comprovado por sandbox HTTP 201 após autorização de IP. O responsável confirmou entrega real (com atraso, no spam); entregabilidade consistente para diferentes provedores ainda não foi avaliada.
+- HTTPS da InfinityFree para `api.brevo.com/v3/smtp/email` comprovado por sandbox HTTP 201 após autorização de IP. O responsável confirmou entrega real do remetente antigo (com atraso, no spam) e do remetente novo (na caixa de entrada). A taxa de entrega para diferentes provedores ainda não foi medida.
 - Limitação por IP não foi implementada; existem limites por conta e sessão, que não substituem defesa distribuída.
 - Troca de senha não revoga sessões preexistentes em outros dispositivos.
 - Remetente Gmail verificado pode ter limitações de entregabilidade; revisar DNS/remetente em fase posterior.
