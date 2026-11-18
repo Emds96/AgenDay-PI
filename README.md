@@ -21,13 +21,15 @@ O **AgenDay 2.0** é uma aplicação web desenvolvida para facilitar a organiza�
 
 Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados independente, autenticação de estabelecimentos, associação entre funcionários e serviços e uma agenda conectada aos registros cadastrados.
 
-> **Estado atual (verificado em 16/11/2026):** as funcionalidades descritas abaixo estão **implementadas no código da branch `dev-feira-uninorte`**, mas ainda dependem de testes integrados na hospedagem. O GitHub Actions **confirmou uma publicação FTPS bem-sucedida em 13/11/2026** e a página pública de login e arquivos CSS 2.0 estavam acessíveis em 16/11/2026. **Não foi confirmado se o último commit está implantado nem se o sistema completo funciona em produção.** Consulte [docs/STATUS.md](docs/STATUS.md).
+> **Estado confirmado em 17/11/2026:** aplicação publicada no site independente [AgenDay](https://agenday-sistema.infinityfree.io/) pelo workflow [#44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922), commit de aplicação `5749f333`; a branch de desenvolvimento possui commits documentais posteriores. Cadastro/login, agenda e outras operações foram validados em cenários delimitados; **login Google e recuperação/alteração de senha também tiveram testes manuais positivos em produção**. Na recuperação, o responsável confirmou o remetente **AgenDay Sistema** entregue na caixa de entrada com endereço `agendaysistema@12832884.brevosend.com`. Não significa que todas as telas e controles de segurança já passaram por QA. Consulte [docs/STATUS.md](docs/STATUS.md) e [docs/QA03_RECUPERACAO_SENHA_BREVO.md](docs/QA03_RECUPERACAO_SENHA_BREVO.md).
 
 ## Funcionalidades
 
 | Módulo | Implementação atual |
 | --- | --- |
-| Conta do estabelecimento | Cadastro, login, sessão autenticada e logout |
+| Conta do estabelecimento | Cadastro, login tradicional e Google, sessão e logout; fluxos principais testados |
+| Senhas (QA-02 e QA-03) | Alteração autenticada de senha e recuperação por e-mail, link temporário e uso único; testes manuais dos fluxos principais aprovados |
+| E-mail transacional | Brevo HTTPS, remetente verificado **AgenDay Sistema**, entrega real confirmada em um teste na caixa de entrada |
 | Clientes | Cadastro, pesquisa e foto opcional |
 | Funcionários | Cadastro, pesquisa, foto opcional e vínculo a vários serviços |
 | Serviços | Cadastro com nome, duração, preço e descrição; pesquisa |
@@ -36,7 +38,7 @@ Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados inde
 | Calendário | Navegação mensal, visualização de agendamentos por dia, status e cancelamento de atendimentos ativos |
 | Segurança | Consultas preparadas, proteção CSRF e isolamento de dados por estabelecimento nos fluxos adaptados |
 
-**Ainda não concluído:** testes integrados de cancelamento e concorrência, revisão final da interface, testes de ponta a ponta e publicação da versão completa. Algumas telas legadas, como comandas e financeiro, permanecem fora do escopo funcional já validado.
+**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha e funcionalidades legadas (perfil/configuração, comandas e financeiro). Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
 
 ## Tecnologias
 
@@ -130,7 +132,7 @@ Crie um estabelecimento de teste, faça login e cadastre um **cliente**, um **se
 
 ## Testes
 
-A inspeção documental de 16/11/2026 não reproduziu o QA autenticado. O [STATUS](docs/STATUS.md) registra uma auditoria integrada **relatada**, com diversos fluxos aprovados no cenário testado e falhas pendentes; não é correto concluir que o aplicativo completo está pronto nem que o PR #4 está publicado.
+Os testes do projeto incluem verificações locais e CI, e o [STATUS](docs/STATUS.md) registra **testes integrados relatados pelo responsável**, operações reais em navegador e publicações confirmadas até 17/11/2026. **QA-02 e QA-03 tiveram fluxos principais validados manualmente**; o PR #4 (menu) foi incluído em publicações posteriores, mas sua regressão visual completa ainda deve ser confirmada. Isso não é certificação de todo o aplicativo.
 
 Há roteiros automatizados para validação de dados e identificadores de cancelamento, sem conectar ao banco:
 
@@ -139,7 +141,7 @@ php tests/agendamento-validacao.php
 php tests/agendamento-cancelamento.php
 ```
 
-A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agendamentos concorrentes **ainda precisam ser confirmados em ambiente integrado**. Revisões estáticas e simulações do calendário não equivalem a um teste completo com MySQL.
+A CI passou nos commits publicados. Nos cenários de QA relatados, houve cadastros reais, agendamentos com bloqueio de sobreposição e cancelamentos no MySQL integrado. **Ainda falta ensaio de concorrência verdadeiramente simultânea e cobertura ampla de autorização**; testes estáticos não substituem essas verificações.
 
 ## Publicação controlada — procedimento operacional
 
@@ -147,7 +149,7 @@ A execução dos testes em PHP, os cadastros reais, os cancelamentos e os agenda
 
 O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desktop Commander**, conectado ao computador autorizado, executa o **GitHub CLI (`gh`)** para consultar e alterar temporariamente as duas variáveis de autorização, disparar `workflow_dispatch` e, quando permitido e autorizado, aprovar o ambiente `producao-agenday`. Segredos FTP permanecem no GitHub Environments. Após a execução, as variáveis devem voltar a `false/disabled`.
 
-**Verificação de 16/11/2026:** PRs #3, #4 e #5 integrados ao commit `ac53c8ea9b8be206c032d4072bf07213a9769698`; validações passaram, mas o job de publicação foi **ignorado (skipped)**. O último deploy comprovado é de 13/11, commit `f807327811895bc97827929f4e30c2e60a180110`. **Não presumir que o código integrado está no site**; confirmar o SHA e testar a interface após o próximo deploy autorizado.
+**Verificação mais recente (17/11/2026):** o workflow [#44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922) publicou o commit `5749f333338e599c67c9e6050e39caa684091bac` com `validar`, FTPS e `publicar` aprovados; os gates voltaram a `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`. O responsável confirmou e-mail real com o novo remetente. Os commits documentais seguintes **não** demandaram novo deploy.
 
 ## Fluxo de branches
 
@@ -167,7 +169,9 @@ O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desk
 - [x] Aplicar no código a responsividade ao login, menu, cadastros e calendário (**5.2**, validação visual em dispositivos ainda pendente).
 - [ ] Executar testes funcionais e de segurança na hospedagem.
 - [x] Preparar automação de publicação segura GitHub → InfinityFree e registrar publicação FTPS concluída em 13/11/2026 ([evidência](https://github.com/Emds96/AgenDay-PI/actions/runs/43518952935)).
-- [ ] Confirmar o commit atualmente publicado, estado atual das autorizações e existência de backup; testar versão atualizada ponta a ponta antes de novas publicações.
+- [x] Confirmar último commit da aplicação publicado, flags de deploy e backups com restauração local aprovados em 17/11/2026.
+- [x] Publicar e validar no fluxo principal a recuperação de senha com visual do login, aviso de spam e remetente **AgenDay Sistema** (QA-03).
+- [ ] Executar regressão ampliada (concorrência simultânea, isolamento entre empresas, módulos legados e casos negativos de senha) antes de promover uma versão para a `main`.
 - [ ] Preparar dados fictícios, imagens das telas e apresentação da feira.
 - [ ] Após testes e autorização específica, **promover** por Pull Request a versão estável de `dev-feira-uninorte` para a `main` **deste fork**, revisando antes o workflow antigo de deploy da `main`.
 
@@ -175,7 +179,7 @@ O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desk
 
 **Roteiro para começar em outra sessão:** consultar o [índice da documentação](docs/INDICE_DA_DOCUMENTACAO.md) e o [guia de continuidade](docs/GUIA_DE_CONTINUIDADE.md). Eles registram **não só o deploy**, mas também o uso de GitHub, Desktop Commander, GitHub CLI, ZERO Browser/TinyFish, autorizações, PRs, backups, testes, ambiente publicado, decisões de produto e o padrão de registro de trabalho.
 
-**Não iniciar nova publicação sem dois backups atuais**, dos arquivos completos de `htdocs/` e do banco via phpMyAdmin, verificados segundo [BACKUP_E_RECUPERACAO.md](docs/BACKUP_E_RECUPERACAO.md). A pasta privada de 16/11 tinha somente um aviso de pendência na última conferência. Os backups de 13/11 são anteriores aos testes de 16/11.
+**Não iniciar nova publicação sem backup recente e validado** de arquivos de `htdocs/` e MySQL; seguir [BACKUP_E_RECUPERACAO.md](docs/BACKUP_E_RECUPERACAO.md). Em 17/11 foi validado o backup automático via FTPS + exportação PHP + restauração local MariaDB; o backup pré-deploy do remetente (`2026-11-17_205855_4f8c886e`) terminou em `BACKUP OK`. Backup não autoriza deploy sem aprovação específica.
 
 Guias separados: [QA e testes](docs/TESTES_E_QUALIDADE.md), [mapa técnico e decisões](docs/ARQUITETURA_E_DECISOES.md), [procedimento de deploy](docs/PUBLICACAO_AUTOMATICA.md) e [estado real/pendências](docs/STATUS.md). Se um guia histórico divergir do repositório, revalidar em vez de assumir.
 
