@@ -26,7 +26,7 @@ O site do Gabriel pode ser comparado **somente para análise autorizada**, não 
 | Agenda | `agenda.php`, `lib/agendamentos.php`, `lib/agendamento-gravar.php`, `salvar-agendamento.php` | Criação e bloqueio de conflito implementados, casos de QA relatados; concorrência simultânea não comprovada |
 | API/calendário/cancelamento | `api/agendamentos.php`, `js/calendario.js`, `lib/agendamento-cancelar.php`, `cancelar-agendamento.php` | Agenda por mês e cancelamento com status mantido no histórico; validar produção após mudanças |
 | Estilos e responsividade | `css/design-system.css`, `css/responsivo.css`, `css/recuperacao-senha.css`, `tests/responsividade-check.js` | Identidade turquesa; QA-01 integrada/publicada, mas sem regressão visual completa confirmada; recuperação QA-03 publicada e testada em viewport 390px sem overflow |
-| Conta, perfil e configurações | `config.php`, `perfil.php`, `alterar-senha.php` | Perfil/configuração ainda têm elementos ilustrativos; **alteração de senha (QA-02) funcional no fluxo principal validado em produção** |
+| Conta, perfil e configurações | `config.php`, `perfil.php`, `alterar-senha.php` | Configuração básica do estabelecimento (nome/contato) publicada e testada em QA01 em 18/11/2026 (PR #26); perfil e configurações avançadas ainda ilustrativos; **alteração de senha (QA-02) funcional no fluxo principal validado em produção** |
 | Comandas e financeiro | `comandas-abertas.php`, `historico-comandas.php`, `financeiro.php` | Arquivos/telas protegidos, **sem fluxo integrado de negócio validado**; não marcar concluídos |
 | Página pública do consumidor | **Não implementada no nosso fork** | Discutida, não aprovada nem desenvolvida; não confundir com o cadastro administrativo do cliente |
 

@@ -1,18 +1,23 @@
 # STATUS — AgenDay 2.0
 
-## QA-04 — Configurações básicas do estabelecimento (18/11/2026, em implementação)
+## QA-04 — Configurações básicas do estabelecimento (18/11/2026; publicada e testada)
 
-- Autorizado nesta sessão: carregar nome/e-mail/contato reais, editar nome/contato, salvar no MySQL, aplicar sessão/CSRF/queries preparadas e melhorar visual; deploy autorizado sujeito a backup, CI e gates.
-- Código em branch de tarefa: config.php, lib/configuracao-estabelecimento.php, js/button-add.js e tests/configuracao-estabelecimento.php. SELECT/UPDATE restritos ao estabelecimento autenticado; nome da sessão atualizado após salvar; escape HTML e POST/Redirect/GET.
-- Ainda não publicado e não validado em produção neste registro. Ver [QA-04](QA04_CONFIG_ESTABELECIMENTO.md). Não incluir perfil, endereço, CNPJ e horários neste escopo.
+- **PR #26 integrado** na branch dev-feira-uninorte (merge 5f2c8666df9d3e63828509b4dd923f58020aac28) em 18/11/2026. Código: config.php, lib/configuracao-estabelecimento.php, js/button-add.js e tests/configuracao-estabelecimento.php.
+- **CI**: [PHP lint #44365662706](https://github.com/Emds96/AgenDay-PI/actions/runs/44365662706) e [validação/pacote #44365662758](https://github.com/Emds96/AgenDay-PI/actions/runs/44365662758), ambas com success. Teste independente de validação presente em tests/configuracao-estabelecimento.php, mas não executado separadamente no workflow vigente.
+- **Backup pré-deploy real**: 2026-11-18_140222_e2169559, status BACKUP OK, 89 arquivos, 10 tabelas, restauração MariaDB local aprovada, hashes SQL/ZIP conferidos; sem segredos no GitHub.
+- **Deploy autorizado**: commit 5f2c8666 publicado pelo [run #44367305044](https://github.com/Emds96/AgenDay-PI/actions/runs/44367305044), com validar, diagnosticar FTPS e publicar success. Variáveis restauradas e reconfirmadas: AGENDAY_DEPLOY_ENABLED=false e AGENDAY_DEPLOY_MODE=disabled. Sem alterar banco, workflow, secrets, main ou repositório original.
+- **QA real no Edge via DeskBrowse, conta fictícia QA01 (18/11):** leitura de nome/e-mail/contato do estabelecimento; e-mail readonly; gravação de nome e contato com feedback positivo; persistência após recarregar; sessão atualizou cabeçalho. Valores originais restaurados e reconferidos após recarga.
+- **Negativos testados:** POST com token CSRF inválido recusado HTTP 403; nome curto/telefone inválido apresentou feedback de validação; dados da conta inalterados. Em 320, 390, 768 e 1366 px não houve rolagem horizontal.
+- **Limites:** ainda falta teste cruzado completo A/B, ensaio de falha do banco, regressão com outros dispositivos e validação humana. perfil.php, endereço, CNPJ e horários permanecem fora do escopo. Ver [QA-04](QA04_CONFIG_ESTABELECIMENTO.md).
+
 
 ---
 
-**Atualizado em:** 17/11/2026 (QA-03 validada manualmente em produção, incluindo identidade do e-mail AgenDay Sistema; isolamento entre estabelecimentos permanece parcialmente auditado)  
+**Atualizado em:** 18/11/2026 (QA-04 publicada e testada em conta fictícia; QA-03 segue aprovada; isolamento A/B ainda parcialmente auditado)
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
-**Commit publicado comprovado:** `5749f333338e599c67c9e6050e39caa684091bac` (novo remetente QA-03, PR #23) via [GitHub Actions #44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922) em 17/11/2026, com as flags de deploy desligadas novamente após o envio. Conferir HEAD atual da `dev-feira-uninorte` antes de próximas tarefas.  
-**Fonte da evidência funcional:** QA autenticada relatada pelo responsável em 16/11/2026, login Google testado manualmente em 17/11/2026, e **relatos/capturas de e-mail reais da QA-03** no mesmo dia. Os testes automatizados de sintaxe/CI, FTPS e sandbox Brevo são identificados separadamente; não são confundidos com leitura da caixa postal.
+**Commit publicado comprovado:** 5f2c8666df9d3e63828509b4dd923f58020aac28 (QA-04, PR #26) via [GitHub Actions #44367305044](https://github.com/Emds96/AgenDay-PI/actions/runs/44367305044) em 18/11/2026, com flags false/disabled verificadas.
+**Fonte da evidência funcional:** QA autenticada de 16/11 relatada pelo responsável, login Google e QA-03 testados manualmente em 17/11, e QA-04 testada diretamente via DeskBrowse em 18/11 com uma conta fictícia (sem confundir com aprovação humana).
 
 ## Última validação confirmada pelo responsável — QA-03 (17/11/2026)
 
@@ -171,9 +176,9 @@ Preparar o AgenDay, sistema web PHP/MySQL de gerenciamento de agendamentos, para
 | Clientes, serviços e funcionários | Cadastros, pesquisa, vínculo e persistência aprovados no QA reportado de 16/11 | Regressão e autorização aprofundada |
 | Agenda/calendário | Criação, bloqueio de sobreposição, cancelamento e reutilização aprovados no QA reportado | Concorrência simultânea e autorização cruzada aprofundada |
 | Navegação e visual | Correção de menu integrada e publicada em conjunto com outros commits; tela de recuperação responsiva validada em 390px | Revalidar menu e modais no navegador real em vários tamanhos |
-| Perfil/configurações | Conteúdo e ações demonstrativas/incompletas | Implementar ou identificar claramente módulos demonstrativos |
+| Perfil/configurações | Configuração básica da empresa publicada e testada em QA01; perfil e configurações avançadas demonstrativos | Implementar perfil, endereço, CNPJ e horários em etapas separadas |
 | Comandas, histórico e financeiro | Páginas legadas sem operações de negócio integradas comprovadas | Definir escopo da feira ou ocultar opções não funcionais |
-| Publicação atual | SHA de aplicação `5749f333` publicado com sucesso, config privada HTTP 403 e flags `false/disabled` | Novas alterações exigem outro deploy autorizado, com backup |
+| Publicação atual | SHA de aplicação `5f2c8666` publicado no run #44367305044, com backup validado e flags `false/disabled` | Próximas alterações de aplicação exigem outro deploy autorizado, com backup |
 
 > **Atenção:** “implementado no código” não significa “validado em produção”. As páginas podem existir e estar acessíveis sem todas as ações funcionarem.
 

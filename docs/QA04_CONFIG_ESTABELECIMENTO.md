@@ -21,18 +21,27 @@ O responsável autorizou implementação, integração e deploy:
 - POST + token CSRF da sessão + prepared statement + POST/Redirect/GET. Nem e-mail nem ID de estabelecimento são aceitos como campos editáveis.
 - Formulário Bootstrap 5 responsivo; nenhuma informação ilustrativa de endereço, horário e redes sociais é exibida como real.
 
-## Critérios de aceite
+## Resultados da validação (18/11/2026)
 
-- [ ] CI, PHP lint e testes unitários aprovados.
-- [ ] Backup recente verificado antes de deploy, workflow com publicar=success e flags restauradas.
-- [ ] QA das informações reais e atualização persistente após recarga em conta de teste.
-- [ ] Mensagem em erros de validação, CSRF inválido e falhas de banco.
-- [ ] Sem overflow em 320/390 px, navegação funcional.
-- [ ] Teste de isolamento de estabelecimentos A/B ainda é uma auditoria separada.
-- [ ] Após validação humana, atualizar documentação antes de declarar encerrado.
+- [x] PR #26 integrado em dev-feira-uninorte, SHA 5f2c8666. GitHub PHP lint #44365662706 e validação do pacote #44365662758 aprovadas.
+- [x] Backup 2026-11-18_140222_e2169559 com BACKUP OK, 89 arquivos, 10 tabelas, SQL/ZIP com hash confirmado e restauração MariaDB local aprovada.
+- [x] Workflow de deploy #44367305044 concluiu success nos três jobs; flags verificadas false/disabled.
+- [x] QA em produção na conta fictícia QA01: dados reais carregados; nome e telefone gravados; mensagem de sucesso; persistência após recarga; nome atualizado no cabeçalho.
+- [x] Dados anteriores da conta QA01 restaurados e conferidos após recarga.
+- [x] CSRF inválido rejeitado com HTTP 403, nome curto/telefone inválido rejeitado com feedback, sem alteração de dados.
+- [x] Teste de layout em 320/390/768/1366 px sem overflow horizontal.
+- [ ] Teste independente tests/configuracao-estabelecimento.php ainda não executado como unidade separada; sintaxe PHP coberta pela CI.
+- [ ] Teste cruzado A/B, simulação de falha de banco e validação humana ainda não executados nesta tarefa.
+
+## Rastreabilidade
+
+- PR: https://github.com/Emds96/AgenDay-PI/pull/26
+- Commit publicado: 5f2c8666df9d3e63828509b4dd923f58020aac28
+- Deploy: https://github.com/Emds96/AgenDay-PI/actions/runs/44367305044
+- Evidências E2E: teste direto realizado por DeskBrowse no Edge em 18/11/2026. Não é relato de aprovação do responsável.
 
 ## Limitações
 
 Testes isolados/CI não são prova de persistência no MySQL de produção. A tela perfil.php e ajustes de localização/horário ficam para outra etapa. Não publicar credenciais, dados de terceiros ou dumps.
 
-**Estado:** código preparado; atualizar PR, SHA, deploy, testes E2E e evidência ao concluir.
+**Estado:** publicado e validado no fluxo principal da conta fictícia QA01 em 18/11/2026; validação humana e cobertura ampliada pendentes.

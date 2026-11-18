@@ -37,8 +37,9 @@ Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados inde
 | Controle de horários | Validação de dados e verificação de sobreposição de atendimentos na gravação |
 | Calendário | Navegação mensal, visualização de agendamentos por dia, status e cancelamento de atendimentos ativos |
 | Segurança | Consultas preparadas, proteção CSRF e isolamento de dados por estabelecimento nos fluxos adaptados |
+| Configurações do estabelecimento (QA-04) | Nome/e-mail/contato reais; edição segura de nome/telefone; e-mail somente leitura; PR #26 publicado e fluxo principal testado na conta QA01 |
 
-**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha e funcionalidades legadas (perfil/configuração, comandas e financeiro). Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
+**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha e funcionalidades legadas (perfil e configurações avançadas, comandas e financeiro). Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
 
 ## Tecnologias
 
@@ -158,6 +159,9 @@ O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desk
 - **Cuidado:** a `main` ainda contém workflow antigo de deploy. Revisar antes de qualquer merge para ela. Nenhuma promoção ou publicação acontece por autorização implícita.
 
 ## Status e próximos passos
+
+**QA-04 (18/11/2026):** configurações básicas publicadas no SHA 5f2c8666 pelo [workflow #44367305044](https://github.com/Emds96/AgenDay-PI/actions/runs/44367305044), após backup com restauração local; leitura e gravação reais testadas via DeskBrowse com conta fictícia QA01 e dados restaurados. Perfil, endereço, CNPJ e horários ainda não foram implementados nesta entrega. Ver [guia QA-04](docs/QA04_CONFIG_ESTABELECIMENTO.md).
+
 
 - [x] Fork de desenvolvimento independente do projeto original.
 - [x] Modelo de banco v2 criado e importado em conta própria; conexão básica testada.
