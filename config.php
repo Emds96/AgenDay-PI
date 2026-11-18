@@ -155,7 +155,7 @@ $csrfToken = agenday_token_csrf();
             <span class="navbar-toggler-icon"></span>
         </button>
         <h3 class="ad-header-brand fw-bold text-center mb-0">AgenDay</h3>
-        <?php require __DIR__ . '/includes/menu-conta.php'; ?>
+        <?php require __DIR__ . '/lib/menu-conta.php'; ?>
         <div class="offcanvas offcanvas-start config-navigation" tabindex="-1"
              id="offcanvasDarkNavbar" aria-labelledby="menuAgenDay">
             <div class="offcanvas-header">

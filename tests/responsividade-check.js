@@ -61,7 +61,9 @@ verificar(ler('agenda.php').includes('action="salvar-agendamento.php"'),
 
 /* UI-07: smoke test do cabeçalho compartilhado (sem renderização no navegador). */
 const paginasAutenticadas = paginas.filter(pagina => pagina !== 'index.php');
-const menuConta = ler('includes/menu-conta.php');
+const menuConta = ler('lib/menu-conta.php');
+verificar(ler('scripts/preparar_publicacao.py').includes('"lib": {".php"}'),
+    'Componente PHP fora dos diretórios incluídos no pacote publicado');
 verificar(menuConta.includes("$_SESSION['nome_estabelecimento']"),
     'Cabeçalho não utiliza a identificação da sessão autenticada');
 verificar(menuConta.includes('htmlspecialchars('), 'Nome da conta não recebe escape HTML');
@@ -75,7 +77,7 @@ for (const pagina of paginasAutenticadas) {
     const fim = html.indexOf('</header>', inicio);
     const cabecalho = html.slice(inicio, fim);
     verificar(inicio !== -1 && fim > inicio, pagina + ': cabeçalho ausente');
-    verificar(cabecalho.includes("require __DIR__ . '/includes/menu-conta.php'"),
+    verificar(cabecalho.includes("require __DIR__ . '/lib/menu-conta.php'"),
         pagina + ': não usa o componente compartilhado');
     verificar(cabecalho.includes('class="ad-header-brand'),
         pagina + ': marca não está na estrutura centralizada');

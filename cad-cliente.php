@@ -40,7 +40,7 @@ require_once __DIR__ . '/info-clientes.php';
             </button>
             <h3 class="ad-header-brand fw-bold text-center mb-0">
                 AgenDay</h3>
-            <?php require __DIR__ . '/includes/menu-conta.php'; ?>
+            <?php require __DIR__ . '/lib/menu-conta.php'; ?>
         <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel" style="width:20%">
                 <div class="offcanvas-header">
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar menu"></button>

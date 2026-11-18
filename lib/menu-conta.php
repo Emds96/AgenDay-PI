@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../verifica_login.php';
 // Componente de conta para páginas que já passaram por verifica_login.php.
 // O login e a edição de configurações mantêm o nome real na sessão da conta.
 $nomeConta = $_SESSION['nome_estabelecimento'] ?? null;
