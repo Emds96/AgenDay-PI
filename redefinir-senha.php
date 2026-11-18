@@ -108,33 +108,62 @@ $csrf = agenday_token_csrf();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="no-referrer">
     <title>Redefinir senha — AgenDay</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/recuperacao-senha.css">
 </head>
-<body class="bg-light">
-<main class="container py-5" style="max-width:520px">
-<section class="bg-white rounded shadow-sm p-4">
-    <h1 class="h3 mb-3">Redefinir senha</h1>
-    <?php if ($sucesso): ?>
-        <div class="alert alert-success" role="status">Senha redefinida com sucesso. Você já pode entrar no AgenDay.</div>
-        <a class="btn btn-primary" href="index.php">Ir para o login</a>
-    <?php elseif (!$tokenValido): ?>
-        <div class="alert alert-danger">Link inválido, expirado ou já utilizado.</div>
-        <a href="esqueci-senha.php">Solicitar outro link</a>
-    <?php else: ?>
-        <?php if ($erro !== ''): ?>
-            <div class="alert alert-danger" role="alert"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></div>
+<body class="agenday-auth agenday-recovery">
+<main class="ad-recovery-layout">
+    <section class="ad-recovery-content" aria-labelledby="titulo-redefinicao">
+        <a class="ad-recovery-brand" href="index.php" aria-label="AgenDay — voltar para o login">
+            <span class="ad-recovery-brand-mark" aria-hidden="true">A</span>
+            <span>Agen<span class="ad-recovery-brand-accent">Day</span></span>
+        </a>
+        <p class="ad-recovery-kicker">Acesso à sua conta</p>
+        <h1 id="titulo-redefinicao">Redefinir senha</h1>
+
+        <?php if ($sucesso): ?>
+            <p class="ad-recovery-description">Sua senha foi atualizada. Agora você pode acessar sua conta com a nova senha.</p>
+            <div class="alert alert-success" role="status">Senha redefinida com sucesso. Você já pode entrar no AgenDay.</div>
+            <a class="ad-recovery-action" href="index.php">Ir para o login</a>
+        <?php elseif (!$tokenValido): ?>
+            <p class="ad-recovery-description">O link de recuperação não está mais disponível. Solicite um novo para continuar.</p>
+            <div class="alert alert-danger" role="alert">Link inválido, expirado ou já utilizado.</div>
+            <a class="ad-recovery-action" href="esqueci-senha.php">Solicitar outro link</a>
+        <?php else: ?>
+            <p class="ad-recovery-description">Crie uma nova senha para o AgenDay. Use pelo menos 8 caracteres e confirme antes de salvar.</p>
+            <?php if ($erro !== ''): ?>
+                <div class="alert alert-danger" role="alert"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></div>
+            <?php endif; ?>
+            <form class="ad-recovery-form" method="post" action="redefinir-senha.php" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+                <input type="hidden" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
+                <label for="nova_senha">Nova senha (8 a 72 bytes)</label>
+                <input id="nova_senha" name="nova_senha" type="password" minlength="8" maxlength="72"
+                       autocomplete="new-password" required>
+                <label for="confirmar_nova_senha">Confirme a nova senha</label>
+                <input id="confirmar_nova_senha" name="confirmar_nova_senha" type="password" minlength="8" maxlength="72"
+                       autocomplete="new-password" required>
+                <button type="submit" class="ad-recovery-submit">Salvar nova senha</button>
+            </form>
         <?php endif; ?>
-        <form method="post" action="redefinir-senha.php" autocomplete="off">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-            <input type="hidden" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
-            <label for="nova_senha" class="form-label">Nova senha (8 a 72 bytes)</label>
-            <input class="form-control mb-3" id="nova_senha" name="nova_senha" type="password" minlength="8" maxlength="72" autocomplete="new-password" required>
-            <label for="confirmar_nova_senha" class="form-label">Confirme a nova senha</label>
-            <input class="form-control mb-3" id="confirmar_nova_senha" name="confirmar_nova_senha" type="password" minlength="8" maxlength="72" autocomplete="new-password" required>
-            <button type="submit" class="btn btn-primary w-100">Salvar nova senha</button>
-        </form>
-    <?php endif; ?>
-</section>
+
+        <a class="ad-recovery-back" href="index.php"><span aria-hidden="true">←</span> Voltar para o login</a>
+    </section>
+
+    <aside class="ad-recovery-side" aria-label="Informações sobre a segurança da sua conta">
+        <div class="ad-recovery-side-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+                 fill="none" stroke="#18544d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="10" width="14" height="11" rx="2"></rect>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                <circle cx="12" cy="15.5" r="1"></circle>
+            </svg>
+        </div>
+        <h2>Uma nova senha, a mesma segurança</h2>
+        <p>Atualize sua senha com tranquilidade. O acesso ao AgenDay continua protegido.</p>
+    </aside>
 </main>
 </body>
 </html>
