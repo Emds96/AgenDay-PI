@@ -64,6 +64,18 @@ A rotina exige autorização para **SHA e destino exatos**, backup recuperável 
 - Validar uploads por formato, tamanho, conteúdo e destino; não permitir execução de scripts em pastas de arquivos enviados.
 - Não executar SQL em banco existente, importar novamente `BD_v2.sql`, alterar automações ou publicar código sem autorização e avaliação de backup/impacto.
 
+## Regra obrigatória após validação do responsável
+
+**O trabalho não termina quando o código é publicado ou a interface parece correta.** Quando o responsável informar que testou e aprovou uma tarefa, a **primeira ação da sessão, antes de responder que está concluída ou iniciar outra funcionalidade**, é reconciliar e versionar a documentação pertinente no GitHub:
+
+1. Conferir o HEAD de `dev-feira-uninorte`, SHA efetivamente publicado e a evidência da validação. Diferenciar observação técnica, resultado de CI e **relato do responsável** (por exemplo, captura de tela de e-mail recebido).
+2. Atualizar `docs/STATUS.md` (resumo atual, PR, SHA, execução de deploy, resultado, pendências), o documento específico da tarefa e, conforme impacto, `README.md`, `docs/GUIA_DE_CONTINUIDADE.md`, `docs/ARQUITETURA_E_DECISOES.md`, `docs/TESTES_E_QUALIDADE.md` ou o índice.
+3. Corrigir **afirmações vencidas** nessas referências ativas. Preservar documentos históricos com datas, sem reescrever eventos antigos como se não tivessem acontecido.
+4. Criar uma alteração **somente documental** (branch/PR com destino `dev-feira-uninorte`), validar e integrar conforme a autorização para manutenção documental. Não efetuar deploy de documentação, mexer na `main` ou tocar segredos.
+5. **Só então comunicar** o fechamento da tarefa e seu estado real. Se a ferramenta falhar, informar expressamente que o registro ficou pendente; nunca declarar documentação atualizada sem conferir o PR/merge.
+
+O responsável autorizou a manutenção documental como parte da finalização das tarefas; ações operacionais (banco, hosting, deploy, secrets ou `main`) continuam exigindo autorização própria. Não pedir que o responsável repita uma validação já relatada apenas para preencher documentos.
+
 ## Verificação e continuidade
 
 Testes disponíveis no repositório (executar quando pertinentes e o ambiente permitir):
