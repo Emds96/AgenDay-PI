@@ -1,10 +1,20 @@
 # STATUS — AgenDay 2.0
 
-**Atualizado em:** 17/11/2026 (fluxos principais do login Google validados manualmente em produção; auditoria de isolamento ainda parcial)  
+**Atualizado em:** 17/11/2026 (QA-03 validada manualmente em produção, incluindo identidade do e-mail AgenDay Sistema; isolamento entre estabelecimentos permanece parcialmente auditado)  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
 **Commit publicado comprovado:** `5749f333338e599c67c9e6050e39caa684091bac` (novo remetente QA-03, PR #23) via [GitHub Actions #44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922) em 17/11/2026, com as flags de deploy desligadas novamente após o envio. Conferir HEAD atual da `dev-feira-uninorte` antes de próximas tarefas.  
-**Fonte da evidência funcional:** auditoria de 16/11/2026 relatada pelo responsável e **testes manuais de login Google realizados por ele em produção em 17/11/2026**, registrados em [`LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md). As evidências são identificadas por origem; este documento não afirma que a automação repetiu os testes manuais.
+**Fonte da evidência funcional:** QA autenticada relatada pelo responsável em 16/11/2026, login Google testado manualmente em 17/11/2026, e **relatos/capturas de e-mail reais da QA-03** no mesmo dia. Os testes automatizados de sintaxe/CI, FTPS e sandbox Brevo são identificados separadamente; não são confundidos com leitura da caixa postal.
+
+## Última validação confirmada pelo responsável — QA-03 (17/11/2026)
+
+- **Recuperação de senha:** concluída e confirmada em teste real: link recebido (na primeira tentativa, no spam), definição de senha nova, login válido com a nova e rejeição da antiga; relato manual do responsável.
+- **Interface:** páginas `esqueci-senha.php` e `redefinir-senha.php` com identidade do login e aviso sobre atraso/spam publicadas no PR #21, deploy #44207273591; QA visual do navegador em 390px e POST com e-mail fictício aprovados.
+- **Remetente profissionalizado:** `AgenDay Sistema` verificado na Brevo; [PR #23](https://github.com/Emds96/AgenDay-PI/pull/23) publicado no deploy [#44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922); sandbox HTTP 201 pela hospedagem. **Captura real do responsável:** Caixa de entrada às 21h40, `De: agendaysistema@12832884.brevosend.com`, `Responder para: agendaysistema@gmail.com`. **APROVADO no cenário testado**.
+- **Restantes não cobertos:** expiração/reutilização de token, limites de tentativa, medição de entrega em múltiplos provedores e auditoria geral de segurança. A `main` não mudou; flags de deploy restabelecidas em `false/disabled`.
+- **Regra de continuidade:** toda confirmação de validação pelo responsável deve gerar, **antes da resposta de encerramento**, atualização integrada em `docs/STATUS.md` e nos documentos ativos afetados. Ver `AGENTS.md` e `docs/GUIA_DE_CONTINUIDADE.md`.
+
+---
 
 ## Backup PHP efêmero + FTPS (17/11/2026; teste real aprovado)
 
@@ -14,7 +24,7 @@
 - **Testes:** 10 testes Python aprovados, lint Python, [CI pós-merge #44185531738](https://github.com/Emds96/AgenDay-PI/actions/runs/44185531738) `validar=success` e [PHP lint #44185531595](https://github.com/Emds96/AgenDay-PI/actions/runs/44185531595) `success` com PHP-lint e pacote público; deploy `skipped`. Após isso, exportação e restauração reais no PC passaram.
 - **Execução real VALIDADA:** usuário configurou FTPS diretamente no PC via Pairdesk (sem compartilhar credenciais). MariaDB 11.8.9 portátil configurado apenas em `127.0.0.1`. Teste HTTP 403 em pasta com `.htaccess` passou; PHP HTTP 200 passou. Backup `2026-11-17_174312_82e123c1`: `82` arquivos (incluindo `conexao.php`, configuração privada Google e uploads), SQL de `9` tabelas / `51` linhas, restauração local com contagens aprovada, ZIP de `83` entradas, SHA-256 SQL/ZIP conferidos, sem temporários no servidor. O primeiro teste do exportador teve timeout; código foi ajustado com diagnóstico por fase, e o segundo concluiu. **Segunda execução integral**, iniciada pelo launcher Windows com MariaDB inicialmente desligado, também teve `BACKUP OK`: `2026-11-17_175147_81686ab8`, 82 arquivos, 9 tabelas, 83 entradas ZIP, SHA-256 coincidente e banco local encerrado após execução.
 - O provedor recomenda FTP + phpMyAdmin; a POC PHP e uma alternativa experimental com risco de timeout/tamanho. Nao assumir backup valido antes de verificacao e restauracao. Nao guardar dumps nem segredos em repositorio ou artifacts.
-- Procedimento oficial atualizado em `docs/BACKUP_E_RECUPERACAO.md` com modo automático validado, atalho **Backup AgenDay** na área de trabalho e fallback manual. A QA-03 foi publicada depois de backup validado; a validação de entrega de e-mail real e de redefinição por usuário ainda está pendente.
+- Procedimento oficial atualizado em `docs/BACKUP_E_RECUPERACAO.md` com modo automático validado, atalho **Backup AgenDay** na área de trabalho e fallback manual. A QA-03 foi publicada após backups validados, e a **entrega real e a redefinição de senha foram confirmadas manualmente pelo responsável** (ver seção QA-03).
 
 ---
 
@@ -26,7 +36,7 @@
 - **Publicação:** commit `43676874d7a3abeba3de72ec00da62af2cd8bc68` enviado pelo workflow [#44197680873](https://github.com/Emds96/AgenDay-PI/actions/runs/44197680873); validação, diagnóstico FTPS e publicação `success`. Depois, `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`.
 - **Site real:** `esqueci-senha.php` HTTP 200, `redefinir-senha.php` rejeita token inválido, configuração Brevo privada HTTP 403. Formulário com e-mail fictício inexistente exibiu mensagem genérica esperada, sem disparo real. Arquivo de configuração Brevo foi confirmado por FTPS sem leitura de seu conteúdo.
 - **Brevo:** Secret `AGENDAY_BREVO_API_KEY` presente. Sandbox do endpoint `/v3/smtp/email` retornou HTTP 401 antes da autorização de IP. Painel mostrava 1 IP bloqueado e 0 autorizados. Após confirmação pelo responsável, painel mostrava **1 IP autorizado e 0 bloqueados**, mantendo a restrição por IP ativada; o teste sandbox do endpoint de envio passou com **HTTP 201**, sem entrega de mensagem. Temporários do teste foram removidos.
-- **Novo remetente AgenDay Sistema publicado:** o responsável criou `agendaysistema@gmail.com` e verificou o remetente com nome **AgenDay Sistema** no painel Brevo (o remetente anterior foi mantido no painel). [PR #23](https://github.com/Emds96/AgenDay-PI/pull/23) integrado na `dev-feira-uninorte`; commit `5749f333338e599c67c9e6050e39caa684091bac` publicado no [workflow #44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922) (validação, FTPS, publicação success). Backup pré-deploy `2026-11-17_205855_4f8c886e` concluiu `BACKUP OK` com restauração local. FTPS confirmou `lib/brevo-email.php` com remetente/nome novos e sem o e-mail antigo. O endpoint Brevo `/v3/smtp/email` aceitou **sandbox HTTP 201** com o novo remetente, sem envio real; temporários removidos. Login e recuperação HTTP 200, config Brevo privada HTTP 403. Variáveis restauradas: `AGENDAY_DEPLOY_ENABLED=false`, `AGENDAY_DEPLOY_MODE=disabled`. **Pendente:** confirmar o endereço From real exibido na caixa postal e a entregabilidade após a troca; o nome automático `brevosend.com` pode depender de regras do provedor. A chave API não foi rotacionada/alterada nesta tarefa.
+- **Novo remetente AgenDay Sistema publicado:** o responsável criou `agendaysistema@gmail.com` e verificou o remetente com nome **AgenDay Sistema** no painel Brevo (o remetente anterior foi mantido no painel). [PR #23](https://github.com/Emds96/AgenDay-PI/pull/23) integrado na `dev-feira-uninorte`; commit `5749f333338e599c67c9e6050e39caa684091bac` publicado no [workflow #44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922) (validação, FTPS, publicação success). Backup pré-deploy `2026-11-17_205855_4f8c886e` concluiu `BACKUP OK` com restauração local. FTPS confirmou `lib/brevo-email.php` com remetente/nome novos e sem o e-mail antigo. O endpoint Brevo `/v3/smtp/email` aceitou **sandbox HTTP 201** com o novo remetente, sem envio real; temporários removidos. Login e recuperação HTTP 200, config Brevo privada HTTP 403. Variáveis restauradas: `AGENDAY_DEPLOY_ENABLED=false`, `AGENDAY_DEPLOY_MODE=disabled`. **Validação real recebida após o deploy:** o responsável apresentou captura do Gmail com mensagem entregue à **Caixa de entrada** (17/11/2026, 21h40), nome **AgenDay Sistema**, campo **De:** `agendaysistema@12832884.brevosend.com` e **Responder para:** `agendaysistema@gmail.com`. Isso confirma o endereço mostrado no caso testado; taxa de entregabilidade em outros provedores não foi medida. A chave API não foi rotacionada/alterada nesta tarefa.
 - **Teste real relatado pelo responsável (17/11/2026):** o e-mail de recuperação chegou com atraso na pasta spam de sua conta; o link permitiu criar uma nova senha, que foi aceita no login, e a senha antiga foi rejeitada. É relato de validação manual, não repetição automatizada. Permanecem pendentes os testes de expiração/reutilização do token, limites de solicitações e regressão do login Google.
 - **Melhoria visual QA-03 publicada e verificada:** [PR #21](https://github.com/Emds96/AgenDay-PI/pull/21) no commit `393b281e` publicado no [run #44207273591](https://github.com/Emds96/AgenDay-PI/actions/runs/44207273591), validação/FTPS/deploy `success`. Backup pré-publicação `2026-11-17_201733_0559724e` com `BACKUP OK` e restauração local aprovada. As telas `esqueci-senha.php` e `redefinir-senha.php` respondem HTTP 200 com novo CSS, visual alinhado ao login e alerta de spam visível. Teste móvel de 390px: uma coluna, sem rolagem horizontal; POST com e-mail fictício retorna mensagem genérica com aviso de atraso/spam, sem erro. Token inválido rejeitado e config Brevo privada continua HTTP 403. Flags novamente `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`. Nenhuma senha de usuário foi modificada neste deploy.
 - **Segurança:** rotação da chave previamente transitada por Google Keep/Drive continua recomendada; a API não revela se a chave publicada já foi rotacionada. Não registrar a chave no Git ou no chat.
@@ -142,21 +152,20 @@ Preparar o AgenDay, sistema web PHP/MySQL de gerenciamento de agendamentos, para
 - **27/11/2026:** data da feira informada no `README.md`; **aguarda confirmação independente**. Planejar demonstração e ajustes finais sem confundir com o prazo de conclusão.
 - Antes de mudar esses registros, confirmar com o responsável e atualizar este arquivo e o `README.md`.
 
-## Visão rápida
+## Visão rápida (reconciliada após a QA-03 de 17/11/2026)
 
-| Frente | Estado verificado | Validação ainda necessária |
+| Frente | Estado com evidência | Validação restante |
 | --- | --- | --- |
-| Banco relacional v2 | `sql/BD_v2.sql` com 8 tabelas e vínculos por estabelecimento; README registra importação em banco independente | Conferir esquema e dados no MySQL real antes de novas operações |
-| Cadastro/login/logout | **Aprovados no cenário QA reportado:** duas contas de teste, login, logout, reautenticação e validações | Recuperação e alteração de senha não funcionais; revalidar após correções |
-| Clientes | **Aprovados no cenário QA reportado:** cadastro, pesquisa, persistência, PNG e arquivo inválido | Aprofundar autorização de endpoints e regressão |
-| Serviços | **Aprovados no cenário QA reportado:** cadastro, preço, duração, pesquisa e rejeição de duplicidade/valores inválidos | Regressão e demais casos-limite |
-| Funcionários | **Aprovados no cenário QA reportado:** cadastro, pesquisa, PNG, vínculo a serviço e persistência | Regressão e demais casos-limite |
-| Agenda/calendário | **Aprovados no cenário QA reportado:** criação, exibição, recarga, bloqueio de sobreposição, cancelamento, reutilização e listagens isoladas entre duas contas | Concorrência realmente simultânea e verificação aprofundada de isolamento ainda pendentes |
-| Tema e responsividade | **Falha QA-01 no site antes da correção; PR #4 integrado no GitHub**, ainda não comprovado na hospedagem. Pequenos transbordamentos em modais reportados | Publicar e repetir testes em múltiplas larguras antes de afirmar resolução |
-| Comandas, histórico e financeiro | Páginas legadas presentes, sem fluxo de negócio integrado validado | Definir escopo mínimo ou retirar opções da demonstração |
-| Perfil, configurações e alterar senha | Páginas protegidas, com conteúdo/ações ainda ilustrativos ou incompletos | Implementar ou sinalizar/ocultar funcionalidades não operacionais |
-| CI | GitHub Actions com lint PHP e rotinas locais; execução de lint com sucesso no histórico consultado | Acompanhar execuções futuras e não confundir CI verde com teste online |
-| Publicação | Publicação FTPS confirmada em 13/11; **auditoria QA reportou fluxos PHP/MySQL funcionais em 16/11** e igualdade de hashes de três arquivos públicos com GitHub | Commit integral do PHP em produção continua sem verificação; regressão após cada publicação |
+| Banco e backup | Banco v2 com migrações Google + QA-03; exportação FTPS e restauração MariaDB local aprovadas | Recuperação completa do site em outra hospedagem ainda não ensaiada |
+| Cadastro/login/logout | Fluxos tradicionais e login Google aprovados nos cenários manuais reportados | Vinculação de conta tradicional ao Google, regressão e negativos adicionais |
+| Alteração de senha (QA-02) | Fluxo principal em produção **aprovado manualmente** após PR #10 | CSRF/negativos e revogação de outras sessões não validados integralmente |
+| Recuperação de senha (QA-03) | **Aprovada manualmente:** envio real, redefinição e login; visual com aviso spam, remetente AgenDay Sistema e endereço de origem confirmados no Gmail | Expiração/reutilização e limites de tentativas, além de entregabilidade em outros provedores |
+| Clientes, serviços e funcionários | Cadastros, pesquisa, vínculo e persistência aprovados no QA reportado de 16/11 | Regressão e autorização aprofundada |
+| Agenda/calendário | Criação, bloqueio de sobreposição, cancelamento e reutilização aprovados no QA reportado | Concorrência simultânea e autorização cruzada aprofundada |
+| Navegação e visual | Correção de menu integrada e publicada em conjunto com outros commits; tela de recuperação responsiva validada em 390px | Revalidar menu e modais no navegador real em vários tamanhos |
+| Perfil/configurações | Conteúdo e ações demonstrativas/incompletas | Implementar ou identificar claramente módulos demonstrativos |
+| Comandas, histórico e financeiro | Páginas legadas sem operações de negócio integradas comprovadas | Definir escopo da feira ou ocultar opções não funcionais |
+| Publicação atual | SHA de aplicação `5749f333` publicado com sucesso, config privada HTTP 403 e flags `false/disabled` | Novas alterações exigem outro deploy autorizado, com backup |
 
 > **Atenção:** “implementado no código” não significa “validado em produção”. As páginas podem existir e estar acessíveis sem todas as ações funcionarem.
 
@@ -284,15 +293,14 @@ O checklist de integração mais importante está em [AGENDAMENTOS_4_5.md](AGEND
 - **Promover** significa abrir e aprovar um PR de `dev-feira-uninorte` para a `main` do fork. Isso **não altera o repositório `oliv-gabriel/AgenDay-PI`**; não há promoção automática, nem obrigação de esperar o dia da feira após aprovação da versão estável.
 - Exigir autorização específica para promoção, alterações de workflow e deploy. O merge na `main` pode disparar o workflow legado; é indispensável revisar o risco antes.
 
-## Próximas prioridades propostas
+## Próximas prioridades propostas (atualizadas após QA-02/QA-03)
 
-1. **QA-01:** código da correção do menu já integrado ([PR #4](https://github.com/Emds96/AgenDay-PI/pull/4)); **pendente publicar e testar visualmente no navegador real**. Não marcar resolvido antes da regressão.
-2. **QA-02 e QA-03:** definir e corrigir alteração e recuperação de senha, sem introduzir fluxo inseguro.
-3. **QA-04–QA-07:** corrigir dados ilustrativos, console e escopo dos módulos legados por PRs separados.
-4. **QA-08:** refinar modais após estabilizar a navegação.
-5. **Regressão:** repetir o fluxo principal auditado; ampliar testes de concorrência e autorização usando contas próprias.
-6. **Documentar a versão implantada:** confirmar o commit PHP publicado e o deploy; manter CI/deploy sob autorização.
-7. **Prazos e apresentação:** confirmar 24/11 e 27/11 e preparar dados de demonstração/contingência. Não promover para `main` sem versão estável e aprovação.
+1. **Isolamento de dados entre estabelecimentos:** completar os testes cruzados de autorização entre duas contas de QA; as listagens normais já passaram, mas endpoints, escritas e concorrência não receberam cobertura integral.
+2. **Experiência pública de agendamento para o consumidor:** definir e implementar o MVP se aprovado; atualmente existe apenas administração/autenticação de estabelecimento.
+3. **QA-04/QA-05:** transformar perfil e configurações fictícios em informações reais; decidir se comandas/histórico/financeiro terão MVP ou serão sinalizados como demonstrativos na feira.
+4. **QA-06/QA-07/QA-08:** corrigir erro JavaScript de configuração, cabeçalhos com `Barbearia` fixa e overflow em modais; validar o menu responsivo (QA-01) visualmente após publicação.
+5. **Regressão:** testar novamente cadastros/agendamentos, login tradicional/Google, recuperação QA-03 (negativos de token/limites) e dispositivos móveis.
+6. **Feira:** confirmar o prazo operacional 24/11 e a apresentação 27/11, revisar dados de demonstração e plano de contingência. Não promover a `main` sem aprovação específica.
 
 Essa lista é uma **proposta de prioridades**, não um backlog já aprovado ou uma confirmação de que algo foi testado.
 

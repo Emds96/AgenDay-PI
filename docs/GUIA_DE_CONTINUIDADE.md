@@ -28,6 +28,12 @@
 
 **Estado do acesso observado em 16/11:** Desktop Commander online e `gh` 2.104.0 autenticado como `Emds96`. Em outra sessão, **verificar novamente**; nunca tratar conexão como permanente. Não registrar ID de dispositivo, token, senha, código OTP ou caminho de secrets no repositório.
 
+## Regra de fechamento validado pelo responsável (17/11/2026)
+
+**Confirmação humana de que funcionou = gatilho imediato para registrar, antes da resposta de conclusão.** Conferir o estado real e atualizar no GitHub `docs/STATUS.md`, o manual da funcionalidade e todos os documentos ativos diretamente afetados. Incluir PR, SHA, execução de deploy, fonte da evidência (teste da ferramenta ou relato do responsável), limitações e pendências. Corrigir textos antigos que continuam marcando como pendente o que já foi aprovado, sem apagar o histórico cronológico. Usar uma branch documental curta derivada de `dev-feira-uninorte`, PR, validação e merge, com `main` preservada. Registro documental não exige novo deploy.
+
+**Ordem ao receber "funcionou", "aprovado" ou screenshot de validação:** confirmar fato → atualizar documentação ativa e integrar PR → responder ao responsável → iniciar próxima tarefa. Caso ferramentas estejam indisponíveis, declarar o registro pendente e sua causa, sem afirmar que foi concluído. Esta regra vale para **todas** as funcionalidades futuras.
+
 ## 3. Nosso ciclo de trabalho — da necessidade ao registro
 
 1. **Entender:** ler pedido e restrições; confirmar escopo, responsável, data, critérios de aceitação, repositório, branch e SHA.
@@ -57,7 +63,7 @@
 - **16/11:** PRs #3 (auditoria), #4 (correção CSS do menu), #5 (registro QA), #6 (guia de deploy) integrados à `dev-feira-uninorte`. Após #6, SHA `040ba53be17bc655438f3ee1a30765b950250ca1`, CI de [run 43960024149](https://github.com/Emds96/AgenDay-PI/actions/runs/43960024149) aprovada, **`publicar=skipped`**.
 - **16/11, verificação documental:** Variables do repositório `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`; Secrets FTP listados (nomes apenas) e environment `producao-agenday` com aprovação. Precisa ser reconfirmado no momento de publicar.
 - **16/11, outra sessão:** pasta privada de backup preparada em `%USERPROFILE%\Documents\AgenDay-Backups\2026-11-16` com `STATUS_BACKUP_PENDENTE.txt`. Inspeção somente leitura confirmou **sem backups atuais** nessa pasta. Os ZIPs de 13/11 têm integridade de arquivo, mas são antigos/incompletos.
-- **Ainda não confirmado nesta revisão:** último SHA PHP implantado, backup atual do site e banco, visual do menu corrigido em produção, teste simultâneo de concorrência real e cobertura total de segurança.
+- **Limitação desta fotografia de 16/11:** naquele momento ainda não havia confirmação do último SHA PHP implantado, backup atual do site/banco, visual do menu, concorrência simultânea ou cobertura total de segurança. **Atualização posterior (17/11):** backups completos foram aprovados com restauração local, o deploy da QA-03 no commit de aplicação `5749f333` foi confirmado, a troca de remetente Brevo foi publicada e o responsável comprovou mensagem real com `De: agendaysistema@12832884.brevosend.com` na caixa de entrada. Menu e segurança continuam exigindo regressão ampliada. Fonte: [STATUS.md](STATUS.md) e [QA03_RECUPERACAO_SENHA_BREVO.md](QA03_RECUPERACAO_SENHA_BREVO.md).
 
 Nenhum procedimento de continuidade ou arquivo documental autoriza automaticamente publicar ou testar operações destrutivas.
 

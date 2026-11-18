@@ -1,6 +1,6 @@
 # Mapa técnico, decisões e pendências — AgenDay 2.0
 
-**Retrato documental de 16/11/2026**, sujeito a mudanças. Código/GitHub e testes recentes são as fontes de verdade; histórico das etapas em `docs/*_3_*.md` e `docs/AGENDAMENTOS_4_*.md`. Não transformar propostas em decisões aprovadas.
+**Revisado em 17/11/2026** após conclusão da QA-03. Código/GitHub e evidências recentes são as fontes de verdade; documentos históricos das etapas registram seu contexto original. Não transformar propostas em decisões aprovadas.
 
 ## 1. Limites de ambientes
 
@@ -18,14 +18,15 @@ O site do Gabriel pode ser comparado **somente para análise autorizada**, não 
 
 | Área | Arquivos principais | Estado reportado / cautela |
 | --- | --- | --- |
-| Autenticação de estabelecimento | `index.php`, `login.php`, `cadastrar.php`, `sessao.php`, `verifica_login.php`, `logout.php` | Cadastro e login implementados, QA autenticado relatado; sem recuperação de senha |
+| Autenticação de estabelecimento | `index.php`, `login.php`, `cadastrar.php`, `sessao.php`, `verifica_login.php`, `logout.php`, `google-entrar.php` | Cadastro/login tradicionais e Google, fluxos principais testados manualmente; negativos e vinculação de conta existente ainda com cobertura parcial |
+| Senhas e comunicação | `alterar-senha.php`, `esqueci-senha.php`, `redefinir-senha.php`, `lib/brevo-email.php`, `css/recuperacao-senha.css` | QA-02 alteração e QA-03 recuperação implementadas/publicadas, aprovadas manualmente no fluxo principal; remetente verificado **AgenDay Sistema** e e-mail real entregue na caixa de entrada, com `De: agendaysistema@12832884.brevosend.com` (caso relatado de 17/11). API Brevo reutiliza a chave configurada; não armazenar chave no Git |
 | Clientes | `cad-cliente.php`, `cadastro-clientes.php`, `info-clientes.php` | Cadastro/pesquisa/upload adaptados à empresa; edição/exclusão não consideradas prontas |
 | Serviços | `cad.servicos.php`, `cadastro-servicos.php`, `info-servicos.php` | Preço, duração, descrição e pesquisa; edição/exclusão pendentes |
 | Funcionários | `cad-funcionario.php`, `cadastro-funcionario.php`, `info-funcionario.php` | Upload e múltiplos serviços via `funcionario_servico`; edição posterior de vínculos não pronta |
 | Agenda | `agenda.php`, `lib/agendamentos.php`, `lib/agendamento-gravar.php`, `salvar-agendamento.php` | Criação e bloqueio de conflito implementados, casos de QA relatados; concorrência simultânea não comprovada |
 | API/calendário/cancelamento | `api/agendamentos.php`, `js/calendario.js`, `lib/agendamento-cancelar.php`, `cancelar-agendamento.php` | Agenda por mês e cancelamento com status mantido no histórico; validar produção após mudanças |
-| Estilos e responsividade | `css/design-system.css`, `css/responsivo.css`, `tests/responsividade-check.js` | Identidade turquesa; QA-01 menu corrigido em código no PR #4 mas ainda não confirmado online |
-| Conta, perfil e configurações | `config.php`, `perfil.php`, `alterar-senha.php` | Telas legadas incompletas/ilustrativas, senha não funcional (QA-02) |
+| Estilos e responsividade | `css/design-system.css`, `css/responsivo.css`, `css/recuperacao-senha.css`, `tests/responsividade-check.js` | Identidade turquesa; QA-01 integrada/publicada, mas sem regressão visual completa confirmada; recuperação QA-03 publicada e testada em viewport 390px sem overflow |
+| Conta, perfil e configurações | `config.php`, `perfil.php`, `alterar-senha.php` | Perfil/configuração ainda têm elementos ilustrativos; **alteração de senha (QA-02) funcional no fluxo principal validado em produção** |
 | Comandas e financeiro | `comandas-abertas.php`, `historico-comandas.php`, `financeiro.php` | Arquivos/telas protegidos, **sem fluxo integrado de negócio validado**; não marcar concluídos |
 | Página pública do consumidor | **Não implementada no nosso fork** | Discutida, não aprovada nem desenvolvida; não confundir com o cadastro administrativo do cliente |
 
@@ -64,13 +65,14 @@ No código de agendamento, data/hora local é interpretada em `America/Manaus` p
 - **Documentação antes das próximas ações de produção**; outra sessão é responsável pela publicação, esta sessão documenta.
 
 **Pendentes:**
-- Novos backups atuais de `htdocs` e MySQL, depois validação formal (runbook [BACKUP_E_RECUPERACAO.md](BACKUP_E_RECUPERACAO.md)).
-- Publicar PR #4 (mais commits integrados, conforme SHA aprovado) e testar correção do menu; confirmar efetivamente versão remota.
-- Corrigir QA-02 a QA-08 na ordem acordada, sem considerar sugestões como escopo já autorizado.
+- Manter backups atuais de `htdocs` e MySQL antes de cada deploy. Rotina automática FTPS/PHP + restauração MariaDB foi comprovada em 17/11 (ex.: `2026-11-17_205855_4f8c886e`, `BACKUP OK`); ensaio de recuperação completa em outra hospedagem ainda não foi feito.
+- Completar regressão visual da correção de menu (QA-01), já integrada e incluída nos deploys posteriores; não presumir cobertura completa apenas pelo código publicado.
+- QA-02 e QA-03 estão concluídas no fluxo principal testado; ainda revisar os cenários negativos de senha. Priorizar QA-04 a QA-08 (configuração, módulos legados, JS, textos fixos, modais) conforme impacto na feira.
 - Definir página pública do consumidor, links e fluxo sem conta/com conta.
 - Decidir escopo real de comandas, financeiro, dashboard e perfil para a apresentação.
 - Decidir integração/colaboração com Gabriel; não unificar branches sem entendimento.
 - Confirmar oficialmente prazo final e data da feira e definir plano de demonstração/contingência.
+- Revalidar limites de isolamento e autorização entre estabelecimentos. Documentar assim que o responsável aprovar cada nova entrega, antes de comunicar a conclusão (ver `AGENTS.md`).
 
 ## 6. Mapa de leitura por tarefa
 
