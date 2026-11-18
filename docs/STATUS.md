@@ -1,5 +1,13 @@
 # STATUS — AgenDay 2.0
 
+## QA-04 — Configurações básicas do estabelecimento (18/11/2026, em implementação)
+
+- Autorizado nesta sessão: carregar nome/e-mail/contato reais, editar nome/contato, salvar no MySQL, aplicar sessão/CSRF/queries preparadas e melhorar visual; deploy autorizado sujeito a backup, CI e gates.
+- Código em branch de tarefa: config.php, lib/configuracao-estabelecimento.php, js/button-add.js e tests/configuracao-estabelecimento.php. SELECT/UPDATE restritos ao estabelecimento autenticado; nome da sessão atualizado após salvar; escape HTML e POST/Redirect/GET.
+- Ainda não publicado e não validado em produção neste registro. Ver [QA-04](QA04_CONFIG_ESTABELECIMENTO.md). Não incluir perfil, endereço, CNPJ e horários neste escopo.
+
+---
+
 **Atualizado em:** 17/11/2026 (QA-03 validada manualmente em produção, incluindo identidade do e-mail AgenDay Sistema; isolamento entre estabelecimentos permanece parcialmente auditado)  
 **Repositório:** `Emds96/AgenDay-PI`  
 **Referência de desenvolvimento:** `dev-feira-uninorte`  
