@@ -33,6 +33,9 @@ jobs:
           php tests/agendamento-cancelamento.php
           php tests/google-identidade-validacao.php
           php tests/recuperacao-senha-test.php
+          php tests/configuracao-estabelecimento.php
+          php tests/alteracao-senha-validacao.php
+          php tests/avatar-estabelecimento.php
           node tests/responsividade-check.js
       - name: Testar backup efemero offline
         shell: bash
@@ -58,10 +61,13 @@ jobs:
           test ! -e deploy-package/conexao.exemplo.php
           test -f deploy-package/arquivos/clientes/.htaccess
           test -f deploy-package/arquivos/funcionarios/.htaccess
+          test -f deploy-package/arquivos/estabelecimentos/.htaccess
           test -f deploy-package/config/.htaccess
           test ! -e deploy-package/config/brevo-api-config.php
           test ! -e deploy-package/arquivos/clientes/*.jpg
           test ! -e deploy-package/arquivos/funcionarios/*.jpg
+          test ! -e deploy-package/arquivos/estabelecimentos/*.jpg
+          test ! -e deploy-package/arquivos/estabelecimentos/*.png
           test ! -e deploy-package/sql
           test ! -e deploy-package/tests
           test ! -e deploy-package/docs
@@ -141,6 +147,7 @@ jobs:
           set -euo pipefail
           test -f deploy-package/arquivos/clientes/.htaccess
           test -f deploy-package/arquivos/funcionarios/.htaccess
+          test -f deploy-package/arquivos/estabelecimentos/.htaccess
           test -f deploy-package/config/.htaccess
       - name: Publicar por FTP com TLS obrigatorio
         env:

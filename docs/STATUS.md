@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## UI-08 — Centralização de Configurações e Space Grotesk Medium (18/11/2026; implementação em branch de tarefa)
+
+- **Origem verificada:** `dev-feira-uninorte` no commit `2ee2d43345f5a3e392ba512fec5fbc4387481c4a`. Escopo autorizado: implementação, testes e PR; **merge, deploy, banco e main não autorizados nesta tarefa**. O site publicado ainda é a versão UI-07.
+- **Alterações implementadas:** `config.php` com exatamente duas abas (**Estabelecimento** e **Minha Conta**) e um único painel visível; nome/telefone persistidos via SQL já existente, e-mail somente leitura na aba Conta, foto e Segurança com modal Alterar senha; estilos em `css/configuracoes-v2.css` e interação em `js/configuracoes.js`. Sem CNPJ, endereço, horário ou terceira aba.
+- **Compatibilidade e senha:** `perfil.php` direciona ao painel Conta e o GET de `alterar-senha.php` também; o POST de senha mantém CSRF, validação pura, `password_verify`, `password_hash`, compare-and-swap e PRG com feedback exibido no modal/aba. A troca real de senha na hospedagem ainda não foi testada nesta versão.
+- **Foto da conta, sem coluna SQL:** biblioteca `lib/avatar-estabelecimento.php` usa somente ID da sessão para arquivos públicos JPG/PNG em `arquivos/estabelecimentos/avatar-ID.ext`, até 2 MiB e 4096x4096, validação real de imagem/MIME e bloqueio a uploads não HTTP. Regra `.htaccess` nova, scripts de empacotamento/publicação ajustados para enviar apenas a regra, não fotos. Avatar aparece no componente compartilhado com fallback SVG. **Imagem pública por URL** e necessária em backup completo de `htdocs`.
+- **Tipografia:** Space Grotesk peso 500 importada por HTTPS apenas para `.ad-header-brand` em desktop/mobile. As páginas autenticadas receberam versão de URL `?v=20261118-ui08` para CSS novo sem cache; fontes dos formulários permanecem inalteradas.
+- **Testes locais realmente executados na branch:** `node --check js/configuracoes.js` sem erro; `node tests/responsividade-check.js` com **121 verificações aprovadas**; `python scripts/preparar_publicacao.py` com pacote de 88 arquivos sem SQL, senhas, fotos ou outros uploads, contendo nova regra anti-execução e arquivos UI-08. **PHP lint/unitários via CI ainda pendentes**; o computador Windows não possui PHP CLI configurado.
+- **Pendente:** validação CI e PR direcionado a `dev-feira-uninorte`; **não publicar automaticamente**. Após futura autorização de deploy e backup atualizado: QA real em 360/390/412/768/1366px, modal (erro/sucesso/teclado/foco), upload JPG/PNG/recusa de inválidos, carregamento do e-mail e isolamento das contas QA A/B, cabeçalho/font no navegador e regressões. O QA do UI-07 já aprovado não substitui o QA desta alteração. Ver [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md).
+
+---
+
 ## UI-07 — Padronização do cabeçalho autenticado (18/11/2026; integrada, publicada e aprovada visualmente)
 
 - **Escopo autorizado:** padronização do nome real da conta no cabeçalho, layout desktop/mobile e simplificação do dropdown. Nada de alterações nas páginas internas de Empresa, Perfil ou Alterar senha, agendamentos, banco, infraestrutura ou deploy.

@@ -36,7 +36,7 @@ def build_package() -> None:
                 copy_safe(file, file.relative_to(ROOT))
 
     # Enviar apenas as regras anti-execucao PHP; nunca incluir fotos no pacote.
-    for folder in ("clientes", "funcionarios"):
+    for folder in ("clientes", "funcionarios", "estabelecimentos"):
         guard = ROOT / "arquivos" / folder / ".htaccess"
         if not guard.is_file():
             raise RuntimeError("Protecao de uploads ausente: " + folder)
@@ -52,7 +52,7 @@ def build_package() -> None:
     assert "index.php" in files and "agenda.php" in files, "Pacote incompleto"
     assert "lib/agendamento-gravar.php" in files, "Biblioteca ausente"
     assert "cancelar-agendamento.php" in files, "Cancelamento ausente"
-    guard_files = {"arquivos/clientes/.htaccess", "arquivos/funcionarios/.htaccess", "config/.htaccess"}
+    guard_files = {"arquivos/clientes/.htaccess", "arquivos/funcionarios/.htaccess", "arquivos/estabelecimentos/.htaccess", "config/.htaccess"}
     assert guard_files.issubset(set(files)), "Protecoes do diretorio de uploads ausentes"
     assert not any((p.startswith("arquivos/") and p not in guard_files)
                    or (p.startswith("config/") and p != "config/.htaccess")

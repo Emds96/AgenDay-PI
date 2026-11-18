@@ -11,7 +11,7 @@ const ler = arquivo => fs.readFileSync(path.join(raiz, arquivo), 'utf8');
 const paginas = [
     'index.php', 'agenda.php', 'cad-cliente.php', 'cad-funcionario.php',
     'cad.servicos.php', 'comandas-abertas.php', 'financeiro.php',
-    'historico-comandas.php', 'perfil.php', 'config.php', 'alterar-senha.php'
+    'historico-comandas.php', 'config.php'
 ];
 let verificacoes = 0;
 const verificar = (condicao, mensagem) => {
@@ -73,7 +73,7 @@ verificar(!menuConta.includes('href="perfil.php"') && !menuConta.includes('href=
     'Atalhos de Perfil e Alterar senha não devem estar no dropdown');
 for (const pagina of paginasAutenticadas) {
     const html = ler(pagina);
-    verificar(html.includes('href="css/responsivo.css?v=20261118-ui07"'),
+    verificar(html.includes('href="css/responsivo.css?v=20261118-ui08"'),
         pagina + ': CSS do cabeçalho sem versão para invalidar cache');
     const inicio = html.indexOf('<header class="navbar');
     const fim = html.indexOf('</header>', inicio);
@@ -93,4 +93,63 @@ verificar(css.includes('grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr
 verificar(css.includes('.ad-account-dropdown .dropdown-item') && css.includes('min-height: 44px'),
     'Áreas de toque do dropdown não estão documentadas no CSS');
 
-console.log('OK: ' + verificacoes + ' verificações estruturais de responsividade e cabeçalho.');
+/* UI-08: duas abas, foto segregada, modal e fonte aplicados sem deploy. */
+const config = ler('config.php');
+const configJS = ler('js/configuracoes.js');
+const configCSS = ler('css/configuracoes-v2.css');
+const avatar = ler('lib/avatar-estabelecimento.php');
+const perfil = ler('perfil.php');
+const alterarSenha = ler('alterar-senha.php');
+verificar((config.match(/role="tab"/g) || []).length === 2
+    && (config.match(/role="tabpanel"/g) || []).length === 2,
+    'UI-08: Configurações precisa ter exatamente duas abas exclusivas');
+verificar(config.includes('Estabelecimento</button>') && config.includes('Minha Conta</button>'),
+    'UI-08: nomes das duas abas incorretos');
+verificar(!config.includes('>Empresa</a>') && !config.includes('>Perfil</a>'),
+    'UI-08: navegação antiga de três abas reapareceu');
+verificar(config.includes('name="nome_estabelecimento"')
+    && config.includes('name="contato_estabelecimento"'),
+    'UI-08: campos editáveis do estabelecimento ausentes');
+verificar(config.includes('type="email"') && config.includes('readonly'),
+    'UI-08: e-mail precisa permanecer somente leitura');
+verificar(config.includes('enctype="multipart/form-data"')
+    && config.includes('name="foto_conta"'),
+    'UI-08: envio da foto de conta ausente');
+verificar(config.includes('id="modalAlterarSenha"')
+    && config.includes('action="alterar-senha.php"')
+    && config.includes('data-bs-backdrop="static"')
+    && config.includes('data-bs-keyboard="true"'),
+    'UI-08: modal e processamento protegido da senha ausentes');
+verificar(configJS.includes('aria-selected') && configJS.includes("event.key === 'ArrowRight'")
+    && configJS.includes('hide.bs.modal') && configJS.includes('enviando'),
+    'UI-08: teclado ou proteção contra fechamento durante POST ausentes');
+verificar(configJS.includes('quantidade < 8') && configJS.includes('quantidade > 15')
+    && configJS.includes('digitos.length === 11'),
+    'UI-08: validação e formatação telefônica ausentes');
+verificar(perfil.includes("Location: config.php?aba=conta")
+    && alterarSenha.includes("Location: config.php?aba=conta"),
+    'UI-08: links legados de Perfil ou Alterar senha perderam compatibilidade');
+verificar(alterarSenha.includes("agenday_senha_validar_formulario($_POST)")
+    && alterarSenha.includes('password_verify(')
+    && alterarSenha.includes('password_hash(')
+    && alterarSenha.includes('agenday_valida_csrf()'),
+    'UI-08: fluxo seguro de senha foi alterado indevidamente');
+verificar(menuConta.includes('agenday_avatar_url(') && avatar.includes("agenday_avatar_caminho")
+    && avatar.includes('is_uploaded_file('),
+    'UI-08: avatar não tem isolamento por ID ou validação de upload');
+verificar(ler('scripts/preparar_publicacao.py').includes('"estabelecimentos"')
+    && ler('scripts/publicar_ftp.py').includes('arquivos/estabelecimentos/.htaccess')
+    && ler('arquivos/estabelecimentos/.htaccess').includes('Require all denied'),
+    'UI-08: armazenamento da foto sem proteção ou vazando uploads no deploy');
+verificar(css.includes('Space+Grotesk:wght@500')
+    && css.includes('font-family: "Space Grotesk"')
+    && css.includes('font-weight: 500 !important;'),
+    'UI-08: assinatura AgenDay sem Space Grotesk Medium');
+verificar(!configCSS.includes('font-family: "Space Grotesk"'),
+    'UI-08: fonte da marca não deve afetar formulários');
+verificar(configCSS.includes('@media (max-width: 575.98px)')
+    && configCSS.includes('.ag-settings-tabs .nav-link')
+    && configCSS.includes('max-height: calc(100dvh - 1.5rem)'),
+    'UI-08: configurações e modal sem estilos mobile');
+
+console.log('OK: ' + verificacoes + ' verificações estruturais de responsividade, cabeçalho e Configurações.');

@@ -53,7 +53,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
     <link rel="stylesheet" href="css/agenda-calendario.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui07">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui08">
 </head>
 
 <body class="agenday-app">

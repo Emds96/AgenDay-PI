@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500&display=swap");
+
 /*
  * AgenDay 2.0 — 5.2 responsividade.
  * Importar depois de design-system.css.
@@ -549,6 +551,10 @@
     grid-column: 2;
     margin: 0;
     color: var(--ad-primary);
+    /* Somente a assinatura AgenDay utiliza Space Grotesk Medium. */
+    font-family: "Space Grotesk", "Segoe UI", Arial, sans-serif;
+    font-weight: 500 !important;
+    letter-spacing: -.025em;
     font-size: 1.35rem;
     line-height: 1.2;
     white-space: nowrap;
@@ -602,6 +608,14 @@
     display: block;
     width: 30px;
     height: 30px;
+}
+
+.agenday-app > header.navbar .ad-account-avatar img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .agenday-app > header.navbar .ad-account-name {
