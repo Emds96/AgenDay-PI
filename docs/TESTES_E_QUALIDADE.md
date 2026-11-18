@@ -85,3 +85,9 @@ Após teste autorizado, registrar sem senhas/dados pessoais:
 - Persistência após recarga, impacto na conta QA e eventual limpeza autorizada.
 - Novo defeito (ID, prioridade, reprodução), limitação de cobertura e responsável pelo próximo passo.
 - Link para run GitHub Actions e `docs/STATUS.md` atualizado. Não publicar prints com tokens, hashes, `conexao.php` ou dados de terceiros.
+
+## 8. Contas permanentes de QA (18/11/2026)
+
+No computador autorizado, pasta `Documents/AgenDay-QA`, foram preparados dois cofres locais `qa01-permanente.clixml` e `qa02-permanente.clixml` (PowerShell `Export-Clixml`/DPAPI, vinculados ao usuário e ao dispositivo Windows), gerenciados pelo script local `Salvar-Contas-QA.ps1`. **Não versionar arquivos CLIXML, e-mails pessoais, senhas ou cópias dos cofres.** Acesso remoto depende do Desktop Commander estar conectado e de autorização do responsável.
+
+Em 18/11/2026, foi confirmada a existência dos dois arquivos criptografados e a abertura da tela de login do ambiente publicado via ZERO Browser MCP. **Não há ainda comprovação de autenticação bem-sucedida das duas contas nem do isolamento entre elas nesta rodada.** Antes de testar isolamento, validar login/logout separadamente, vínculo com estabelecimentos diferentes e só depois executar casos cruzados com dados fictícios e autorização.
