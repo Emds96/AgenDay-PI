@@ -178,7 +178,7 @@ Preparar o AgenDay, sistema web PHP/MySQL de gerenciamento de agendamentos, para
 | Navegação e visual | Correção de menu integrada e publicada em conjunto com outros commits; tela de recuperação responsiva validada em 390px | Revalidar menu e modais no navegador real em vários tamanhos |
 | Perfil/configurações | Configuração básica da empresa publicada e testada em QA01; perfil e configurações avançadas demonstrativos | Implementar perfil, endereço, CNPJ e horários em etapas separadas |
 | Comandas, histórico e financeiro | Páginas legadas sem operações de negócio integradas comprovadas | Definir escopo da feira ou ocultar opções não funcionais |
-| Publicação atual | SHA de aplicação `5749f333` publicado com sucesso, config privada HTTP 403 e flags `false/disabled` | Novas alterações exigem outro deploy autorizado, com backup |
+| Publicação atual | SHA de aplicação `5f2c8666` publicado no run #44367305044, com backup validado e flags `false/disabled` | Próximas alterações de aplicação exigem outro deploy autorizado, com backup |
 
 > **Atenção:** “implementado no código” não significa “validado em produção”. As páginas podem existir e estar acessíveis sem todas as ações funcionarem.
 
