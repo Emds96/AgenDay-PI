@@ -124,7 +124,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/box.css">
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui07">
     <style>
         .config-container { max-width: 980px; margin: 1.5rem auto 3rem; }
         .config-card { border: 1px solid #e4e8eb; border-radius: 1rem; overflow: hidden; }
