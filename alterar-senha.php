@@ -127,7 +127,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/alterar-senha.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui07">
 </head>
 
 <body class="agenday-app">

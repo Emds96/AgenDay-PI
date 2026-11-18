@@ -23,8 +23,8 @@ for (const pagina of paginas) {
     const html = ler(pagina);
     const head = html.slice(html.indexOf('<head'), html.indexOf('</head>'));
     verificar(head.includes('href="css/design-system.css"'), pagina + ': sem Design System');
-    verificar(head.includes('href="css/responsivo.css"'), pagina + ': sem CSS responsivo');
-    verificar(head.indexOf('href="css/design-system.css"') < head.indexOf('href="css/responsivo.css"'),
+    verificar(head.includes('href="css/responsivo.css'), pagina + ': sem CSS responsivo');
+    verificar(head.indexOf('href="css/design-system.css"') < head.indexOf('href="css/responsivo.css'),
         pagina + ': ordem incorreta de CSS');
     verificar((html.match(/css\/responsivo\.css/g) || []).length === 1,
         pagina + ': CSS responsivo deve aparecer uma vez');
@@ -73,6 +73,8 @@ verificar(!menuConta.includes('href="perfil.php"') && !menuConta.includes('href=
     'Atalhos de Perfil e Alterar senha não devem estar no dropdown');
 for (const pagina of paginasAutenticadas) {
     const html = ler(pagina);
+    verificar(html.includes('href="css/responsivo.css?v=20261118-ui07"'),
+        pagina + ': CSS do cabeçalho sem versão para invalidar cache');
     const inicio = html.indexOf('<header class="navbar');
     const fim = html.indexOf('</header>', inicio);
     const cabecalho = html.slice(inicio, fim);
