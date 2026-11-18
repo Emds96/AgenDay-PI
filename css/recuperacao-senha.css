@@ -1,0 +1,310 @@
+/*
+ * AgenDay — recuperação/redefinição de senha (QA-03).
+ * Mesma paleta, degradê e cartão da página de login.
+ * Estilos isolados para não alterar os formulários administrativos.
+ */
+.agenday-auth.agenday-recovery {
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    padding: clamp(16px, 4vw, 48px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ad-background, #e3f2fd);
+    font-family: var(--ad-font, system-ui, sans-serif);
+}
+
+.agenday-recovery .ad-recovery-layout {
+    width: min(100%, 960px);
+    min-height: 520px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.14fr) minmax(290px, .86fr);
+    overflow: hidden;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, .19), 0 10px 10px rgba(0, 0, 0, .12);
+}
+
+.agenday-recovery .ad-recovery-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(26px, 5vw, 64px);
+    min-width: 0;
+}
+
+.agenday-recovery .ad-recovery-brand {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 10px;
+    margin-bottom: 32px;
+    color: var(--ad-primary, #18544d);
+    text-decoration: none;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -.04em;
+}
+
+.agenday-recovery .ad-recovery-brand:hover {
+    color: var(--ad-primary-hover, #11675c);
+}
+
+.agenday-recovery .ad-recovery-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #a2ece4, #7ad6cc 55%, #1cc1ae);
+    color: #18544d;
+    font-weight: 800;
+}
+
+.agenday-recovery .ad-recovery-brand .ad-recovery-brand-accent {
+    color: #148e80;
+}
+
+.agenday-recovery .ad-recovery-kicker {
+    margin: 0 0 9px;
+    color: #11675c;
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+}
+
+.agenday-recovery .ad-recovery-content h1 {
+    margin: 0 0 12px;
+    font-size: clamp(1.7rem, 3vw, 2.15rem);
+    font-weight: 800;
+    letter-spacing: -.035em;
+    line-height: 1.2;
+    color: var(--ad-text, #203b38);
+}
+
+.agenday-recovery .ad-recovery-description {
+    margin: 0 0 23px;
+    color: var(--ad-text-muted, #486560);
+    line-height: 1.6;
+    font-size: .96rem;
+}
+
+.agenday-recovery .ad-recovery-form {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+}
+
+.agenday-recovery .ad-recovery-form label {
+    color: var(--ad-text, #203b38);
+    font-size: .91rem;
+    font-weight: 700;
+}
+
+.agenday-recovery .ad-recovery-form input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--ad-border, #ccdfdb);
+    border-radius: 11px;
+    padding: 11px 14px;
+    color: #203b38;
+    background: #fff;
+    font: inherit;
+    outline: none;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.agenday-recovery .ad-recovery-form input:focus-visible {
+    border-color: #11675c;
+    box-shadow: 0 0 0 3px rgba(17, 103, 92, .17);
+}
+
+.agenday-recovery .ad-recovery-form input::placeholder {
+    color: #6f8984;
+}
+
+.agenday-recovery .ad-recovery-submit,
+.agenday-recovery .ad-recovery-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 14px;
+    padding: 12px 18px;
+    border: 1px solid #18544d;
+    border-radius: 13px;
+    background: #5cc6ba;
+    color: #18544d;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.agenday-recovery .ad-recovery-submit:hover,
+.agenday-recovery .ad-recovery-action:hover {
+    background: #7ad6cc;
+    box-shadow: 0 8px 18px rgba(24, 84, 77, .16);
+    color: #18544d;
+}
+
+.agenday-recovery .ad-recovery-submit:active,
+.agenday-recovery .ad-recovery-action:active {
+    transform: translateY(1px);
+}
+
+.agenday-recovery :is(a, button, input):focus-visible {
+    outline: 3px solid rgba(17, 103, 92, .45);
+    outline-offset: 3px;
+}
+
+.agenday-recovery .ad-recovery-notice {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    margin-top: 19px;
+    padding: 14px;
+    border: 1px solid #c5e9e1;
+    border-radius: 12px;
+    background: #eefaf7;
+    color: #255b53;
+    font-size: .86rem;
+    line-height: 1.55;
+}
+
+.agenday-recovery .ad-recovery-notice-icon {
+    flex: 0 0 27px;
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 9px;
+    background: #d5f2eb;
+    color: #11675c;
+    font-weight: 800;
+}
+
+.agenday-recovery .ad-recovery-notice strong {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.agenday-recovery .ad-recovery-back {
+    align-self: flex-start;
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+    margin-top: 25px;
+    color: #18544d;
+    font-size: .93rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.agenday-recovery .ad-recovery-back:hover {
+    color: #11675c;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.agenday-recovery .ad-recovery-content .alert {
+    margin-bottom: 18px;
+    border-radius: 11px;
+    text-align: left;
+    font-size: .92rem;
+    line-height: 1.5;
+}
+
+.agenday-recovery .ad-recovery-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+    padding: 46px 36px;
+    text-align: center;
+    background: linear-gradient(110deg, #a2ece4 0%, #7ad6cc 49%, #1cc1ae 100%);
+    color: #18544d;
+}
+
+.agenday-recovery .ad-recovery-side-icon {
+    display: grid;
+    place-items: center;
+    width: 74px;
+    height: 74px;
+    margin-bottom: 23px;
+    border: 2px solid rgba(24, 84, 77, .25);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, .28);
+}
+
+.agenday-recovery .ad-recovery-side h2 {
+    max-width: 310px;
+    margin: 0 0 13px;
+    color: #18544d;
+    font-size: clamp(1.5rem, 2.3vw, 1.9rem);
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.agenday-recovery .ad-recovery-side p {
+    max-width: 290px;
+    margin: 0;
+    font-size: .98rem;
+    line-height: 1.65;
+}
+
+@media (max-width: 750px) {
+    .agenday-auth.agenday-recovery {
+        align-items: flex-start;
+        padding: 14px;
+    }
+    .agenday-recovery .ad-recovery-layout {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+        max-width: 540px;
+        margin: auto;
+    }
+    .agenday-recovery .ad-recovery-side {
+        grid-row: 1;
+        padding: 22px 24px;
+    }
+    .agenday-recovery .ad-recovery-side-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        margin-bottom: 8px;
+    }
+    .agenday-recovery .ad-recovery-side-icon svg {
+        width: 25px;
+        height: 25px;
+    }
+    .agenday-recovery .ad-recovery-side h2 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+    .agenday-recovery .ad-recovery-side p {
+        font-size: .86rem;
+        line-height: 1.5;
+    }
+    .agenday-recovery .ad-recovery-content {
+        padding: 26px 23px 30px;
+    }
+    .agenday-recovery .ad-recovery-brand {
+        margin-bottom: 23px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .agenday-recovery *,
+    .agenday-recovery *::before,
+    .agenday-recovery *::after {
+        transition: none !important;
+    }
+}
