@@ -34,6 +34,22 @@ A documentação histórica de cada microtarefa pode descrever etapas já supera
 
 A rotina exige autorização para **SHA e destino exatos**, backup recuperável e confirmação da branch; ativa temporariamente `AGENDAY_DEPLOY_ENABLED=true` e `AGENDAY_DEPLOY_MODE=publish`, dispara `workflow_dispatch`, aprova o environment `producao-agenday` quando autorizado, comprova `publicar=success` e **desativa as duas variáveis novamente**, também após falha. Um push com CI verde **não é deploy**. Não tocar secrets, `conexao.php`, SQL, workflow ou banco no processo documental. Consultar o guia atualizado — não confiar em mensagens de sessões anteriores.
 
+## Fluxo rapido proporcional ao risco (proposta de 19/11/2026)
+
+**Classificacao indicada pelo responsavel:** `simples`, `media` ou `complexa`. A IA deve seguir o nivel pedido e **alertar/elevar o rigor** se houver impacto em autenticacao, banco, permissao, isolamento de estabelecimentos, pagamentos, integracoes externas ou dados persistentes. A categoria nunca dispensa autorizacao.
+
+| Nivel | Exemplos | Analise, validacao e registro |
+| --- | --- | --- |
+| Simples | Remover componente visual, trocar texto, ajustar CSS isolado | Ler somente contexto e arquivos afetados; verificar regressao visual/mobile e links afetados; PR curto; registro sucinto em `STATUS.md` e no PR. |
+| Media | Formulario, regra local de agendamento, endpoint existente | Conferir dependencias e dados afetados; testes direcionados + CI; PR e QA do fluxo real; registrar riscos e pendencias. |
+| Complexa | Autenticacao por celular, nova area de clientes, migracao SQL, integracao externa | Planejar interfaces/dados/seguranca; aprovar riscos; testes integrados, regressao ampliada e plano de recuperacao. |
+
+**Um pedido pode autorizar o ciclo completo** (codigo, branch, testes, PR, merge e eventual deploy), desde que descreva expressamente essas acoes e seus limites; nao exigir confirmacoes repetidas do que ja foi autorizado. Para publicar, sempre identificar e conferir SHA exato, destino, CI, backup real e environment; nao publicar commits de terceiros nem alterar `main`. Se o pedido autorizar **somente preparar PR**, parar antes do merge/deploy.
+
+**Economia de tempo:** reutilizar `AGENTS.md` e o indice, consultar trecho relevante (nao auditar o repositorio inteiro a cada ajuste), evitar relatorios extensos por mudanca visual, e automatizar somente operacoes repetitivas seguras. A confirmacao do responsavel apos QA continua exigindo registro tecnico real; para mudancas simples, manter esse registro curto (sem documento historico novo se `STATUS.md` e PR bastarem).
+
+**Assistente de publicacao em piloto:** `scripts/publicacao_assistida.py` inicia sempre em **simulacao**; `--executar` possui efeitos reais e depende de autorizacao nova para SHA e destino, backup verificado, ambiente protegido e coordenacao entre sessoes. A implementacao do piloto **nao** autoriza publica-lo nem executa-lo em producao. Manual: [docs/PUBLICACAO_AUTOMATICA.md](docs/PUBLICACAO_AUTOMATICA.md).
+
 ## Como começar uma tarefa
 
 1. Confirmar repositório, branch atual, último commit, atividade de outras sessões e escopo solicitado.
