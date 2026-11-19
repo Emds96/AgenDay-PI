@@ -1,5 +1,16 @@
 # STATUS — AgenDay 2.0
 
+## UI-09 — Padronização do menu hambúrguer (18/11/2026; implementação e deploy autorizados)
+
+- **Autorização e escopo explícitos:** responsável aprovou a prévia visual e solicitou apenas trocar o título do menu de “AgenDay” para **“Menu”**, manter os cinco links individuais **Agenda, Clientes, Serviços, Funcionários, Configurações**, destaque da página ativa, ícones e paleta verde da identidade original e **Sair** destacado na parte inferior. Foi autorizada a implementação completa, PR/merge em `dev-feira-uninorte` e publicação/QA na hospedagem.
+- **Fora do escopo e preservado:** o dropdown da conta no canto superior direito, com Configurações e Sair, **não foi removido**; essa alteração foi explicitamente separada para outra decisão. Também não alterar cabeçalho central AgenDay/Space Grotesk, páginas internas, autenticação, cadastros, agendamentos, banco, upload, Financeiro, Comandas, hospedagem/configuração privada ou `main`. Os módulos Financeiro e Comandas permanecem acessíveis em suas rotas existentes, só não aparecem no menu simplificado.
+- **Estrutura implementada:** componente único `lib/menu-lateral.php`, utilizado por `agenda.php`, `cad-cliente.php`, `cad-funcionario.php`, `cad.servicos.php`, `comandas-abertas.php`, `financeiro.php`, `historico-comandas.php` e `config.php`. Mantém o ID/bootstrap offcanvas, botão de fechar à esquerda, título **Menu** à direita, cinco itens na ordem aprovada, `aria-current` na página selecionada e logout fixado no rodapé. SVGs decorativos em verde e ícone `img/icon-sair.svg` existente. Nenhuma rota PHP mudou.
+- **CSS:** somente `css/responsivo.css` recebeu estilos específicos para `.ad-sidebar` (foco visível, fundo mint da opção ativa, espaçamento e toque, rodapé, safe-area mobile e sem overflow). Referências versionadas a `?v=20261118-ui09` nas oito páginas para invalidar cache sem afetar o CSS de outros componentes.
+- **Validação local inicial:** `node tests/responsividade-check.js` passou com **144 verificações**; `python scripts/preparar_publicacao.py` gerou pacote com **89 arquivos**, incluindo `lib/menu-lateral.php`, sem SQL, segredos ou uploads. Testes de sintaxe PHP/CI, backup, merge, deploy e QA real no navegador ainda devem ser registrados conforme execução.
+- **Próximo passo:** PR de implementação para `dev-feira-uninorte`; após CI, backup completo de `htdocs` + SQL com `BACKUP OK` e integridade SHA-256, integração e deploy controlado por Actions/FTPS, restauração `false/disabled` e verificação visual/interativa do offcanvas em páginas administrativas/mobile/desktop. **Nada de alteração na `main`.**
+
+---
+
 ## UI-08 — Configurações em duas abas + Space Grotesk (18/11/2026; publicada e testada parcialmente em produção)
 
 - **Integração autorizada e realizada:** [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33) integrado em `dev-feira-uninorte` no merge `5637ef4092792d6493c461a0d15de5636244101a`. Branch `main` e esquema MySQL preservados. A autorização posterior para merge e deploy foi concedida para esta etapa, sem estendê-la a alterações de dados QA.

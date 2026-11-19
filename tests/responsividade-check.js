@@ -73,7 +73,7 @@ verificar(!menuConta.includes('href="perfil.php"') && !menuConta.includes('href=
     'Atalhos de Perfil e Alterar senha não devem estar no dropdown');
 for (const pagina of paginasAutenticadas) {
     const html = ler(pagina);
-    verificar(html.includes('href="css/responsivo.css?v=20261118-ui08"'),
+    verificar(html.includes('href="css/responsivo.css?v=20261118-ui09"'),
         pagina + ': CSS do cabeçalho sem versão para invalidar cache');
     const inicio = html.indexOf('<header class="navbar');
     const fim = html.indexOf('</header>', inicio);
@@ -151,5 +151,51 @@ verificar(configCSS.includes('@media (max-width: 575.98px)')
     && configCSS.includes('.ag-settings-tabs .nav-link')
     && configCSS.includes('max-height: calc(100dvh - 1.5rem)'),
     'UI-08: configurações e modal sem estilos mobile');
+
+
+/* UI-09: um menu hambúrguer único, com identidade aprovada e logout no rodapé. */
+const menuLateral = ler('lib/menu-lateral.php');
+const linksMenu = [...menuLateral.matchAll(/href="([^"]+)"/g)].map(resultado => resultado[1]);
+const rotasEsperadas = [
+    'agenda.php', 'cad-cliente.php', 'cad.servicos.php',
+    'cad-funcionario.php', 'config.php', 'logout.php'
+];
+verificar(linksMenu.length === rotasEsperadas.length
+    && linksMenu.every((rota, posicao) => rota === rotasEsperadas[posicao]),
+    'UI-09: menu deve ter exatamente cinco rotas individuais e Sair, na ordem aprovada');
+verificar(menuLateral.includes('id="ad-sidebar-title">Menu</h5>')
+    && !menuLateral.includes('id="ad-sidebar-title">AgenDay</h5>'),
+    'UI-09: título interno do menu não é Menu');
+verificar(menuLateral.includes('id="offcanvasDarkNavbar"')
+    && menuLateral.includes('aria-labelledby="ad-sidebar-title"')
+    && menuLateral.indexOf('class="btn-close"') < menuLateral.indexOf('id="ad-sidebar-title"'),
+    'UI-09: controle de fechamento e título do menu estão fora de ordem');
+verificar(menuLateral.includes('class="ad-sidebar-footer"')
+    && menuLateral.indexOf('class="ad-sidebar-footer"') > menuLateral.indexOf('class="offcanvas-body ad-sidebar-body"')
+    && menuLateral.includes('class="nav-link ad-side-logout"'),
+    'UI-09: Sair não está fixado na seção final do menu');
+verificar(menuLateral.includes("$_SERVER['SCRIPT_NAME']")
+    && menuLateral.includes("' aria-current=\"page\"'"),
+    'UI-09: identificação semântica da página ativa ausente');
+verificar(!menuLateral.includes('>Cadastrar</') && !menuLateral.includes('>Comandas</')
+    && !menuLateral.includes('>Financeiro</'),
+    'UI-09: agrupamentos antigos voltaram ao menu aprovado');
+verificar(css.includes('#offcanvasDarkNavbar .ad-sidebar-footer')
+    && css.includes('#offcanvasDarkNavbar .ad-side-link')
+    && css.includes('env(safe-area-inset-bottom)')
+    && css.includes('#offcanvasDarkNavbar .ad-side-link.active'),
+    'UI-09: estilos de item ativo/rodapé responsivo ausentes');
+for (const pagina of paginasAutenticadas) {
+    const html = ler(pagina);
+    const headStart = html.indexOf('<header class="navbar');
+    const headEnd = html.indexOf('</header>', headStart);
+    const header = html.slice(headStart, headEnd);
+    verificar(header.includes("require __DIR__ . '/lib/menu-lateral.php'")
+        && header.includes("require __DIR__ . '/lib/menu-conta.php'"),
+        pagina + ': menu lateral ou componente da conta não estão no cabeçalho');
+    verificar(!header.includes('id="offcanvasDarkNavbar"')
+        && !header.includes('>Cadastrar</') && !header.includes('>Comandas</'),
+        pagina + ': menu antigo ainda duplicado na página');
+}
 
 console.log('OK: ' + verificacoes + ' verificações estruturais de responsividade, cabeçalho e Configurações.');
