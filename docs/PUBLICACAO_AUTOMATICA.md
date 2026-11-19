@@ -55,7 +55,7 @@ O YAML possui `on.push` **somente** para `dev-feira-uninorte` e `workflow_dispat
 
 ## Assistente de publicacao em piloto (19/11/2026)
 
-Foi proposto `scripts/publicacao_assistida.py`, sem alterar este workflow. **Status: teste offline realizado; ainda nao executado nem validado no Windows do responsavel.** Usar somente apos revisao do PR, validacao operacional e autorizacao **especifica** para a publicacao do SHA correto. O procedimento manual abaixo continua sendo o plano de contingencia.
+Foi proposto `scripts/publicacao_assistida.py`, sem alterar este workflow. **Status: simulacao e testes offline executados com sucesso no Windows do responsavel via DeskBrowse em 19/11 (7/7 testes; `py_compile` aprovado); modo real nao testado.** Usar somente apos revisao do PR, validacao operacional e autorizacao **especifica** para a publicacao do SHA correto. O procedimento manual abaixo continua sendo o plano de contingencia.
 
 **Simulacao local (sem gh, rede, FTP, banco ou gravacao):**
 
@@ -67,7 +67,7 @@ python scripts/publicacao_assistida.py --sha SHA_COMPLETO_DE_40_CARACTERES
 
 **Precaucoes relevantes:** congelar pushes/merges na branch durante toda a janela de flags abertas; confirmar manualmente a identidade do destino. Se a execucao for interrompida ou um run ficar sem estado terminal, o assistente **nao desliga as flags antes de saber se ha upload em andamento**: acompanhar imediatamente o run e aplicar a desativacao do manual, evitando novas escritas na branch. Falhas de rede/CLI podem exigir intervencao humana. A automacao nao elimina o risco de FTPS parcial ou a necessidade de QA no site. **Nunca testar `--executar` sem autorizacao de deploy**.
 
-Testes locais offline do piloto: `python -m unittest discover -s tests -p test_publicacao_assistida.py -v`. A simulação e os testes nao demonstram que o modo real funciona no Windows/InfinityFree.
+Testes locais offline do piloto: `python -m unittest discover -s tests -p test_publicacao_assistida.py -v`. A simulacao e os testes no PC validam apenas o caminho sem escrita; nao demonstram que o modo real funciona no InfinityFree.
 
 ## Procedimento reproduzível com PowerShell + GitHub CLI
 
