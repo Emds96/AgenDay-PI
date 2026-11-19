@@ -177,7 +177,7 @@ $abaContaAtiva = $abaSelecionada === 'conta';
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/box.css">
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui08">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui09">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261118-ui08">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
@@ -194,26 +194,7 @@ $abaContaAtiva = $abaSelecionada === 'conta';
         </button>
         <h3 class="ad-header-brand fw-bold text-center mb-0">AgenDay</h3>
         <?php require __DIR__ . '/lib/menu-conta.php'; ?>
-        <div class="offcanvas offcanvas-start ag-settings-navigation" tabindex="-1"
-             id="offcanvasDarkNavbar" aria-labelledby="menuAgenDay">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="menuAgenDay">AgenDay</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                        aria-label="Fechar menu"></button>
-            </div>
-            <div class="offcanvas-body">
-                <nav class="navbar-nav">
-                    <a class="nav-link fw-bold py-2" href="agenda.php"><i class="bi bi-calendar3 me-2"></i>Agenda</a>
-                    <a class="nav-link fw-bold py-2" href="cad-cliente.php"><i class="bi bi-people me-2"></i>Clientes</a>
-                    <a class="nav-link fw-bold py-2" href="cad.servicos.php"><i class="bi bi-card-list me-2"></i>Serviços</a>
-                    <a class="nav-link fw-bold py-2" href="cad-funcionario.php"><i class="bi bi-person-badge me-2"></i>Funcionários</a>
-                    <a class="nav-link fw-bold py-2 active" aria-current="page" href="config.php">
-                        <i class="bi bi-gear me-2"></i>Configurações
-                    </a>
-                    <a class="nav-link fw-bold py-2" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Sair</a>
-                </nav>
-            </div>
-        </div>
+        <?php require __DIR__ . '/lib/menu-lateral.php'; ?>
     </div>
 </header>
 
