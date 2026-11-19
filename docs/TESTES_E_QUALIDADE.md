@@ -17,6 +17,9 @@ Um agente deve reportar **qual nível foi atingido**, identificando ferramenta, 
 find . -type f -name '*.php' -not -path './deploy-package/*' -print0 | xargs -0 -n 1 php -l
 php tests/agendamento-validacao.php
 php tests/agendamento-cancelamento.php
+php tests/configuracao-estabelecimento.php
+php tests/alteracao-senha-validacao.php
+php tests/avatar-estabelecimento.php
 node tests/responsividade-check.js
 ```
 
@@ -87,3 +90,11 @@ Após teste autorizado, registrar sem senhas/dados pessoais:
 - Persistência após recarga, impacto na conta QA e eventual limpeza autorizada.
 - Novo defeito (ID, prioridade, reprodução), limitação de cobertura e responsável pelo próximo passo.
 - Link para run GitHub Actions e `docs/STATUS.md` atualizado. Não publicar prints com tokens, hashes, `conexao.php` ou dados de terceiros.
+
+## 8. UI-08 — Configurações em duas abas (branch de tarefa, sem deploy)
+
+A implementação proposta está documentada em [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md). **Não confundir UI-08 com o defeito QA-08 de overflow dos modais**, que permanece em acompanhamento separado.
+
+- **Verificações locais realizadas (Windows, branch UI-08):** `node --check js/configuracoes.js` passou, `node tests/responsividade-check.js` passou (121 verificações), `python scripts/preparar_publicacao.py` passou (88 arquivos; apenas regras de proteção na pasta `arquivos/`, sem fotos). Essas verificações não consultam banco.
+- **Testes PHP confirmados na CI:** `tests/configuracao-estabelecimento.php`, `tests/alteracao-senha-validacao.php` e `tests/avatar-estabelecimento.php` foram adicionados ao job `validar`. Sintaxe PHP e execução dos testes concluídas com `success` no [run #44424205050](https://github.com/Emds96/AgenDay-PI/actions/runs/44424205050), SHA `fe7855b8`, branch `feat/configuracoes-duas-abas-ui08`. Os jobs de FTPS e publicação foram `skipped`.
+- **Bloqueado até deploy autorizado:** conteúdo real das abas, nome/telefone salvos com sessão, e-mail correto por estabelecimento, upload/recusa de arquivo, mudança real de senha, Escape/foco do modal, tipografia computada, isolamento A/B, CSS em dispositivos e regressão. Sem deploy nesta tarefa, não há novos resultados E2E do UI-08 no InfinityFree.

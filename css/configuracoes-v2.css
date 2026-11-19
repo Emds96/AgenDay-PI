@@ -1,0 +1,353 @@
+/* Configurações UI-08: duas abas, formulário minimalista e segurança no modal. */
+.ag-settings {
+    max-width: 930px;
+    margin: clamp(1.25rem, 3.5vw, 2.75rem) auto 4rem;
+    padding-inline: clamp(.75rem, 2.5vw, 1.5rem);
+    color: var(--ad-text);
+}
+
+.ag-settings-heading {
+    margin-bottom: 1.75rem;
+}
+
+.ag-settings-heading h1 {
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    letter-spacing: -.02em;
+    margin-bottom: .4rem;
+}
+
+.ag-settings-heading p,
+.ag-settings-section-title p,
+.ag-settings-help {
+    color: var(--ad-text-muted);
+    line-height: 1.5;
+}
+
+.ag-settings-heading p {
+    margin-bottom: 0;
+}
+
+.ag-settings-panel {
+    background: var(--ad-surface);
+    border: 1px solid var(--ad-border);
+    border-radius: 18px;
+    box-shadow: var(--ad-shadow);
+    overflow: hidden;
+}
+
+.ag-settings-tabbar {
+    padding: .75rem clamp(1rem, 3vw, 2rem) 0;
+    border-bottom: 1px solid var(--ad-border);
+}
+
+.ag-settings-tabs {
+    flex-wrap: nowrap;
+    gap: 1rem;
+    border: 0;
+}
+
+.ag-settings-tabs .nav-link {
+    flex: 0 1 auto;
+    min-width: 142px;
+    min-height: 48px;
+    padding: .7rem 1rem;
+    color: var(--ad-text-muted);
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    transition: color .16s ease, border-color .16s ease;
+}
+
+.ag-settings-tabs .nav-link:hover {
+    color: var(--ad-primary);
+    border-color: var(--ad-border);
+}
+
+.ag-settings-tabs .nav-link.active,
+.ag-settings-tabs .nav-link[aria-selected="true"] {
+    color: var(--ad-primary);
+    background: transparent;
+    border-bottom-color: var(--ad-primary);
+}
+
+.ag-settings-tabs .nav-link:focus-visible,
+.ag-settings button:focus-visible,
+.ag-settings a:focus-visible,
+.ag-settings input:focus-visible,
+.ag-settings-password-modal button:focus-visible,
+.ag-settings-password-modal input:focus-visible {
+    outline: 3px solid var(--ad-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(28, 193, 174, .15);
+}
+
+.ag-settings-body {
+    padding: clamp(1.15rem, 3.5vw, 2.25rem);
+}
+
+.ag-settings-section-title {
+    margin-bottom: 1.75rem;
+}
+
+.ag-settings-section-title h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: .4rem;
+}
+
+.ag-settings-section-title p {
+    margin-bottom: 0;
+}
+
+.ag-settings .form-label {
+    color: var(--ad-text);
+}
+
+.ag-settings .form-control,
+.ag-settings-password-modal .form-control {
+    min-height: 46px;
+    padding: .65rem .85rem;
+    border-color: var(--ad-border);
+    border-radius: .65rem;
+    color: var(--ad-text);
+}
+
+.ag-settings .form-control:focus,
+.ag-settings-password-modal .form-control:focus {
+    border-color: var(--ad-primary-hover);
+    box-shadow: 0 0 0 .2rem rgba(17, 103, 92, .14);
+}
+
+.ag-settings .form-text,
+.ag-settings-password-modal .form-text {
+    color: var(--ad-text-muted);
+}
+
+.ag-settings-readonly {
+    background: #f5f8f8 !important;
+    cursor: default;
+}
+
+.ag-settings .btn,
+.ag-settings-password-modal .btn {
+    min-height: 44px;
+    border-radius: .65rem;
+    padding: .55rem 1.25rem;
+    font-weight: 600;
+}
+
+.ag-settings .btn-primary,
+.ag-settings-password-modal .btn-primary {
+    background-color: var(--ad-primary);
+    border-color: var(--ad-primary);
+}
+
+.ag-settings .btn-primary:hover,
+.ag-settings-password-modal .btn-primary:hover {
+    background-color: var(--ad-primary-hover);
+    border-color: var(--ad-primary-hover);
+}
+
+.ag-settings .btn-outline-primary {
+    color: var(--ad-primary);
+    border-color: var(--ad-primary);
+}
+
+.ag-settings .btn-outline-primary:hover {
+    color: #fff;
+    border-color: var(--ad-primary);
+    background: var(--ad-primary);
+}
+
+.ag-settings-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.ag-settings-group {
+    padding: 0 0 1.75rem;
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--ad-border);
+}
+
+.ag-settings-group:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+.ag-settings-group h3 {
+    font-size: 1.06rem;
+    font-weight: 700;
+    margin-bottom: .45rem;
+}
+
+.ag-settings-help {
+    margin-bottom: 1rem;
+}
+
+.ag-settings-photo-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    min-width: 0;
+}
+
+.ag-settings-photo {
+    flex: 0 0 88px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    border: 2px solid var(--ad-border);
+    background: var(--ad-surface-muted);
+    overflow: hidden;
+}
+
+.ag-settings-photo img,
+.ag-settings-photo svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ag-settings-photo-form {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 590px;
+}
+
+.ag-settings-photo-form .form-control {
+    width: 100%;
+    min-width: 0;
+    font-size: .95rem;
+}
+
+.ag-settings-security {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+}
+
+.ag-settings-navigation {
+    width: min(320px, 85vw) !important;
+}
+
+.ag-settings-password-modal {
+    border: 1px solid var(--ad-border);
+    border-radius: 1rem;
+    overflow: hidden;
+    color: var(--ad-text);
+}
+
+.ag-settings-password-modal .modal-header,
+.ag-settings-password-modal .modal-footer {
+    border-color: var(--ad-border);
+}
+
+.ag-settings-password-modal .modal-body {
+    padding: 1.4rem;
+}
+
+.ag-settings-password-modal .modal-title {
+    font-weight: 700;
+}
+
+.ag-settings-password-modal .modal-footer {
+    padding: 1rem 1.4rem;
+}
+
+@media (max-width: 575.98px) {
+    .ag-settings {
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+        padding-inline: .75rem;
+    }
+
+    .ag-settings-heading {
+        margin-bottom: 1.25rem;
+    }
+
+    .ag-settings-panel {
+        border-radius: 14px;
+    }
+
+    .ag-settings-tabbar {
+        padding: .3rem .85rem 0;
+    }
+
+    .ag-settings-tabs {
+        gap: .25rem;
+    }
+
+    .ag-settings-tabs .nav-link {
+        flex: 1 1 50%;
+        min-width: 0;
+        padding: .7rem .35rem;
+        font-size: .94rem;
+    }
+
+    .ag-settings-body {
+        padding: 1.15rem;
+    }
+
+    .ag-settings-photo-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .ag-settings-photo {
+        flex-basis: 88px;
+    }
+
+    .ag-settings-security {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ag-settings-actions .btn,
+    .ag-settings-security .btn,
+    .ag-settings-photo-form .btn {
+        width: 100%;
+    }
+
+    #modalAlterarSenha .modal-dialog {
+        margin: .75rem;
+        max-width: none;
+    }
+
+    #modalAlterarSenha .modal-content {
+        max-height: calc(100dvh - 1.5rem);
+    }
+
+    #modalAlterarSenha .modal-body {
+        padding: 1.15rem;
+    }
+
+    #modalAlterarSenha .modal-footer {
+        padding: 1rem 1.15rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #modalAlterarSenha .modal-footer .btn {
+        margin: 0;
+        min-width: 0;
+        padding-inline: .5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ag-settings-tabs .nav-link {
+        transition: none;
+    }
+}

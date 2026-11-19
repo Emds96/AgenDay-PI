@@ -18,7 +18,7 @@ PERMITTED = {
 NEVER = {"conexao.php", "conexao.exemplo.php", "brevo-api-config.php"}
 
 def allowed(rel: Path) -> bool:
-    if rel.as_posix() in {"arquivos/clientes/.htaccess", "arquivos/funcionarios/.htaccess", "config/.htaccess"}:
+    if rel.as_posix() in {"arquivos/clientes/.htaccess", "arquivos/funcionarios/.htaccess", "arquivos/estabelecimentos/.htaccess", "config/.htaccess"}:
         return True
     if rel.name in NEVER or any(p.startswith(".") or p == ".." for p in rel.parts):
         return False

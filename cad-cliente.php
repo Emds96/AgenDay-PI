@@ -29,7 +29,7 @@ require_once __DIR__ . '/info-clientes.php';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui07">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui08">
 </head>
 
 <body class="agenday-app">
