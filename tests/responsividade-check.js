@@ -61,37 +61,28 @@ verificar(ler('agenda.php').includes('action="salvar-agendamento.php"'),
 
 /* UI-07: smoke test do cabeçalho compartilhado (sem renderização no navegador). */
 const paginasAutenticadas = paginas.filter(pagina => pagina !== 'index.php');
-const menuConta = ler('lib/menu-conta.php');
-verificar(ler('scripts/preparar_publicacao.py').includes('"lib": {".php"}'),
-    'Componente PHP fora dos diretórios incluídos no pacote publicado');
-verificar(menuConta.includes("$_SESSION['nome_estabelecimento']"),
-    'Cabeçalho não utiliza a identificação da sessão autenticada');
-verificar(menuConta.includes('htmlspecialchars('), 'Nome da conta não recebe escape HTML');
-verificar(menuConta.includes('href="config.php"') && menuConta.includes('href="logout.php"'),
-    'Dropdown não contém Configurações e Sair');
-verificar(!menuConta.includes('href="perfil.php"') && !menuConta.includes('href="alterar-senha.php"'),
-    'Atalhos de Perfil e Alterar senha não devem estar no dropdown');
+verificar(!fs.existsSync(path.join(raiz, 'lib/menu-conta.php')),
+    'UI-10: componente exclusivo do dropdown ainda existe');
 for (const pagina of paginasAutenticadas) {
     const html = ler(pagina);
-    verificar(html.includes('href="css/responsivo.css?v=20261118-ui09"'),
+    verificar(html.includes('href="css/responsivo.css?v=20261119-ui10"'),
         pagina + ': CSS do cabeçalho sem versão para invalidar cache');
     const inicio = html.indexOf('<header class="navbar');
     const fim = html.indexOf('</header>', inicio);
     const cabecalho = html.slice(inicio, fim);
     verificar(inicio !== -1 && fim > inicio, pagina + ': cabeçalho ausente');
-    verificar(cabecalho.includes("require __DIR__ . '/lib/menu-conta.php'"),
-        pagina + ': não usa o componente compartilhado');
+    verificar(!cabecalho.includes('menu-conta.php')
+        && cabecalho.includes("require __DIR__ . '/lib/menu-lateral.php'"),
+        pagina + ': cabeçalho não foi simplificado ou perdeu o hambúrguer');
     verificar(cabecalho.includes('class="ad-header-brand'),
         pagina + ': marca não está na estrutura centralizada');
     verificar(!cabecalho.includes('Barbearia'),
         pagina + ': nome fictício encontrado no cabeçalho');
 }
-verificar(/@media \(max-width: 767\.98px\)\s*\{[\s\S]*?\.agenday-app > header\.navbar \.ad-account-name\s*\{\s*display:\s*none;/m.test(css),
-    'Nome do estabelecimento não é ocultado no cabeçalho mobile');
 verificar(css.includes('grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)'),
     'Cabeçalho não centraliza a marca em três colunas');
-verificar(css.includes('.ad-account-dropdown .dropdown-item') && css.includes('min-height: 44px'),
-    'Áreas de toque do dropdown não estão documentadas no CSS');
+verificar(!css.includes('ad-account-') && !css.includes('.navbar .dropdown'),
+    'UI-10: CSS exclusivo do antigo dropdown ainda existe');
 
 /* UI-08: duas abas, foto segregada, modal e fonte aplicados sem deploy. */
 const config = ler('config.php');
@@ -134,7 +125,7 @@ verificar(alterarSenha.includes("agenday_senha_validar_formulario($_POST)")
     && alterarSenha.includes('password_hash(')
     && alterarSenha.includes('agenday_valida_csrf()'),
     'UI-08: fluxo seguro de senha foi alterado indevidamente');
-verificar(menuConta.includes('agenday_avatar_url(') && avatar.includes("agenday_avatar_caminho")
+verificar(avatar.includes('agenday_avatar_url(') && avatar.includes("agenday_avatar_caminho")
     && avatar.includes('is_uploaded_file('),
     'UI-08: avatar não tem isolamento por ID ou validação de upload');
 verificar(ler('scripts/preparar_publicacao.py').includes('"estabelecimentos"')
@@ -191,11 +182,41 @@ for (const pagina of paginasAutenticadas) {
     const headEnd = html.indexOf('</header>', headStart);
     const header = html.slice(headStart, headEnd);
     verificar(header.includes("require __DIR__ . '/lib/menu-lateral.php'")
-        && header.includes("require __DIR__ . '/lib/menu-conta.php'"),
-        pagina + ': menu lateral ou componente da conta não estão no cabeçalho');
+        && !header.includes('lib/menu-conta.php'),
+        pagina + ': menu lateral ausente ou dropdown da conta reapareceu');
     verificar(!header.includes('id="offcanvasDarkNavbar"')
         && !header.includes('>Cadastrar</') && !header.includes('>Comandas</'),
         pagina + ': menu antigo ainda duplicado na página');
 }
+
+
+/* UI-10: cabeçalho sem menu da conta, com marca centrada e sidebar intacta. */
+for (const pagina of paginasAutenticadas) {
+    const html = ler(pagina);
+    const start = html.indexOf('<header class="navbar');
+    const end = html.indexOf('</header>', start);
+    const header = html.slice(start, end);
+    verificar(start >= 0 && end > start
+        && !header.includes('menu-conta.php')
+        && !header.includes('ad-header-account')
+        && !header.includes('ad-account-avatar')
+        && !header.includes('dropdown-toggle')
+        && header.includes('class="ad-header-brand')
+        && header.includes('data-bs-target="#offcanvasDarkNavbar"'),
+        'UI-10: cabeçalho contém dropdown ou perdeu menu/marca em ' + pagina);
+    verificar((html.match(/lib\/menu-lateral\.php/g) || []).length === 1,
+        'UI-10: menu hambúrguer ausente ou duplicado em ' + pagina);
+}
+verificar(!fs.existsSync(path.join(raiz, 'lib/menu-conta.php')),
+    'UI-10: antigo componente de dropdown foi mantido');
+verificar(!css.includes('ad-account-') && !css.includes('header.navbar .dropdown'),
+    'UI-10: estilos exclusivos da conta ainda existem');
+verificar(css.includes('grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)')
+    && css.includes('grid-column: 2;')
+    && css.includes('font-family: "Space Grotesk"'),
+    'UI-10: marca perdeu centralização ou tipografia');
+verificar(menuLateral.includes('href="config.php"')
+    && menuLateral.includes('href="logout.php"'),
+    'UI-10: Configurações/Sair não podem desaparecer do hambúrguer');
 
 console.log('OK: ' + verificacoes + ' verificações estruturais de responsividade, cabeçalho e Configurações.');

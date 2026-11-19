@@ -38,26 +38,6 @@
     flex-shrink: 0;
 }
 
-.agenday-app .navbar .dropdown-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    min-width: 0;
-    max-width: min(56vw, 310px);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.agenday-app .navbar .dropdown-toggle img {
-    flex-shrink: 0;
-}
-
-.agenday-app .navbar .dropdown-menu {
-    max-width: calc(100vw - 16px);
-    overflow-wrap: anywhere;
-}
-
 .agenday-app .card,
 .agenday-app .modal-content,
 .agenday-app input,
@@ -137,23 +117,6 @@
 
     .agenday-app header.navbar .navbar-toggler {
         flex-shrink: 0;
-    }
-
-    .agenday-app header.navbar .dropdown {
-        min-width: 0;
-    }
-
-    .agenday-app header.navbar .dropdown-toggle {
-        max-width: 43vw;
-        font-size: .83rem;
-        padding-inline: 6px;
-        overflow: hidden;
-    }
-
-    .agenday-app header.navbar .dropdown-toggle img {
-        width: 26px;
-        height: 26px;
-        margin-right: 2px !important;
     }
 
     .agenday-app #offcanvasDarkNavbar.offcanvas {
@@ -496,10 +459,6 @@
         font-size: 1rem;
     }
 
-    .agenday-app header.navbar .dropdown-toggle {
-        max-width: 37vw;
-    }
-
     .agenday-app #agenda-calendario .calendar-days,
     .agenday-app #agenda-calendario .calendar-week-day {
         gap: 2px;
@@ -532,7 +491,7 @@
     }
 }
 
-/* UI-07: cabeçalho do painel com conta responsiva e marca centralizada. */
+/* UI-10: cabeçalho enxuto; três trilhos simétricos mantêm AgenDay centralizado. */
 .agenday-app > header.navbar > .container-fluid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -560,100 +519,6 @@
     white-space: nowrap;
 }
 
-.agenday-app > header.navbar .ad-header-account {
-    grid-column: 3;
-    justify-self: end;
-    min-width: 0;
-    max-width: 100%;
-}
-
-.agenday-app > header.navbar .ad-account-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: .5rem;
-    min-height: 44px;
-    min-width: 44px;
-    max-width: 100%;
-    padding: .35rem .65rem;
-    overflow: visible;
-    white-space: nowrap;
-    border: 1px solid transparent;
-    border-radius: .75rem;
-    color: var(--ad-text);
-}
-
-.agenday-app > header.navbar .ad-account-trigger:hover,
-.agenday-app > header.navbar .ad-account-trigger:focus-visible {
-    background-color: var(--ad-surface-muted);
-    border-color: var(--ad-border);
-}
-
-.agenday-app > header.navbar .ad-account-trigger::after {
-    flex-shrink: 0;
-    margin-left: 0;
-}
-
-.agenday-app > header.navbar .ad-account-avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 30px;
-    width: 30px;
-    height: 30px;
-    color: var(--ad-primary);
-}
-
-.agenday-app > header.navbar .ad-account-avatar svg {
-    display: block;
-    width: 30px;
-    height: 30px;
-}
-
-.agenday-app > header.navbar .ad-account-avatar img {
-    display: block;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.agenday-app > header.navbar .ad-account-name {
-    display: inline-block;
-    min-width: 0;
-    max-width: min(27vw, 260px);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.agenday-app > header.navbar .ad-account-dropdown {
-    min-width: 230px;
-    max-width: calc(100vw - 24px);
-    padding: .4rem;
-    border: 1px solid var(--ad-border);
-    border-radius: .75rem;
-    box-shadow: 0 8px 20px rgba(24, 84, 77, .12);
-}
-
-.agenday-app > header.navbar .ad-account-identity {
-    padding: .65rem .75rem;
-    color: var(--ad-text);
-    font-weight: 700;
-}
-
-.agenday-app > header.navbar .ad-account-identity-name {
-    display: block;
-    overflow-wrap: anywhere;
-}
-
-.agenday-app > header.navbar .ad-account-dropdown .dropdown-item {
-    display: flex;
-    align-items: center;
-    min-height: 44px;
-    border-radius: .5rem;
-}
-
 @media (max-width: 767.98px) {
     .agenday-app > header.navbar > .container-fluid {
         gap: 4px;
@@ -664,16 +529,7 @@
         font-size: 1.25rem;
     }
 
-    .agenday-app > header.navbar .ad-account-trigger {
-        max-width: none;
-        gap: .3rem;
-        padding: .35rem .5rem;
-        overflow: visible;
-    }
 
-    .agenday-app > header.navbar .ad-account-name {
-        display: none;
-    }
 }
 
 @media (max-width: 390px) {

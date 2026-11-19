@@ -1,5 +1,16 @@
 # STATUS — AgenDay 2.0
 
+## UI-10 — Remoção do dropdown da conta no cabeçalho (19/11/2026; implementação autorizada)
+
+- **Escopo aprovado:** retirar inteiramente do cabeçalho autenticado avatar/foto, nome, seta e dropdown da conta em desktop/mobile, preservando à esquerda o hambúrguer e ao centro **AgenDay** com Space Grotesk Medium. A autorização abrange implementação, PR/integração com `dev-feira-uninorte` e deploy para validação visual; **não** inclui mudanças na `main`, banco, cadastros, agendamento ou outros módulos.
+- **Pré-condição confirmada no código:** `lib/menu-lateral.php` já possui os links reais `config.php` (**Configurações**) e `logout.php` (**Sair**), portanto o menu hambúrguer não precisa ser modificado.
+- **Alteração restrita:** removidas as oito inclusões de `lib/menu-conta.php` em `agenda.php`, `cad-cliente.php`, `cad-funcionario.php`, `cad.servicos.php`, `comandas-abertas.php`, `financeiro.php`, `historico-comandas.php` e `config.php`; excluído do repositório o componente exclusivo `lib/menu-conta.php`. Em `css/responsivo.css`, eliminadas somente as regras da conta/dropdown que não têm mais uso, mantendo a grade de três colunas **simétricas** (hambúrguer no trilho esquerdo, marca no centro, trilho direito sem conteúdo) para preservar a centralização. URLs CSS versionadas `?v=20261119-ui10` para invalidar cache.
+- **O que permanece:** marca e tipografia atuais, `lib/menu-lateral.php`, rotas/funcionalidades Configurações e Sair, interface interna de `config.php`, imagem que o estabelecimento salvou na pasta `arquivos/estabelecimentos/` e suas funções `lib/avatar-estabelecimento.php`, dados da sessão e todas as funcionalidades de negócio. Nenhum script específico do dropdown foi identificado; Bootstrap e scripts gerais permanecem por serem utilizados no restante da interface.
+- **Testes locais executados:** `node tests/responsividade-check.js`: **159 verificações aprovadas**; `python scripts/preparar_publicacao.py`: pacote **88 arquivos** com menu lateral presente e componente do dropdown ausente, sem SQL/segredos/uploads; `git diff --check` aprovado. CI PHP, backup, merge, deploy e QA no navegador a registrar após execução; não declarar site atualizado antes do job de publicação.
+- **Nota operacional:** o publicador FTPS adiciona/substitui arquivos e **não exclui arquivos antigos remotamente**. Mesmo que o antigo PHP deixe de existir no repositório/pacote, nenhuma página terá referência a ele; a eventual limpeza física do arquivo órfão na hospedagem exige procedimento de manutenção próprio, não necessário à remoção visual e não executado neste escopo.
+
+---
+
 ## UI-09 — Menu hambúrguer padronizado (18/11/2026; integrado, publicado, QA inicial aprovado)
 
 - **Autorização e escopo explícitos:** responsável aprovou a prévia visual e solicitou apenas trocar o título do menu de “AgenDay” para **“Menu”**, manter os cinco links individuais **Agenda, Clientes, Serviços, Funcionários, Configurações**, destaque da página ativa, ícones e paleta verde da identidade original e **Sair** destacado na parte inferior. Foi autorizada a implementação completa, PR/merge em `dev-feira-uninorte` e publicação/QA na hospedagem.
