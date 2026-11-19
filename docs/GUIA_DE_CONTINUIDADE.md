@@ -45,6 +45,20 @@
 
 **Ordem ao receber "funcionou", "aprovado" ou screenshot de validação:** confirmar fato → atualizar documentação ativa e integrar PR → responder ao responsável → iniciar próxima tarefa. Caso ferramentas estejam indisponíveis, declarar o registro pendente e sua causa, sem afirmar que foi concluído. Esta regra vale para **todas** as funcionalidades futuras.
 
+### Modo rapido de desenvolvimento (proposta em PR, 19/11/2026)
+
+O responsavel pode identificar o nivel no proprio pedido: **"simples"**, **"media"** ou **"complexa"**. O agente nao deve reinterpretar arbitrariamente a categoria, mas deve explicar e elevar os controles se a mudanca atingir autenticacao, SQL, isolamento de dados, permissoes ou integracoes.
+
+- **Simples (UI/texto/CSS isolado):** checar HEAD, arquivos diretamente afetados e outras sessoes; branch curta, ajuste minimo, testes de sintaxe/responsividade conforme o arquivo; PR para `dev-feira-uninorte`; CI; publicacao somente autorizada; QA no celular; registro curto no PR/`STATUS.md`.
+- **Media (formulario ou regra existente):** investigar dependencias e efeito em dados, testes direcionados + CI, PR, validacao real do caminho modificado e registro de regressao/pendencias.
+- **Complexa (nova arquitetura, login/seguranca, mudanca SQL):** plano e aprovacao de riscos antes de escrever, testes ampliados, backup/recuperacao e rollout com monitoramento.
+
+**Autorizacao unica:** se o responsavel incluir expressamente branch, codigo, PR, merge, testes e publicacao na mesma autorizacao, executar sem novas perguntas para passos ja incluidos, respeitando condicoes e riscos; verificar o SHA efetivamente resultante antes de publicar. Uma tarefa autorizada apenas para PR **para** no PR. Nao alterar `main`, Secrets, banco, workflow, hospedagem ou publicar fora do escopo.
+
+**Fechamento enxuto:** registrar somente fatos verificaveis, SHA/PR/run, teste real relatado e pendencias; para alteracoes simples, nao abrir um novo documento historico longo. Se QA ocorrer apos merge, seguir a regra de documentacao aprovada acima, com PR documental pequeno quando necessario. Nunca declarar `publicado` com base apenas em CI.
+
+**Deploy assistido:** consultar [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md). O script `scripts/publicacao_assistida.py` substitui passos manuais repetitivos apenas apos validacao no Windows e autorizacao de publicacao; por padrao ele apenas simula. Mesmo no modo real, exige backup, SHA validado e aprovacao do environment; nao faz rollback atomico.
+
 ## 3. Nosso ciclo de trabalho — da necessidade ao registro
 
 1. **Entender:** ler pedido e restrições; confirmar escopo, responsável, data, critérios de aceitação, repositório, branch e SHA.
