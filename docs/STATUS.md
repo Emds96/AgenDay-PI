@@ -1,11 +1,11 @@
 # STATUS — AgenDay 2.0
 
-## OPS-01 — Fluxo rapido e assistente de publicacao (19/11/2026; [PR #39](https://github.com/Emds96/AgenDay-PI/pull/39) em revisao, nao integrado)
+## OPS-01 — Fluxo rapido e assistente de publicacao (19/11/2026; [PR #39](https://github.com/Emds96/AgenDay-PI/pull/39); verificar integracao no GitHub)
 
-- **Autorizado:** documentar classificacao simples/media/complexa, autorizacao de tarefa com escopo claro, criar assistente operacional e testes sem publicar; criar branch e PR para `dev-feira-uninorte`. **Nao autorizado:** merge, deploy, modificacao de Secrets, banco ou workflow.
+- **Autorizado:** documentar classificacao simples/media/complexa, autorizacao de tarefa com escopo claro, criar assistente operacional e testes sem publicar; criar branch e PR para `dev-feira-uninorte`. **Autorizacao inicial:** sem merge ou deploy. **Autorizacao posterior:** responsavel solicitou continuidade apos validacao Windows, permitindo revisao e integracao do PR #39. **Permanece sem autorizacao:** deploy, modificacao de Secrets, banco ou workflow.
 - **Implementacao proposta:** `scripts/publicacao_assistida.py` com simulacao padrao sem chamadas a GitHub; modo real separado por `--executar`, exigindo SHA integral, confirmacao literal, backup privado recente e integro, CI do mesmo SHA, flags em estado seguro e aprovacao humana do environment. Nao substitui backup nem rollback.
-- **Testes realizados offline:** `python -m unittest discover -s tests -p test_publicacao_assistida.py -v` (7 testes aprovados) e `python -m py_compile scripts/publicacao_assistida.py`. Nenhum FTP, GH Actions real, SQL ou site foi acessado pelos testes.
-- **Limite:** PC remoto identificado offline nesta sessao; execucao em Windows com `gh` autenticado e fluxo real **pendentes**. Mesmo depois de merge aprovado, usar inicialmente somente simulacao; publicacao real exige autorizacao propria e QA.
+- **Validacao no Windows do responsavel via DeskBrowse (19/11):** arquivos do commit do PR consultados pelo `gh` em pasta temporaria, `python -m py_compile` aprovado, `python -m unittest discover -s tests -p test_publicacao_assistida.py -v` **7/7 aprovados** e simulacao com SHA real `cfa8203541d7f26a251df7be9f38156aa2a79271` aprovada (`SIMULACAO_PC_OK`). A pasta temporaria foi removida. Nenhum deploy, SQL ou acesso FTP foi realizado pelos testes.
+- **Limite:** simulacao e testes foram executados no Windows com `gh` disponivel, mas o **modo real permanece nao testado** (sem liberar flags nem despachar Actions). Mesmo depois de merge aprovado, usar inicialmente somente simulacao; publicacao real exige autorizacao propria e QA.
 
 ---
 
