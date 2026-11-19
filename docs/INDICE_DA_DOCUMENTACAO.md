@@ -10,6 +10,8 @@
 4. [`ARQUITETURA_E_DECISOES.md`](ARQUITETURA_E_DECISOES.md): módulos, limites, decisões tomadas e opções pendentes.
 5. [`README.md`](../README.md): visão geral e como executar em desenvolvimento.
 
+**Fluxo rapido (piloto):** a classificacao simples/media/complexa e a regra de autorizacao unica estao em [AGENTS.md](../AGENTS.md) e [GUIA_DE_CONTINUIDADE.md](GUIA_DE_CONTINUIDADE.md). Para o assistente de deploy (simulacao por padrao e publicacao real ainda nao validada), consultar [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) e `scripts/publicacao_assistida.py`. A aprovacao de PR e a documentacao nao equivalem a autorizacao de deploy.
+
 ## Escolher o manual específico
 
 | Tarefa | Documento | Conteúdo |
