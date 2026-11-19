@@ -37,9 +37,9 @@ Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados inde
 | Controle de horários | Validação de dados e verificação de sobreposição de atendimentos na gravação |
 | Calendário | Navegação mensal, visualização de agendamentos por dia, status e cancelamento de atendimentos ativos |
 | Segurança | Consultas preparadas, proteção CSRF e isolamento de dados por estabelecimento nos fluxos adaptados |
-| Configurações do estabelecimento (QA-04) | Nome/e-mail/contato reais; edição segura de nome/telefone; e-mail somente leitura; PR #26 publicado e fluxo principal testado na conta QA01 |
+| Configurações (QA-04 / UI-08) | Central com **Estabelecimento** e **Minha Conta**; nome/telefone editáveis, e-mail somente leitura, foto JPG/PNG por estabelecimento e troca de senha em modal. [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33) publicado; QA inicial visual automatizado aprovado, testes de gravação e aprovação humana pendentes. |
 
-**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha e funcionalidades legadas (perfil e configurações avançadas, comandas e financeiro). Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
+**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha e testes completos de gravação da nova central Configurações, comandas e financeiro. Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
 
 ## Tecnologias
 

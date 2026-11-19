@@ -3,7 +3,7 @@
 **Data:** 18/11/2026
 **Branch de implementação:** `feat/configuracoes-duas-abas-ui08`
 **Base:** `dev-feira-uninorte`, início no commit `2ee2d43345f5a3e392ba512fec5fbc4387481c4a`
-**Estado:** implementado no [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33), com CI de validação aprovada no [run #44424205050](https://github.com/Emds96/AgenDay-PI/actions/runs/44424205050) (commit `fe7855b8319811e27dc48c16c629150a7bceccef`); sem merge/deploy. Ver `docs/STATUS.md` para o estado atual.
+**Estado:** [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33) **integrado** à `dev-feira-uninorte` (merge `5637ef4092792d6493c461a0d15de5636244101a`) e **publicado** pelo [workflow #44428793171](https://github.com/Emds96/AgenDay-PI/actions/runs/44428793171) com `success`. QA de navegação/UI no Edge aprovado parcialmente, persistência e aprovação humana ainda pendentes. Ver `docs/STATUS.md`.
 
 ## Escopo e comportamento
 
@@ -25,29 +25,30 @@ A tabela `estabelecimento` não tem coluna de avatar no esquema referencial; as 
 - A imagem é **pública por URL**, como uma logo de estabelecimento; não serve para imagens privadas ou documentos. Não há endpoint de visualização privada e não se promete sigilo da imagem. URLs são construídas do ID da sessão para o cabeçalho e incluem um fragmento do hash SHA-256 da imagem para invalidar o cache mesmo após duas trocas rápidas.
 - O banco não registra a imagem. Por isso, **backup/restauração devem incluir a pasta completa** em `htdocs/arquivos/estabelecimentos` e o SQL já previsto no backup geral. Um backup apenas do GitHub não recupera fotos. Confirmar permissões de escrita e `.htaccess` no InfinityFree depois de autorização de deploy.
 
-## Verificações de implementação e QA
+## Verificações e QA da versão publicada (18/11/2026)
 
-| Cenário | Estado nesta branch |
-| --- | --- |
-| UI com exatamente duas abas; somente painel ativo visível | Implementado; smoke test estrutural executado, navegador real pendente |
-| Nome/telefone e atualização do cabeçalho | Código e validação reaproveitados; gravação no banco de produção pendente |
-| E-mail real, imutável | Consulta original por ID da sessão preservada; verificação em QA A/B pendente |
-| Foto JPG/PNG e atualização do avatar | Código de upload/validação implementado; teste real de upload/recarga pendente |
-| Modal e senha atual/nova/confirmação | Segurança de backend reaproveitada; fluxo real erro/sucesso pendente |
-| Teclado, foco, Escape e bloqueio durante POST | Lógica implementada; teste interativo e leitor de tela pendentes |
-| Mobile 360/390/412px e desktop 1366px | CSS responsivo criado; inspeção visual em ambiente publicado pendente |
-| Isolamento entre contas A/B | Código isola por ID de sessão; teste cruzado em produção pendente |
-| Space Grotesk 500 apenas na marca | Regra CSS criada; confirmar `computed font-family` no navegador após deploy |
-| Regressão nas páginas administrativas | Testes estruturais disponíveis; revisão visual completa pendente |
+**Evidências de liberação:** CI da branch de tarefa [#44424603604](https://github.com/Emds96/AgenDay-PI/actions/runs/44424603604), CI pós-merge [#44428652461](https://github.com/Emds96/AgenDay-PI/actions/runs/44428652461) e [#44428652349](https://github.com/Emds96/AgenDay-PI/actions/runs/44428652349), todos com sucesso. Backup privado `2026-11-18_201846_a7eb4bb3`: BACKUP OK (91 arquivos, 10 tabelas, restauração local/ZIP/SHA-256 confirmados). Deploy [#44428793171](https://github.com/Emds96/AgenDay-PI/actions/runs/44428793171): três jobs `success`; flags depois do envio `false/disabled`.
 
-**Não executar testes de escrita no site publicado como prova desta versão:** até autorização de deploy, o InfinityFree permanece na versão anterior. O mecanismo `DeskBrowse` permite autenticação segura das contas de QA A/B quando um teste em produção for aprovado; credenciais nunca ficam no repositório.
+| Cenário | Resultado observado | Limitação |
+| --- | --- | --- |
+| Duas abas com apenas um painel visível | **PASS**, clique e seta do teclado no Edge | Teste com leitor de tela pendente |
+| Responsividade 320, 360, 390, 412, 768 e 1366px | **PASS**, sem overflow horizontal na página Configurações | Outros navegadores/dispositivos físicos pendentes |
+| Nome/telefone e cabeçalho | **PASS parcial**, nome carregado; telefone opcional e máscara brasileira testada só no DOM | Gravação/persistência reais ainda não testadas |
+| E-mail da conta B em campo somente leitura | **PASS** para presença e atributo readonly | Conteúdo comparado com banco/conta A ainda não testado |
+| Foto/avatar e pasta protegida | **PASS parcial**, campo de arquivo e fallback no cabeçalho renderizam; listagem pública da pasta retorna HTTP 403 | Upload/recusa de inválidos/troca real da imagem ainda não testados |
+| Modal senha | **PASS de UI**, três campos, foco, Escape, Cancelar e X | POST de erro/sucesso, bloqueio durante envio e persistência pendentes |
+| Fontes | **PASS**, Space Grotesk peso 500 carregada no cabeçalho e system-ui mantida em títulos/campos | Verificação visual humana pendente |
+| Rotas legadas e regressão administrativa | **PASS de navegação**, dez rotas em 412px, redirects de Perfil/Senha, sem erro PHP visível | Fluxos de escrita das demais páginas não retestados |
+| Isolamento A/B | Biblioteca filtra por ID da sessão; leitura autenticada na conta B | Teste cruzado real A/B não executado nesta etapa |
 
-## Operação futura
+**Não foram enviados POSTs que alterassem banco, nome, telefone, foto ou senha.** Essa distinção importa: tela carregada, CI verde e modal abrindo não substituem QA integrado dos fluxos.
 
-1. Revisar o PR #33 e conferir o resultado aprovado de PHP/Node/artefato no run #44424205050, **sem publicar**. Revalidar em CI caso o código mude.
-2. Obter aprovação de merge e deploy separadamente; conferir `AGENTS.md`, `docs/BACKUP_E_RECUPERACAO.md` e `docs/PUBLICACAO_AUTOMATICA.md`.
-3. Criar backup novo e íntegro de `htdocs` + SQL, incluindo a nova pasta de fotos caso já exista.
-4. Confirmar que a regra `.htaccess` foi enviada e protege os temporários, e que a pasta aceita somente imagens JPG/PNG conforme código.
-5. Testar com contas fictícias A e B: abas, dados separados, upload, avatar no cabeçalho, senha atual incorreta, confirmação, sucesso, teclado, tela mobile e regressão; registrar evidência e devolver contas aos dados esperados.
+## Próxima etapa de validação com o responsável
 
-**Proibido neste escopo:** alterar MySQL, dar merge na `main`, executar deploy ou afirmar que as funcionalidades novas já estão operantes na hospedagem.
+1. Abrir [Configurações](https://agenday-sistema.infinityfree.io/config.php) em dispositivo real e validar aparência de Estabelecimento/Minha Conta.
+2. Testar alteração de nome e telefone em conta de teste, confirmando persistência após recarga e atualização do cabeçalho; registrar valores anteriores para restaurar se necessário.
+3. Enviar JPG/PNG válido de até 2 MiB, confirmar preview e avatar em outras telas; testar rejeição de imagem inválida. Lembrar que logo é pública e que o backup deve incluir `htdocs/arquivos/estabelecimentos`.
+4. Abrir modal, testar senha antiga incorreta, confirmação divergente e atualização real. **Se alterar senha de conta QA do cofre**, atualizar o cofre autorizado imediatamente; não registrar credenciais na conversa ou no GitHub.
+5. Validar isolamento da conta A vs B e regressão geral com autorização de escrita delimitada. Os testes humanos devem ser documentados como relato do responsável, separados de CI e navegação automatizada.
+
+**Após o deploy:** não realizar novo deploy para registrar documentação. O SHA publicado de aplicação é `5637ef4`; commits documentais posteriores na `dev-feira-uninorte` não provam nova versão hospedada.
