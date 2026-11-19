@@ -1,6 +1,6 @@
 # STATUS — AgenDay 2.0
 
-## OPS-01 — Fluxo rapido e assistente de publicacao (19/11/2026; em PR, nao integrado)
+## OPS-01 — Fluxo rapido e assistente de publicacao (19/11/2026; [PR #39](https://github.com/Emds96/AgenDay-PI/pull/39) em revisao, nao integrado)
 
 - **Autorizado:** documentar classificacao simples/media/complexa, autorizacao de tarefa com escopo claro, criar assistente operacional e testes sem publicar; criar branch e PR para `dev-feira-uninorte`. **Nao autorizado:** merge, deploy, modificacao de Secrets, banco ou workflow.
 - **Implementacao proposta:** `scripts/publicacao_assistida.py` com simulacao padrao sem chamadas a GitHub; modo real separado por `--executar`, exigindo SHA integral, confirmacao literal, backup privado recente e integro, CI do mesmo SHA, flags em estado seguro e aprovacao humana do environment. Nao substitui backup nem rollback.
