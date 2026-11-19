@@ -177,7 +177,7 @@ $abaContaAtiva = $abaSelecionada === 'conta';
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/box.css">
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui09">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261119-ui10">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261118-ui08">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
@@ -193,7 +193,6 @@ $abaContaAtiva = $abaSelecionada === 'conta';
             <span class="navbar-toggler-icon"></span>
         </button>
         <h3 class="ad-header-brand fw-bold text-center mb-0">AgenDay</h3>
-        <?php require __DIR__ . '/lib/menu-conta.php'; ?>
         <?php require __DIR__ . '/lib/menu-lateral.php'; ?>
     </div>
 </header>

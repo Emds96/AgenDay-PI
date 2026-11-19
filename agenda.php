@@ -53,7 +53,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
     <link rel="stylesheet" href="css/agenda-calendario.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css?v=20261118-ui09">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261119-ui10">
 </head>
 
 <body class="agenday-app">
@@ -64,7 +64,6 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
             </button>
             <h3 class="ad-header-brand fw-bold text-center mb-0">
                 AgenDay</h3>
-            <?php require __DIR__ . '/lib/menu-conta.php'; ?>
         <?php require __DIR__ . '/lib/menu-lateral.php'; ?>
         </div>
     </header>
