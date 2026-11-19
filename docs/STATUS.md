@@ -1,5 +1,14 @@
 # STATUS — AgenDay 2.0
 
+## OPS-01 — Fluxo rapido e assistente de publicacao (19/11/2026; em PR, nao integrado)
+
+- **Autorizado:** documentar classificacao simples/media/complexa, autorizacao de tarefa com escopo claro, criar assistente operacional e testes sem publicar; criar branch e PR para `dev-feira-uninorte`. **Nao autorizado:** merge, deploy, modificacao de Secrets, banco ou workflow.
+- **Implementacao proposta:** `scripts/publicacao_assistida.py` com simulacao padrao sem chamadas a GitHub; modo real separado por `--executar`, exigindo SHA integral, confirmacao literal, backup privado recente e integro, CI do mesmo SHA, flags em estado seguro e aprovacao humana do environment. Nao substitui backup nem rollback.
+- **Testes realizados offline:** `python -m unittest discover -s tests -p test_publicacao_assistida.py -v` (7 testes aprovados) e `python -m py_compile scripts/publicacao_assistida.py`. Nenhum FTP, GH Actions real, SQL ou site foi acessado pelos testes.
+- **Limite:** PC remoto identificado offline nesta sessao; execucao em Windows com `gh` autenticado e fluxo real **pendentes**. Mesmo depois de merge aprovado, usar inicialmente somente simulacao; publicacao real exige autorizacao propria e QA.
+
+---
+
 ## UI-10 — Remoção do dropdown da conta no cabeçalho (19/11/2026; integrada, publicada, QA inicial aprovado)
 
 - **Escopo aprovado:** retirar inteiramente do cabeçalho autenticado avatar/foto, nome, seta e dropdown da conta em desktop/mobile, preservando à esquerda o hambúrguer e ao centro **AgenDay** com Space Grotesk Medium. A autorização abrange implementação, PR/integração com `dev-feira-uninorte` e deploy para validação visual; **não** inclui mudanças na `main`, banco, cadastros, agendamento ou outros módulos.
