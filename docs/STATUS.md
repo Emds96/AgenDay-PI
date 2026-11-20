@@ -1,6 +1,17 @@
 # STATUS — AgenDay 2.0
 
-## CAD-02 — Horário de funcionamento no cadastro (20/11/2026; branch `feat/cadastro-horario`, não publicada)
+## BLQ-01 — Tela de bloqueios (20/11/2026; branch `feat/bloqueios-agenda`, não publicada)
+
+- **Escopo autorizado:** interface para cadastrar e excluir bloqueios de agenda (feriado, folga, curso, "fecha mais cedo"), dentro de **Configurações → Horários**, abaixo das regras. Nenhum deploy e nenhuma alteração em banco de produção.
+- **Arquivos:** `lib/bloqueios.php` (novo: validação, listagem, criação e exclusão), `config.php` (seção Bloqueios + ações `criar_bloqueio`/`excluir_bloqueio`), `js/configuracoes.js` (sugere 23:59 ao informar o início e valida fim > início), `css/configuracoes-v2.css` (cartões de bloqueio e botão de 44 px), `tests/responsividade-check.js` (+3 verificações, 173 no total).
+- **Regras aplicadas:** `id_estabelecimento` sempre da sessão; CSRF obrigatório; `inicio` e `fim` validados como data/hora real (rejeita 30/02 e formato ambíguo); fim depois do início; motivo obrigatório até 120 caracteres; funcionário precisa pertencer à conta; exclusão filtra por estabelecimento e bloqueio, devolvendo "não encontrado" para outra conta.
+- **Interface:** quatro campos (Início, Fim, Motivo, Quem fica bloqueado), lista em ordem de início com período, motivo e escopo, e botão de excluir com alvo de 44 px. Sem funcionário selecionado, vale para o estabelecimento inteiro.
+- **Validação local (20/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` e `node --check` aprovados; POSTs reais criaram feriado de dia inteiro e folga de funcionário, conferidos no MySQL; rejeitados fim antes do início, motivo vazio, 30 de fevereiro, funcionário de outra conta e POST sem CSRF (403); exclusão removeu apenas o registro da própria conta; tentativa de excluir bloqueio de outra conta devolveu "Bloqueio não encontrado" e o registro sobreviveu; lista de outra conta não aparece; navegador em desktop e 360 px sem overflow, com o atalho de 23:59 funcionando. `responsividade-check` (173), agenda (19), cancelamento (20) e configuração (13) aprovados.
+- **Pendências:** a agenda ainda **não usa** os bloqueios no cálculo de horário livre (próxima fase); validar em celular físico; aplicação da migração no InfinityFree antes do deploy; PR/CI.
+
+---
+
+## CAD-02 — Horário de funcionamento no cadastro (20/11/2026; branch `feat/cadastro-horario`, integrada nos PRs #46/#47)
 
 - **Escopo autorizado:** pedido do responsável para informar o horário básico já na criação da conta, antes da tela de bloqueios. Nenhum deploy e nenhuma alteração em banco de produção.
 - **Formulário (`index.php`):** bloco compacto **"Horário de funcionamento"** no cadastro, com os 7 dias em checkboxes (seg–sex marcados), **Abre às / Fecha às** pré-preenchidos com 08:00/18:00 e legenda apontando para Configurações → Horários. O mesmo horário vale para todos os dias marcados; almoço e horário diferente por dia continuam em Configurações.

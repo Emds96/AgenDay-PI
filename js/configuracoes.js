@@ -91,10 +91,31 @@ document.addEventListener('DOMContentLoaded', () => {
         sincronizar();
     });
 
+    // Aba Horários: ao escolher o início do bloqueio, sugere o mesmo dia às
+    // 23:59 no fim (caso mais comum: feriado ou folga do dia inteiro).
+    const bloqueioInicio = document.getElementById('bloqueioInicio');
+    const bloqueioFim = document.getElementById('bloqueioFim');
+    if (bloqueioInicio && bloqueioFim) {
+        bloqueioInicio.addEventListener('change', () => {
+            if (bloqueioFim.value !== '' || bloqueioInicio.value === '') return;
+            bloqueioFim.value = bloqueioInicio.value.slice(0, 10) + 'T23:59';
+        });
+        const sincronizarBloqueio = () => {
+            if (bloqueioInicio.value !== '' && bloqueioFim.value !== ''
+                && bloqueioFim.value <= bloqueioInicio.value) {
+                bloqueioFim.setCustomValidity('O fim do bloqueio precisa ser depois do início.');
+            } else {
+                bloqueioFim.setCustomValidity('');
+            }
+        };
+        bloqueioInicio.addEventListener('input', sincronizarBloqueio);
+        bloqueioFim.addEventListener('input', sincronizarBloqueio);
+        sincronizarBloqueio();
+    }
+
     const campoFoto = document.getElementById('fotoConta');
     if (campoFoto) {
-        campoFoto.addEventListener('change', () => {
-            campoFoto.setCustomValidity('');
+        campoFoto.addEventListener('change', () => {            campoFoto.setCustomValidity('');
             const arquivo = campoFoto.files && campoFoto.files[0];
             if (!arquivo) return;
             if (arquivo.size > 2 * 1024 * 1024

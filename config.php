@@ -4,6 +4,7 @@ require_once __DIR__ . '/verifica_login.php';
 require_once __DIR__ . '/lib/configuracao-estabelecimento.php';
 require_once __DIR__ . '/lib/avatar-estabelecimento.php';
 require_once __DIR__ . '/lib/horario-funcionamento.php';
+require_once __DIR__ . '/lib/bloqueios.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($metodo, ['GET', 'POST'], true)) {
@@ -25,6 +26,9 @@ $dadosCarregados = false;
 $funcionamentoDisponivel = false;
 $diasFuncionamento = agenday_horario_padrao();
 $regrasFuncionamento = agenday_regras_padrao();
+$bloqueios = [];
+$funcionariosBloqueio = [];
+$formularioBloqueio = ['inicio' => '', 'fim' => '', 'motivo' => '', 'id_funcionario' => ''];
 $nomeAtual = '';
 $emailAtual = '';
 $contatoAtual = '';
@@ -91,6 +95,8 @@ if (isset($conexao) && $conexao instanceof mysqli) {
     try {
         $diasFuncionamento = agenday_horario_carregar($conexao, $idEstabelecimento);
         $regrasFuncionamento = agenday_regras_carregar($conexao, $idEstabelecimento);
+        $bloqueios = agenday_bloqueio_listar($conexao, $idEstabelecimento);
+        $funcionariosBloqueio = agenday_bloqueio_funcionarios($conexao, $idEstabelecimento);
         $funcionamentoDisponivel = true;
     } catch (Throwable $e) {
         error_log('AgenDay: horário de funcionamento indisponível (' . get_class($e) . ').');
@@ -108,7 +114,7 @@ if ($metodo === 'POST') {
     $acao = isset($_POST['acao']) && is_string($_POST['acao']) ? $_POST['acao'] : '';
     if ($acao === 'atualizar_foto') {
         $abaSelecionada = 'conta';
-    } elseif ($acao === 'salvar_funcionamento') {
+    } elseif (in_array($acao, ['salvar_funcionamento', 'criar_bloqueio', 'excluir_bloqueio'], true)) {
         $abaSelecionada = 'funcionamento';
     } else {
         $abaSelecionada = 'estabelecimento';
@@ -219,6 +225,54 @@ if ($metodo === 'POST') {
                 ];
             }
         }
+    } elseif ($acao === 'criar_bloqueio') {
+        foreach (array_keys($formularioBloqueio) as $campo) {
+            $formularioBloqueio[$campo] = isset($_POST[$campo]) && is_string($_POST[$campo])
+                ? trim($_POST[$campo]) : '';
+        }
+        [$dadosBloqueio, $errosBloqueio] = agenday_bloqueio_validar($_POST);
+        if (!$funcionamentoDisponivel) {
+            $errosBloqueio[] = 'A estrutura de bloqueios ainda não existe neste banco.';
+        }
+
+        if ($errosBloqueio !== []) {
+            $alertaFuncionamento = ['tipo' => 'danger', 'texto' => implode(' ', $errosBloqueio)];
+        } else {
+            try {
+                agenday_bloqueio_criar($conexao, $idEstabelecimento, $dadosBloqueio);
+                $_SESSION['feedback_config_funcionamento'] = 'Bloqueio adicionado com sucesso.';
+                header('Location: config.php?aba=funcionamento#bloqueios', true, 303);
+                exit;
+            } catch (DomainException $e) {
+                $alertaFuncionamento = ['tipo' => 'danger', 'texto' => $e->getMessage()];
+            } catch (Throwable $e) {
+                error_log('AgenDay: falha ao criar bloqueio (' . get_class($e) . ').');
+                $alertaFuncionamento = [
+                    'tipo' => 'danger',
+                    'texto' => 'Não foi possível adicionar o bloqueio agora. Tente novamente.',
+                ];
+            }
+        }
+    } elseif ($acao === 'excluir_bloqueio') {
+        $idBloqueio = filter_var($_POST['id_bloqueio'] ?? null, FILTER_VALIDATE_INT);
+        if ($idBloqueio === false || $idBloqueio < 1) {
+            $alertaFuncionamento = ['tipo' => 'danger', 'texto' => 'Bloqueio inválido.'];
+        } else {
+            try {
+                if (agenday_bloqueio_excluir($conexao, $idEstabelecimento, $idBloqueio)) {
+                    $_SESSION['feedback_config_funcionamento'] = 'Bloqueio excluído com sucesso.';
+                    header('Location: config.php?aba=funcionamento#bloqueios', true, 303);
+                    exit;
+                }
+                $alertaFuncionamento = ['tipo' => 'danger', 'texto' => 'Bloqueio não encontrado.'];
+            } catch (Throwable $e) {
+                error_log('AgenDay: falha ao excluir bloqueio (' . get_class($e) . ').');
+                $alertaFuncionamento = [
+                    'tipo' => 'danger',
+                    'texto' => 'Não foi possível excluir o bloqueio agora. Tente novamente.',
+                ];
+            }
+        }
     } else {
         http_response_code(400);
         $alertaEstabelecimento = ['tipo' => 'danger', 'texto' => 'Ação desconhecida.'];
@@ -249,11 +303,11 @@ $nomesDias = agenday_dias_semana();
     <link rel="stylesheet" href="css/box.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261119-ui10">
-    <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui15">
+    <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
-    <script defer src="js/configuracoes.js?v=20261120-ui11"></script>
+    <script defer src="js/configuracoes.js?v=20261120-ui12"></script>
 </head>
 <body class="agenday-app">
 <header class="navbar navbar-light bg-light">
@@ -489,6 +543,92 @@ $nomesDias = agenday_dias_semana();
                             </button>
                         </div>
                     </form>
+
+                    <section class="ag-bloqueios" id="bloqueios" aria-labelledby="tituloBloqueios">
+                        <div class="ag-settings-section-title">
+                            <h3 id="tituloBloqueios">Bloqueios</h3>
+                            <p>Impeça agendamentos em feriados, folgas ou horários em que o estabelecimento não atende.</p>
+                        </div>
+
+                        <form method="post" action="config.php?aba=funcionamento#bloqueios" id="formBloqueio">
+                            <input type="hidden" name="acao" value="criar_bloqueio">
+                            <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                            <div class="row g-3">
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="bloqueioInicio">Início</label>
+                                    <input class="form-control" type="datetime-local" id="bloqueioInicio" name="inicio"
+                                           value="<?= agenday_config_html($formularioBloqueio['inicio']) ?>" required
+                                           <?= !$funcionamentoDisponivel ? 'disabled' : '' ?>>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="bloqueioFim">Fim</label>
+                                    <input class="form-control" type="datetime-local" id="bloqueioFim" name="fim"
+                                           value="<?= agenday_config_html($formularioBloqueio['fim']) ?>" required
+                                           <?= !$funcionamentoDisponivel ? 'disabled' : '' ?>>
+                                    <div class="form-text">Para o dia inteiro, use 00:00 no início e 23:59 no fim.</div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="bloqueioMotivo">Motivo</label>
+                                    <input class="form-control" type="text" id="bloqueioMotivo" name="motivo"
+                                           maxlength="120" placeholder="Ex.: feriado, folga ou curso" required
+                                           value="<?= agenday_config_html($formularioBloqueio['motivo']) ?>"
+                                           <?= !$funcionamentoDisponivel ? 'disabled' : '' ?>>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="bloqueioFuncionario">Quem fica bloqueado?</label>
+                                    <select class="form-select" id="bloqueioFuncionario" name="id_funcionario"
+                                            <?= !$funcionamentoDisponivel ? 'disabled' : '' ?>>
+                                        <option value="">Estabelecimento inteiro</option>
+                                        <?php foreach ($funcionariosBloqueio as $funcionario): ?>
+                                            <option value="<?= (int) $funcionario['id_funcionario'] ?>"
+                                                <?= (string) $funcionario['id_funcionario'] === $formularioBloqueio['id_funcionario'] ? 'selected' : '' ?>>
+                                                <?= agenday_config_html($funcionario['nome_funcionario']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="ag-settings-actions">
+                                <button class="btn btn-primary" type="submit" <?= !$funcionamentoDisponivel ? 'disabled' : '' ?>>
+                                    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Adicionar bloqueio
+                                </button>
+                            </div>
+                        </form>
+
+                        <?php if ($bloqueios === []): ?>
+                            <p class="ag-bloqueios-vazio">Nenhum bloqueio cadastrado.</p>
+                        <?php else: ?>
+                            <ul class="ag-bloqueios-lista">
+                                <?php foreach ($bloqueios as $bloqueio): ?>
+                                    <li class="ag-bloqueio-item">
+                                        <div class="ag-bloqueio-info">
+                                            <strong><?= agenday_config_html($bloqueio['motivo']) ?></strong>
+                                            <span>
+                                                <?= agenday_config_html((new DateTimeImmutable($bloqueio['inicio']))->format('d/m/Y H:i')) ?>
+                                                até
+                                                <?= agenday_config_html((new DateTimeImmutable($bloqueio['fim']))->format('d/m/Y H:i')) ?>
+                                            </span>
+                                            <span class="ag-bloqueio-escopo">
+                                                <?= $bloqueio['id_funcionario'] === null
+                                                    ? 'Estabelecimento inteiro'
+                                                    : agenday_config_html($bloqueio['nome_funcionario'] ?? 'Funcionário') ?>
+                                            </span>
+                                        </div>
+                                        <form method="post" action="config.php?aba=funcionamento#bloqueios" class="ag-bloqueio-excluir">
+                                            <input type="hidden" name="acao" value="excluir_bloqueio">
+                                            <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                                            <input type="hidden" name="id_bloqueio" value="<?= (int) $bloqueio['id_bloqueio'] ?>">
+                                            <button class="btn btn-outline-danger btn-sm" type="submit"
+                                                    aria-label="Excluir bloqueio <?= agenday_config_html($bloqueio['motivo']) ?>">
+                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Excluir</span>
+                                            </button>
+                                        </form>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </section>
                 </div>
             </section>
 

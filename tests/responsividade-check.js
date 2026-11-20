@@ -102,6 +102,19 @@ verificar(config.includes('id="formFuncionamento"')
     && config.includes('name="regras[intervalo]"')
     && config.includes('name="regras[antecedencia]"'),
     'Horários: formulário de funcionamento ausente');
+verificar(config.includes('id="formBloqueio"')
+    && config.includes('id="bloqueioInicio"')
+    && config.includes('id="bloqueioFim"')
+    && config.includes('id="bloqueioMotivo"')
+    && config.includes('id="bloqueioFuncionario"'),
+    'BLQ-01: formulário de bloqueios ausente');
+verificar(config.includes('name="acao" value="criar_bloqueio"')
+    && config.includes('name="acao" value="excluir_bloqueio"'),
+    'BLQ-01: ações de bloqueio ausentes');
+verificar(config.includes("require_once __DIR__ . '/lib/bloqueios.php'")
+    && ler('lib/bloqueios.php').includes('function agenday_bloqueio_excluir(')
+    && ler('lib/bloqueios.php').includes('WHERE id_estabelecimento = ? AND id_bloqueio = ?'),
+    'BLQ-01: exclusão de bloqueio sem filtro por estabelecimento');
 verificar(!config.includes('>Empresa</a>') && !config.includes('>Perfil</a>'),
     'UI-08: navegação antiga de três abas reapareceu');
 verificar(config.includes('name="nome_estabelecimento"')
