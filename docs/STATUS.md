@@ -1,5 +1,15 @@
 # STATUS — AgenDay 2.0
 
+## EDIT-FUN-01 — Edição de funcionário (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
+
+- **Escopo autorizado:** editar funcionário já cadastrado (nome, contato, foto opcional e vínculos com serviços), com validação, CSRF, transação e isolamento por `id_estabelecimento` da sessão. Sem autorização de deploy; PR/merge não realizados.
+- **Arquivos:** `editar-funcionario.php` (novo endpoint, somente POST), `cad-funcionario.php` (botão **Editar**, modal com os mesmos checkboxes de serviços e mensagem de sucesso variável) e `info-funcionario.php` (passa a expor `servicos_ids` para pré-marcar os serviços do funcionário).
+- **Regras aplicadas:** funcionário só é atualizado quando `id_funcionario` e `id_estabelecimento` da sessão coincidem; cada serviço enviado é reconferido como pertencente ao estabelecimento antes de gravar; os vínculos são recompostos em transação (DELETE + INSERT) e revertidos por rollback em caso de falha; foto antiga só é apagada após commit e se o caminho casar com o padrão gerado pelo servidor.
+- **Validação local (19/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado nos três arquivos; cadastro de teste com um serviço → edição de nome/contato → vínculos recompostos para dois serviços conferidos no MySQL; remoção de todos os vínculos funcionou; funcionário de outro estabelecimento rejeitado ("Funcionário não encontrado."); serviço de outro estabelecimento rejeitado; telefone inválido e POST sem CSRF rejeitados. Modal pré-marca o serviço existente e, em 360 px, não há overflow horizontal.
+- **Pendências:** validação visual do responsável, upload de foto substituta, celular físico e CI do PR.
+
+---
+
 ## EDIT-CLI-01 — Edição de cliente (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
 
 - **Escopo autorizado:** permitir editar cliente já cadastrado (nome, e-mail, contato e troca opcional de foto), mantendo validação, CSRF e isolamento por `id_estabelecimento` da sessão. Não houve autorização de deploy; PR/merge não realizados.
