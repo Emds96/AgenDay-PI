@@ -241,3 +241,118 @@ form {
   text-align: center;
 
 }
+
+/* CAD-01: horário de funcionamento resumido no cadastro. */
+.ad-horario-cadastro {
+  width: 100%;
+  margin: 4px 0 6px;
+  padding: 10px 12px 8px;
+  border: 1px solid #cfe4e0;
+  border-radius: 12px;
+  background: #f5fbfa;
+  text-align: left;
+}
+
+.ad-horario-cadastro legend {
+  float: none;
+  width: auto;
+  margin: 0;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: #18544d;
+  text-transform: uppercase;
+}
+
+.ad-horario-dias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ad-horario-dia {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 9px;
+  border: 1px solid #cfe4e0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #18544d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ad-horario-dia input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: #18544d;
+}
+
+.ad-horario-dia:has(input:checked) {
+  border-color: #18544d;
+  background: #d9f0ec;
+}
+
+.ad-horario-dia input:focus-visible {
+  outline: 2px solid #18544d;
+  outline-offset: 2px;
+}
+
+.ad-horario-horas {
+  display: flex;
+  gap: 8px;
+}
+
+.ad-horario-horas label {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #18544d;
+}
+
+.ad-horario-horas input {
+  width: 100%;
+  min-height: 38px;
+  padding: 4px 8px;
+  border: 1px solid #cfe4e0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: #1f2a28;
+}
+
+.ad-horario-horas input:focus-visible {
+  outline: 2px solid #18544d;
+  outline-offset: 1px;
+}
+
+.ad-horario-ajuda {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #5b6b68;
+}
+
+@media (max-width: 575.98px) {
+  .ad-horario-cadastro {
+    padding: 10px;
+  }
+
+  .ad-horario-dia {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 36px;
+  }
+}

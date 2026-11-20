@@ -226,13 +226,16 @@ function agenday_regras_validar(array $post): array
 }
 
 /**
- * Cria os 7 dias padrão para um estabelecimento que acabou de ser cadastrado.
- * Não sobrescreve nada (INSERT IGNORE) e nunca interrompe o cadastro: se a
- * migração de horário ainda não estiver aplicada, apenas registra no log e a
- * conta continua sendo criada normalmente.
+ * Cria os 7 dias de funcionamento para um estabelecimento recém-cadastrado.
+ * Sem $dias, usa o padrão da tela; com $dias, grava exatamente o que o
+ * cadastro enviou. Não sobrescreve nada (INSERT IGNORE) e nunca interrompe o
+ * cadastro: se a migração de horário ainda não estiver aplicada, apenas
+ * registra no log e a conta continua sendo criada normalmente.
  */
-function agenday_horario_criar_padrao(mysqli $conexao, int $idEstabelecimento): bool
+function agenday_horario_criar_padrao(mysqli $conexao, int $idEstabelecimento, ?array $dias = null): bool
 {
+    $dias = $dias ?? agenday_horario_padrao();
+
     try {
         $gravacao = $conexao->prepare(
             'INSERT IGNORE INTO horario_funcionamento
@@ -241,7 +244,7 @@ function agenday_horario_criar_padrao(mysqli $conexao, int $idEstabelecimento): 
              VALUES (?, ?, ?, ?, ?, NULL, NULL)'
         );
 
-        foreach (agenday_horario_padrao() as $numeroDia => $dia) {
+        foreach ($dias as $numeroDia => $dia) {
             $numeroDia = (int) $numeroDia;
             $aberto = !empty($dia['aberto']) ? 1 : 0;
             $abertura = (string) $dia['abertura'] . ':00';

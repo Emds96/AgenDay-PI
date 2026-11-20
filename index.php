@@ -45,7 +45,7 @@ if (!is_array($googlePending)
 
     <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css'>
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/login.css?v=20261120-cad01">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css">
@@ -111,6 +111,30 @@ if (!is_array($googlePending)
                         </div>
                     </div>
                 </div>
+
+                <fieldset class="ad-horario-cadastro">
+                    <legend>Quando você atende?</legend>
+                    <div class="ad-horario-dias" role="group" aria-label="Dias de funcionamento">
+                        <?php foreach ([1 => 'Seg', 2 => 'Ter', 3 => 'Qua', 4 => 'Qui', 5 => 'Sex', 6 => 'Sáb', 0 => 'Dom'] as $numeroDia => $rotuloDia) : ?>
+                            <label class="ad-horario-dia">
+                                <input type="checkbox" name="dias[]" value="<?= (int) $numeroDia ?>"
+                                    <?= $numeroDia !== 0 ? 'checked' : '' ?>>
+                                <span><?= $rotuloDia ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="ad-horario-horas">
+                        <label>
+                            <span>Abre às</span>
+                            <input class="rounded rounded-4" type="time" name="abertura" value="08:00" step="300" required>
+                        </label>
+                        <label>
+                            <span>Fecha às</span>
+                            <input class="rounded rounded-4" type="time" name="fechamento" value="18:00" step="300" required>
+                        </label>
+                    </div>
+                    <p class="ad-horario-ajuda">Pode ajustar depois em Configurações → Horários.</p>
+                </fieldset>
 
 
 

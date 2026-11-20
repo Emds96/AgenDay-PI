@@ -1,6 +1,19 @@
 # STATUS — AgenDay 2.0
 
-## CAD-01 — Cadastro cria o horário de funcionamento (20/11/2026; branch `fix/cadastro-horario-padrao`, não publicada)
+## CAD-02 — Horário de funcionamento no cadastro (20/11/2026; branch `feat/cadastro-horario`, não publicada)
+
+- **Escopo autorizado:** pedido do responsável para informar o horário básico já na criação da conta, antes da tela de bloqueios. Nenhum deploy e nenhuma alteração em banco de produção.
+- **Formulário (`index.php`):** bloco compacto **"Quando você atende?"** no cadastro, com os 7 dias em checkboxes (seg–sex marcados), **Abre às / Fecha às** pré-preenchidos com 08:00/18:00 e legenda apontando para Configurações → Horários. O mesmo horário vale para todos os dias marcados; almoço e horário diferente por dia continuam em Configurações.
+- **Backend (`cadastrar.php`):** valida dias (0–6), exige pelo menos um dia, horário no formato HH:MM e fechamento depois da abertura; monta os 7 dias e grava com `agenday_horario_criar_padrao($conexao, $novoId, $diasFuncionamento)`.
+- **Biblioteca (`lib/horario-funcionamento.php`):** `agenday_horario_criar_padrao()` passou a aceitar o 3º parâmetro opcional `$dias`; sem ele, mantém o padrão (usado pelo cadastro Google). Continua com `INSERT IGNORE` e `try/catch`, sem interromper o cadastro se a migração não existir.
+- **Estilo (`css/login.css`):** bloco em cartão claro, checkboxes com estado marcado visível, alvos de toque de 36 px no celular; `index.php` passou a carregar `login.css?v=20261120-cad01`.
+- **Regras aplicadas:** CSRF obrigatório; dias fora de 0–6 ignorados; nenhum dia aberto é recusado; horário inválido (`25:00`) é recusado; fechamento antes da abertura é recusado; a conta **não** é criada nesses casos.
+- **Validação local (20/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado em `cadastrar.php`, `index.php` e na biblioteca; POSTs reais conferidos no MySQL — seg–sex 09:00–19:00 gerou 7 linhas com sábado e domingo fechados; todos os dias 07:30–22:00 gerou 7 abertos; nenhum dia, horário invertido, `25:00` e POST sem CSRF recusados sem criar conta; `node tests/responsividade-check.js` (170 verificações) e os testes de agenda, cancelamento, senha, configuração e reenvio aprovados; desktop e 360 px sem overflow. O teste `google-identidade-validacao.php` não roda neste Windows por falha de `openssl_pkey_new` (limitação do ambiente, sem relação com o lote).
+- **Pendências:** cadastro via Google ainda usa o horário padrão (não recebeu o bloco); validar em celular físico; aplicação da migração de horário no InfinityFree antes do deploy; PR/CI.
+
+---
+
+## CAD-01 — Cadastro cria o horário de funcionamento (20/11/2026; branch `fix/cadastro-horario-padrao`, integrada no PR #45)
 
 - **Escopo autorizado:** corrigir o cadastro para que toda conta nova já nasça com os 7 dias de `horario_funcionamento` gravados, em vez de depender do padrão apenas em memória. Nenhum deploy e nenhuma alteração em banco de produção.
 - **Arquivos:** `lib/horario-funcionamento.php` (nova `agenday_horario_criar_padrao()`), `cadastrar.php` (cadastro comum) e `google-cadastro-concluir.php` (cadastro via Google). `tests/responsividade-check.js` ganhou 3 verificações estruturais (168 no total).

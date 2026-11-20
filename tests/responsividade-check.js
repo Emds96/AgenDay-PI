@@ -251,11 +251,18 @@ verificar(bloqueioEnvio.includes("form.addEventListener('submit'")
 
 /* CAD-01: toda conta nova nasce com os 7 dias de horário gravados. */
 const libHorario = ler('lib/horario-funcionamento.php');
+const cadastroNormal = ler('cadastrar.php');
 verificar(libHorario.includes('function agenday_horario_criar_padrao(')
     && libHorario.includes('INSERT IGNORE INTO horario_funcionamento'),
     'CAD-01: biblioteca sem a criação do horário padrão');
-verificar(ler('cadastrar.php').includes('agenday_horario_criar_padrao($conexao, $novoId)'),
-    'CAD-01: cadastro comum não cria o horário padrão');
+verificar(cadastroNormal.includes('agenday_horario_criar_padrao($conexao, $novoId, $diasFuncionamento)'),
+    'CAD-01: cadastro comum não cria o horário informado');
+verificar(cadastroNormal.includes('$diasMarcados'),
+    'CAD-01: cadastro comum não lê os dias escolhidos');
+verificar(ler('index.php').includes('name="dias[]"')
+    && ler('index.php').includes('name="abertura"')
+    && ler('index.php').includes('name="fechamento"'),
+    'CAD-01: formulário de cadastro sem os campos de horário');
 verificar(ler('google-cadastro-concluir.php').includes('agenday_horario_criar_padrao($conexao, $id)'),
     'CAD-01: cadastro via Google não cria o horário padrão');
 
