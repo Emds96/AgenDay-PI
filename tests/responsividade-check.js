@@ -219,4 +219,39 @@ verificar(menuLateral.includes('href="config.php"')
     && menuLateral.includes('href="logout.php"'),
     'UI-10: Configurações/Sair não podem desaparecer do hambúrguer');
 
+
+/* FIX-01: checagens de integração do formulário e teste PHP no CI. */
+for (const [pagina, endpoint, tipo] of [
+    ['cad-cliente.php', 'cadastro-clientes.php', 'clientes'],
+    ['cad-funcionario.php', 'cadastro-funcionario.php', 'funcionarios'],
+]) {
+    const form = ler(pagina);
+    const api = ler(endpoint);
+    verificar(form.includes('data-agenday-cadastro')
+        && form.includes('name="cadastro_token"')
+        && form.includes("agenday_cadastro_token_emitir('" + tipo + "')")
+        && form.includes('js/cadastro-envio.js'),
+        'FIX-01: formulário sem token único/bloqueio JS: ' + pagina);
+    verificar(api.includes('agenday_cadastro_token_consumir(\'' + tipo + '\'')
+        && api.indexOf('agenday_cadastro_token_consumir(') < api.indexOf('INSERT INTO'),
+        'FIX-01: PHP não consome token antes de inserir: ' + endpoint);
+}
+const bloqueioEnvio = ler('js/cadastro-envio.js');
+verificar(bloqueioEnvio.includes("form.addEventListener('submit'")
+    && bloqueioEnvio.includes('evento.preventDefault()')
+    && bloqueioEnvio.includes('botao.disabled = true')
+    && bloqueioEnvio.includes("'Salvando...'"),
+    'FIX-01: bloqueio de duplo clique ausente');
+
+if (process.env.GITHUB_ACTIONS === 'true') {
+    // A runner de CI possui PHP; o Windows remoto não precisa ter PHP instalado.
+    const { spawnSync } = require('node:child_process');
+    const testePhp = spawnSync('php', ['tests/cadastro-reenvio.php'], {
+        cwd: raiz, encoding: 'utf8', timeout: 15000
+    });
+    verificar(testePhp.status === 0,
+        'FIX-01: teste PHP falhou: ' + (testePhp.stderr || testePhp.error?.message || ''));
+    console.log((testePhp.stdout || '').trim());
+}
+
 console.log('OK: ' + verificacoes + ' verificações estruturais de responsividade, cabeçalho e Configurações.');
