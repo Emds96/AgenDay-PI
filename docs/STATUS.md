@@ -1,5 +1,15 @@
 # STATUS — AgenDay 2.0
 
+## CAD-01 — Cadastro cria o horário de funcionamento (20/11/2026; branch `fix/cadastro-horario-padrao`, não publicada)
+
+- **Escopo autorizado:** corrigir o cadastro para que toda conta nova já nasça com os 7 dias de `horario_funcionamento` gravados, em vez de depender do padrão apenas em memória. Nenhum deploy e nenhuma alteração em banco de produção.
+- **Arquivos:** `lib/horario-funcionamento.php` (nova `agenday_horario_criar_padrao()`), `cadastrar.php` (cadastro comum) e `google-cadastro-concluir.php` (cadastro via Google). `tests/responsividade-check.js` ganhou 3 verificações estruturais (168 no total).
+- **Regras aplicadas:** os 7 dias usam o mesmo `agenday_horario_padrao()` da tela (seg–sex 08:00–18:00, sábado 08:00–12:00, domingo fechado, sem almoço); a gravação é `INSERT IGNORE`, então nunca sobrescreve linha existente; no cadastro Google a criação ocorre dentro da transação já existente; se a migração de horário ainda não estiver aplicada, a função apenas registra no log e **o cadastro continua funcionando**.
+- **Validação local (20/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado nos 3 arquivos; cadastro real pela tela criou a conta id 22 com 7 linhas conferidas no MySQL e as 5 regras com os padrões; a conta nova abre Configurações → Horários já preenchida e sem aviso de migração; simulação de migração ausente (tabela renomeada) manteve o cadastro funcionando, com `agenday_horario_criar_padrao()` devolvendo `false` e log registrado, e a tabela restaurada depois; `node tests/responsividade-check.js` (168 verificações), `agendamento-validacao` (19), `agendamento-cancelamento` (20), `alteracao-senha-validacao` (16), `configuracao-estabelecimento` (13) e `cadastro-reenvio` (11) aprovados. Cadastro via Google **não** foi exercitado de ponta a ponta (exige OAuth real); validado por código e `php -l`.
+- **Pendências:** validar o cadastro Google em ambiente real; aplicação da migração de horário no InfinityFree antes do deploy; validação visual do responsável; PR/CI.
+
+---
+
 ## HOR-01 — Horário de funcionamento e regras de agendamento (20/11/2026; branch `feat/horario-funcionamento`, não publicada)
 
 - **Escopo autorizado:** criar a base de tempo do agendamento — horário de funcionamento por dia (com almoço e intervalo), tabela de bloqueios e regras do estabelecimento (antecedência mínima, janela máxima, prazo de cancelamento e tolerância de atraso) — e editá-las em **Configurações → Horários**. Nenhum deploy e nenhuma alteração em banco de produção.

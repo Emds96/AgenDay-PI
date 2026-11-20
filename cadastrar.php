@@ -51,7 +51,14 @@ try {
     );
     $stmt->bind_param('sss', $nome, $email, $hash);
     $stmt->execute();
+    $novoId = (int) $conexao->insert_id;
     $stmt->close();
+
+    // A conta já nasce com o horário padrão gravado (seg-sáb 08:00-18:00,
+    // sábado até 12:00, domingo fechado), para a agenda ter de onde partir.
+    require_once __DIR__ . '/lib/horario-funcionamento.php';
+    agenday_horario_criar_padrao($conexao, $novoId);
+
     $_SESSION['status_cadastro'] = true;
 } catch (mysqli_sql_exception $e) {
     if ($e->getCode() === 1062) {

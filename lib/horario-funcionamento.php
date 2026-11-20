@@ -225,6 +225,48 @@ function agenday_regras_validar(array $post): array
     return [$regras, $erros];
 }
 
+/**
+ * Cria os 7 dias padrão para um estabelecimento que acabou de ser cadastrado.
+ * Não sobrescreve nada (INSERT IGNORE) e nunca interrompe o cadastro: se a
+ * migração de horário ainda não estiver aplicada, apenas registra no log e a
+ * conta continua sendo criada normalmente.
+ */
+function agenday_horario_criar_padrao(mysqli $conexao, int $idEstabelecimento): bool
+{
+    try {
+        $gravacao = $conexao->prepare(
+            'INSERT IGNORE INTO horario_funcionamento
+                (id_estabelecimento, dia_semana, aberto, hora_abertura, hora_fechamento,
+                 inicio_almoco, fim_almoco)
+             VALUES (?, ?, ?, ?, ?, NULL, NULL)'
+        );
+
+        foreach (agenday_horario_padrao() as $numeroDia => $dia) {
+            $numeroDia = (int) $numeroDia;
+            $aberto = !empty($dia['aberto']) ? 1 : 0;
+            $abertura = (string) $dia['abertura'] . ':00';
+            $fechamento = (string) $dia['fechamento'] . ':00';
+            $gravacao->bind_param(
+                'iiiss',
+                $idEstabelecimento,
+                $numeroDia,
+                $aberto,
+                $abertura,
+                $fechamento
+            );
+            $gravacao->execute();
+        }
+        $gravacao->close();
+        return true;
+    } catch (Throwable $e) {
+        error_log(
+            'AgenDay: horário padrão não criado para o estabelecimento ' . $idEstabelecimento
+            . ' (' . get_class($e) . ').'
+        );
+        return false;
+    }
+}
+
 /** Grava os 7 dias e as regras na mesma transação. */
 function agenday_horario_salvar(mysqli $conexao, int $idEstabelecimento, array $dias, array $regras): void
 {
