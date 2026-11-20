@@ -1,5 +1,15 @@
 # STATUS — AgenDay 2.0
 
+## EDIT-SER-01 — Edição de serviço (19/11/2026; implementada na branch `feat/editar-servico`, não publicada)
+
+- **Escopo autorizado:** editar serviço já cadastrado (nome, duração, preço e descrição) com validação equivalente à do cadastro, CSRF e isolamento por `id_estabelecimento` da sessão.
+- **Arquivos:** `editar-servico.php` (novo endpoint, somente POST) e `cad.servicos.php` (botão **Editar**, modal preenchido por `data-*` e mensagem de sucesso variável).
+- **Regras aplicadas:** o serviço só é atualizado quando `id_servicos` pertence ao estabelecimento da sessão; duração convertida de minutos para `TIME`; preço gravado como `DECIMAL(10,2)` sem aritmética de ponto flutuante; nome duplicado reaproveita a mensagem de unicidade já existente no cadastro.
+- **Validação local (19/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado; edição real de nome/duração/preço/descrição conferida no MySQL; nome duplicado rejeitado com a mensagem de unicidade; serviço de outro estabelecimento rejeitado ("Serviço não encontrado."); duração 0 e preço negativo rejeitados; GET responde 405; modal pré-preenchido e sem overflow em 360 px.
+- **Pendências:** validação visual do responsável, celular físico e CI do PR.
+
+---
+
 ## EDIT-FUN-01 — Edição de funcionário (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
 
 - **Escopo autorizado:** editar funcionário já cadastrado (nome, contato, foto opcional e vínculos com serviços), com validação, CSRF, transação e isolamento por `id_estabelecimento` da sessão. Sem autorização de deploy; PR/merge não realizados.
