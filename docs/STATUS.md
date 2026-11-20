@@ -1,6 +1,20 @@
 # STATUS — AgenDay 2.0
 
-## BLQ-01 — Tela de bloqueios (20/11/2026; branch `feat/bloqueios-agenda`, não publicada)
+## DEPLOY-20261120 — Publicação do SHA 84eef5d (20/11/2026)
+
+- **Autorização:** responsável autorizou publicar o SHA `84eef5dd2ee861669c79daf592b1219410811669` em `https://agenday-sistema.infinityfree.io/`, mantendo os dados de produção.
+- **Backup antes da publicação:** `C:\Users\EDER\Documents\AgenDay-Backups\2026-11-20_192137_a1d631ca` — `backup-completo.zip` (8,8 MB), `banco-agenday.sql` (22,1 KB), árvore `htdocs` e `relatorio.json`. Rotina validada (`Executar-Backup-Agenday.ps1`).
+- **Banco:** `sql/migracao-horario-funcionamento.sql` aplicado no phpMyAdmin antes do código. Conferido por consulta: tabelas `horario_funcionamento` e `bloqueio` = 1 e 1; 5 colunas novas em `estabelecimento`. Nenhum dado apagado.
+- **Execução:** workflow `agenday-publicar.yml` disparado por `workflow_dispatch` na branch `dev-feira-uninorte` (SHA exato). Run `44837030817`: `Validar codigo e pacote` ✅, `Testar FTPS sem publicar arquivos` ✅, `Enviar ao InfinityFree somente com autorizacao` ✅ (sucesso em 20/11/2026).
+- **Flags:** `AGENDAY_DEPLOY_ENABLED=true` / `AGENDAY_DEPLOY_MODE=publish` ligadas apenas durante a execução e **desligadas ao final** (`false` / `disabled`, conferido em 23:33).
+- **Validação após publicar:** arquivos conferidos por FTPS — `index.php` com o bloco de horário no cadastro (`name="dias[]"`, `name="abertura"`, legenda "Horário de funcionamento") e `login.css?v=20261120-cad01`; `config.php` com aba Horários, `id="formBloqueio"`, `criar_bloqueio` e `configuracoes-v2.css?v=20261120-ui16`; `js/configuracoes.js` com o atalho 23:59; `lib/bloqueios.php` e `lib/horario-funcionamento.php` presentes. Navegador real: tela de login carregando e bloco de horário visível. `arquivos/` e `conexao.php` preservados; nenhum exportador temporário de backup restou.
+- **O que muda para o usuário:** edição de cliente, funcionário e serviço; aba **Horários**; cadastro já com horário; tela de **Bloqueios**.
+- **O que ainda não muda:** a agenda continua sem usar horário, bloqueio e regras no cálculo de horário livre; isso é a próxima fase (AGD-01). O envio do código e o SQL não alteram esse comportamento.
+- **Pendências:** validar os fluxos autenticados no site publicado com a conta do responsável (login, salvar horário, criar/excluir bloqueio, cadastro novo); celular físico; implementar a agenda.
+
+---
+
+## BLQ-01 — Tela de bloqueios (20/11/2026; integrada no PR #48)
 
 - **Escopo autorizado:** interface para cadastrar e excluir bloqueios de agenda (feriado, folga, curso, "fecha mais cedo"), dentro de **Configurações → Horários**, abaixo das regras. Nenhum deploy e nenhuma alteração em banco de produção.
 - **Arquivos:** `lib/bloqueios.php` (novo: validação, listagem, criação e exclusão), `config.php` (seção Bloqueios + ações `criar_bloqueio`/`excluir_bloqueio`), `js/configuracoes.js` (sugere 23:59 ao informar o início e valida fim > início), `css/configuracoes-v2.css` (cartões de bloqueio e botão de 44 px), `tests/responsividade-check.js` (+3 verificações, 173 no total).
