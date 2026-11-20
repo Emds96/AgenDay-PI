@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## FIX-01 — Reenvio duplo em Clientes/Funcionários (19/11/2026; implementação em revisão)
+
+- **Problema confirmado em produção, antes da correção:** phpMyAdmin mostrou dois registros diferentes para o mesmo nome/telefone nos exemplos da conta de teste (clientes IDs 9/10; funcionários IDs 12/13); as listagens exibiam esses pares. Nenhum registro existente foi apagado.
+- **Escopo aprovado:** proteção front-end e PHP para cadastro de cliente e funcionário; testes, PR/merge e publicação autorizada no InfinityFree. Não alterar tabelas, excluir duplicatas nem tocar na `main`.
+- **Solução:** bloqueio visual do botão Concluir com `Salvando...`; token único de cadastro (separado de CSRF), emitido na sessão para cada formulário e consumido **antes do INSERT e upload**. Sessão PHP permanece aberta durante o POST para serializar requisições da mesma sessão. Token expira após 30 minutos, possui limite em memória e não é usado como regra de unicidade de telefone.
+- **Arquivos:** `cad-cliente.php`, `cad-funcionario.php`, `cadastro-clientes.php`, `cadastro-funcionario.php`, `lib/cadastro-reenvio.php`, `js/cadastro-envio.js` e `tests/cadastro-reenvio.php`.
+- **Validação inicial:** no Windows, smoke `node tests/responsividade-check.js` com 159 verificações aprovado; testes PHP/CI, deploy e QA integrado pendentes nesta fotografia. Não considerar o bug resolvido no site até publicação e prova de um único INSERT para repetição da mesma solicitação.
+- **Limitação conhecida:** o token por sessão protege replay da mesma tentativa e cliques duplos; **não** impede cadastros separados e intencionais com nome/telefone iguais em outras sessões. Garantia global de idempotência exigiria persistência no banco, fora deste escopo.
+
+---
+
+
 ## OPS-01 — Fluxo rapido e assistente de publicacao (19/11/2026; [PR #39](https://github.com/Emds96/AgenDay-PI/pull/39); verificar integracao no GitHub)
 
 - **Autorizado:** documentar classificacao simples/media/complexa, autorizacao de tarefa com escopo claro, criar assistente operacional e testes sem publicar; criar branch e PR para `dev-feira-uninorte`. **Autorizacao inicial:** sem merge ou deploy. **Autorizacao posterior:** responsavel solicitou continuidade apos validacao Windows, permitindo revisao e integracao do PR #39. **Permanece sem autorizacao:** deploy, modificacao de Secrets, banco ou workflow.

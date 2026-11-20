@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/verifica_login.php';
+require_once __DIR__ . '/lib/cadastro-reenvio.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     http_response_code(405);
@@ -90,6 +91,11 @@ if ($foto !== null) {
             }
         }
     }
+}
+
+// Validado e consumido enquanto o PHP mantém o bloqueio da sessão.
+if (!agenday_cadastro_token_consumir('funcionarios', $_POST['cadastro_token'] ?? null)) {
+    agenday_erro_funcionario('Este cadastro já foi enviado ou expirou. Atualize a página antes de tentar novamente.');
 }
 
 $caminhoPublico = null;
