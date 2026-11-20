@@ -22,6 +22,8 @@ O **AgenDay 2.0** é uma aplicação web desenvolvida para facilitar a organiza�
 Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados independente, autenticação de estabelecimentos, associação entre funcionários e serviços e uma agenda conectada aos registros cadastrados.
 
 > **Estado confirmado em 17/11/2026:** aplicação publicada no site independente [AgenDay](https://agenday-sistema.infinityfree.io/) pelo workflow [#44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922), commit de aplicação `5749f333`; a branch de desenvolvimento possui commits documentais posteriores. Cadastro/login, agenda e outras operações foram validados em cenários delimitados; **login Google e recuperação/alteração de senha também tiveram testes manuais positivos em produção**. Na recuperação, o responsável confirmou o remetente **AgenDay Sistema** entregue na caixa de entrada com endereço `agendaysistema@12832884.brevosend.com`. Não significa que todas as telas e controles de segurança já passaram por QA. Consulte [docs/STATUS.md](docs/STATUS.md) e [docs/QA03_RECUPERACAO_SENHA_BREVO.md](docs/QA03_RECUPERACAO_SENHA_BREVO.md).
+>
+> **Estado confirmado em 20/11/2026:** novo deploy publicado pelo workflow [44837030817](https://github.com/Emds96/AgenDay-PI/actions/runs/44837030817), commit `84eef5d`, após backup verificado e aplicação da migração `sql/migracao-horario-funcionamento.sql` no phpMyAdmin. Entraram: edição de cliente, funcionário e serviço; aba **Horários** em Configurações; horário no cadastro; e tela de **Bloqueios**. A agenda ainda **não usa** horário, bloqueios e regras no cálculo de horário livre — isso é a próxima fase. Detalhes em [docs/STATUS.md](docs/STATUS.md).
 
 ## Funcionalidades
 
@@ -30,16 +32,17 @@ Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados inde
 | Conta do estabelecimento | Cadastro, login tradicional e Google, sessão e logout; fluxos principais testados |
 | Senhas (QA-02 e QA-03) | Alteração autenticada de senha e recuperação por e-mail, link temporário e uso único; testes manuais dos fluxos principais aprovados |
 | E-mail transacional | Brevo HTTPS, remetente verificado **AgenDay Sistema**, entrega real confirmada em um teste na caixa de entrada |
-| Clientes | Cadastro, pesquisa e foto opcional |
-| Funcionários | Cadastro, pesquisa, foto opcional e vínculo a vários serviços |
-| Serviços | Cadastro com nome, duração, preço e descrição; pesquisa |
+| Clientes | Cadastro, pesquisa, foto opcional e **edição em modal** (PR #42) |
+| Funcionários | Cadastro, pesquisa, foto opcional, vínculo a vários serviços e **edição em modal** (PR #42) |
+| Serviços | Cadastro com nome, duração, preço e descrição; pesquisa e **edição em modal** (PR #43) |
 | Agendamentos | Seleção de cliente, serviço, funcionário, data e hora; gravação programada no MySQL |
 | Controle de horários | Validação de dados e verificação de sobreposição de atendimentos na gravação |
 | Calendário | Navegação mensal, visualização de agendamentos por dia, status e cancelamento de atendimentos ativos |
 | Segurança | Consultas preparadas, proteção CSRF e isolamento de dados por estabelecimento nos fluxos adaptados |
-| Configurações (QA-04 / UI-08) | Central com **Estabelecimento** e **Minha Conta**; nome/telefone editáveis, e-mail somente leitura, foto JPG/PNG por estabelecimento e troca de senha em modal. [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33) publicado; QA inicial visual automatizado aprovado, testes de gravação e aprovação humana pendentes. |
+| Configurações (QA-04 / UI-08 / HOR-01 / BLQ-01) | Central com **três abas**: **Estabelecimento**, **Horários** e **Minha Conta**. Nome/telefone editáveis, e-mail somente leitura, foto JPG/PNG, troca de senha em modal; na aba Horários, funcionamento por dia com almoço, regras de agendamento e bloqueios (feriado, folga, "fecha mais cedo"). [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33) e [PR #48](https://github.com/Emds96/AgenDay-PI/pull/48) publicados. |
+| Horário e bloqueios | Funcionamento semanal em `horario_funcionamento`, bloqueios por estabelecimento ou funcionário em `bloqueio` e regras na tabela `estabelecimento` (intervalo, antecedência, janela, cancelamento e tolerância). **Configurável, mas ainda não aplicado pelo cálculo da agenda.** |
 
-**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha e testes completos de gravação da nova central Configurações, comandas e financeiro. Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
+**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha, validação em produção da aba Horários e dos bloqueios, comandas e financeiro. A **agenda ainda não consome** horário de funcionamento, bloqueios e regras. Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
 
 ## Tecnologias
 
@@ -79,18 +82,24 @@ AgenDay-PI/
 
 ## Banco de dados
 
-O modelo atual está em [`sql/BD_v2.sql`](sql/BD_v2.sql) e contém **8 tabelas**:
+O modelo atual está em [`sql/BD_v2.sql`](sql/BD_v2.sql) e contém **12 tabelas**:
 
 | Tabela | Finalidade |
 | --- | --- |
 | `proprietario` | Dados opcionais do proprietário |
-| `estabelecimento` | Contas dos estabelecimentos |
+| `estabelecimento` | Contas dos estabelecimentos e regras de agendamento |
 | `endereco` | Endereço do estabelecimento |
 | `clientes` | Clientes de cada estabelecimento |
 | `funcionarios` | Profissionais cadastrados |
 | `servicos` | Serviços, duração e preço |
 | `funcionario_servico` | Associação de funcionários aos serviços que realizam |
 | `agendamentos` | Cliente, funcionário, serviço, início, fim e situação do atendimento |
+| `estabelecimento_google` | Vínculo de login Google por estabelecimento |
+| `recuperacao_senha` | Tokens de recuperação de senha |
+| `horario_funcionamento` | Funcionamento por dia da semana, incluindo almoço |
+| `bloqueio` | Feriado, folga ou fechamento parcial, por conta ou funcionário |
+
+> Em bancos já existentes, a estrutura nova entra pelo arquivo `sql/migracao-horario-funcionamento.sql`, aplicado no phpMyAdmin antes de publicar o código.
 
 Os dados de clientes, funcionários, serviços e agendamentos são vinculados ao estabelecimento. O objetivo é impedir que contas diferentes misturem seus registros.
 
@@ -111,7 +120,7 @@ cd AgenDay-PI
 
 Crie **um banco vazio e independente**, selecionando-o no phpMyAdmin. Importe nele o arquivo `sql/BD_v2.sql` **apenas se estiver configurando um novo ambiente**.
 
-> **Atenção:** o banco independente já configurado para o projeto foi criado e recebeu as 8 tabelas. **Não reimporte ou execute o SQL nesse banco sem necessidade e sem backup.** Nunca execute esse script no banco do projeto original.
+> **Atenção:** o banco independente já configurado para o projeto foi criado e, após a migração de 20/11/2026, reúne 12 tabelas. **Não reimporte ou execute o SQL nesse banco sem necessidade e sem backup.** Nunca execute esse script no banco do projeto original.
 
 ### 3. Configurar a conexão privada
 
