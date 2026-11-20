@@ -48,7 +48,7 @@
 
 ---
 
-## HOR-01 — Horário de funcionamento e regras de agendamento (20/11/2026; branch `feat/horario-funcionamento`, não publicada)
+## HOR-01 — Horário de funcionamento e regras de agendamento (20/11/2026; branch `feat/horario-funcionamento`, publicada no deploy de 20/11/2026 — SHA `84eef5d`)
 
 - **Escopo autorizado:** criar a base de tempo do agendamento — horário de funcionamento por dia (com almoço e intervalo), tabela de bloqueios e regras do estabelecimento (antecedência mínima, janela máxima, prazo de cancelamento e tolerância de atraso) — e editá-las em **Configurações → Horários**. Nenhum deploy e nenhuma alteração em banco de produção.
 - **Banco:** `sql/migracao-horario-funcionamento.sql` (aplicar no phpMyAdmin **antes** de publicar o código) cria `horario_funcionamento` (1 linha por dia: aberto, abre, fecha e almoço), `bloqueio` (estabelecimento inteiro ou funcionário) e adiciona 5 colunas em `estabelecimento`: intervalo da agenda (**um só para a semana**, padrão 30 min), antecedência mínima, janela máxima, prazo de cancelamento e tolerância de atraso. `sql/BD_v2.sql` foi atualizado como modelo para banco novo. Nenhum dado existente é apagado; quem não tem linhas em `horario_funcionamento` recebe o padrão do código (seg–sáb 08:00–18:00, sábado até 12:00, domingo fechado).
@@ -60,7 +60,7 @@
 
 ---
 
-## EDIT-SER-01 — Edição de serviço (19/11/2026; implementada na branch `feat/editar-servico`, não publicada)
+## EDIT-SER-01 — Edição de serviço (19/11/2026; implementada na branch `feat/editar-servico`, publicada no deploy de 20/11/2026 — SHA `84eef5d`)
 
 - **Escopo autorizado:** editar serviço já cadastrado (nome, duração, preço e descrição) com validação equivalente à do cadastro, CSRF e isolamento por `id_estabelecimento` da sessão.
 - **Arquivos:** `editar-servico.php` (novo endpoint, somente POST) e `cad.servicos.php` (botão **Editar**, modal preenchido por `data-*` e mensagem de sucesso variável).
@@ -70,7 +70,7 @@
 
 ---
 
-## EDIT-FUN-01 — Edição de funcionário (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
+## EDIT-FUN-01 — Edição de funcionário (19/11/2026; implementada na branch `feat/editar-cliente`, publicada no deploy de 20/11/2026 — SHA `84eef5d`)
 
 - **Escopo autorizado:** editar funcionário já cadastrado (nome, contato, foto opcional e vínculos com serviços), com validação, CSRF, transação e isolamento por `id_estabelecimento` da sessão. Sem autorização de deploy; PR/merge não realizados.
 - **Arquivos:** `editar-funcionario.php` (novo endpoint, somente POST), `cad-funcionario.php` (botão **Editar**, modal com os mesmos checkboxes de serviços e mensagem de sucesso variável) e `info-funcionario.php` (passa a expor `servicos_ids` para pré-marcar os serviços do funcionário).
@@ -80,7 +80,7 @@
 
 ---
 
-## EDIT-CLI-01 — Edição de cliente (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
+## EDIT-CLI-01 — Edição de cliente (19/11/2026; implementada na branch `feat/editar-cliente`, publicada no deploy de 20/11/2026 — SHA `84eef5d`)
 
 - **Escopo autorizado:** permitir editar cliente já cadastrado (nome, e-mail, contato e troca opcional de foto), mantendo validação, CSRF e isolamento por `id_estabelecimento` da sessão. Não houve autorização de deploy; PR/merge não realizados.
 - **Arquivos:** `editar-cliente.php` (novo endpoint, somente POST) e `cad-cliente.php` (botão **Editar** por linha, modal preenchido por `data-*`, mensagem de sucesso variável, sem alterar o cadastro existente).

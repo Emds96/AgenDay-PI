@@ -20,19 +20,20 @@ O site do Gabriel pode ser comparado **somente para análise autorizada**, não 
 | --- | --- | --- |
 | Autenticação de estabelecimento | `index.php`, `login.php`, `cadastrar.php`, `sessao.php`, `verifica_login.php`, `logout.php`, `google-entrar.php` | Cadastro/login tradicionais e Google, fluxos principais testados manualmente; negativos e vinculação de conta existente ainda com cobertura parcial |
 | Senhas e comunicação | `alterar-senha.php`, `esqueci-senha.php`, `redefinir-senha.php`, `lib/brevo-email.php`, `css/recuperacao-senha.css` | QA-02 alteração e QA-03 recuperação implementadas/publicadas, aprovadas manualmente no fluxo principal; remetente verificado **AgenDay Sistema** e e-mail real entregue na caixa de entrada, com `De: agendaysistema@12832884.brevosend.com` (caso relatado de 17/11). API Brevo reutiliza a chave configurada; não armazenar chave no Git |
-| Clientes | `cad-cliente.php`, `cadastro-clientes.php`, `info-clientes.php` | Cadastro/pesquisa/upload adaptados à empresa; edição/exclusão não consideradas prontas |
-| Serviços | `cad.servicos.php`, `cadastro-servicos.php`, `info-servicos.php` | Preço, duração, descrição e pesquisa; edição/exclusão pendentes |
-| Funcionários | `cad-funcionario.php`, `cadastro-funcionario.php`, `info-funcionario.php` | Upload e múltiplos serviços via `funcionario_servico`; edição posterior de vínculos não pronta |
+| Clientes | `cad-cliente.php`, `cadastro-clientes.php`, `editar-cliente.php`, `info-clientes.php` | Cadastro/pesquisa/upload adaptados à empresa e **edição em modal** (PR #42, publicada em 20/11/2026); exclusão não implementada |
+| Serviços | `cad.servicos.php`, `cadastro-servicos.php`, `editar-servico.php`, `info-servicos.php` | Preço, duração, descrição, pesquisa e **edição em modal** (PR #43, publicada em 20/11/2026); exclusão não implementada |
+| Funcionários | `cad-funcionario.php`, `cadastro-funcionario.php`, `editar-funcionario.php`, `info-funcionario.php` | Upload, múltiplos serviços via `funcionario_servico` e **edição em modal, inclusive dos vínculos** (PR #42, publicada em 20/11/2026) |
+| Horário, bloqueios e regras | `lib/horario-funcionamento.php`, `lib/bloqueios.php`, `config.php`, `sql/migracao-horario-funcionamento.sql` | Tabelas `horario_funcionamento` e `bloqueio`, mais 5 colunas de regras em `estabelecimento`; tela em Configurações → Horários (PRs #44, #45, #46, #47 e #48, publicadas em 20/11/2026). `agenday_horario_janelas()` já entrega as janelas do dia sem o almoço. **A agenda ainda não usa esses dados** |
 | Agenda | `agenda.php`, `lib/agendamentos.php`, `lib/agendamento-gravar.php`, `salvar-agendamento.php` | Criação e bloqueio de conflito implementados, casos de QA relatados; concorrência simultânea não comprovada |
 | API/calendário/cancelamento | `api/agendamentos.php`, `js/calendario.js`, `lib/agendamento-cancelar.php`, `cancelar-agendamento.php` | Agenda por mês e cancelamento com status mantido no histórico; validar produção após mudanças |
 | Estilos e responsividade | `css/design-system.css`, `css/responsivo.css`, `css/recuperacao-senha.css`, `tests/responsividade-check.js` | Identidade turquesa; QA-01 integrada/publicada, mas sem regressão visual completa confirmada; recuperação QA-03 publicada e testada em viewport 390px sem overflow |
-| Conta, perfil e configurações | `config.php`, `perfil.php`, `alterar-senha.php` | Configuração básica do estabelecimento (nome/contato) publicada e testada em QA01 em 18/11/2026 (PR #26); perfil e configurações avançadas ainda ilustrativos; **alteração de senha (QA-02) funcional no fluxo principal validado em produção** |
+| Conta, perfil e configurações | `config.php`, `perfil.php`, `alterar-senha.php` | Central com três abas (**Estabelecimento**, **Horários** e **Minha Conta**); configuração básica (nome/contato) publicada e testada em QA01 em 18/11/2026 (PR #26); aba Horários publicada em 20/11/2026; perfil ainda ilustrativo; **alteração de senha (QA-02) funcional no fluxo principal validado em produção** |
 | Comandas e financeiro | `comandas-abertas.php`, `historico-comandas.php`, `financeiro.php` | Arquivos/telas protegidos, **sem fluxo integrado de negócio validado**; não marcar concluídos |
 | Página pública do consumidor | **Não implementada no nosso fork** | Discutida, não aprovada nem desenvolvida; não confundir com o cadastro administrativo do cliente |
 
 ## 3. Banco v2: fonte e cuidados
 
-`sql/BD_v2.sql` descreve 8 tabelas relacionadas: `proprietario`, `estabelecimento`, `endereco`, `clientes`, `funcionarios`, `servicos`, `funcionario_servico` e `agendamentos`. Banco independente no InfinityFree foi preparado em etapa anterior, conforme README/STATUS; **não reimportar** o SQL em ambiente existente.
+`sql/BD_v2.sql` descreve 12 tabelas: `proprietario`, `estabelecimento`, `endereco`, `clientes`, `funcionarios`, `servicos`, `funcionario_servico`, `agendamentos`, `estabelecimento_google`, `recuperacao_senha`, `horario_funcionamento` e `bloqueio`. Banco independente no InfinityFree recebeu a migração `sql/migracao-horario-funcionamento.sql` em 20/11/2026 (2 tabelas novas e 5 colunas em `estabelecimento`, sem apagar dados), conforme README/STATUS; **não reimportar** o SQL em ambiente existente.
 
 O `htdocs/conexao.php` de produção é **privado** e fora do GitHub. Cada request autenticado usa `id_estabelecimento` da sessão e consultas preparadas nas rotas adaptadas. Há `password_hash/password_verify`, CSRF, tratamento de uploads e locks/transações para reservas — **essas proteções só cobrem rotas implementadas/revisadas; não são auditoria geral de segurança**.
 
@@ -65,7 +66,9 @@ No código de agendamento, data/hora local é interpretada em `America/Manaus` p
 - **Documentação antes das próximas ações de produção**; outra sessão é responsável pela publicação, esta sessão documenta.
 
 **Pendentes:**
-- Manter backups atuais de `htdocs` e MySQL antes de cada deploy. Rotina automática FTPS/PHP + restauração MariaDB foi comprovada em 17/11 (ex.: `2026-11-17_205855_4f8c886e`, `BACKUP OK`); ensaio de recuperação completa em outra hospedagem ainda não foi feito.
+- Manter backups atuais de `htdocs` e MySQL antes de cada deploy. Rotina automática FTPS/PHP + restauração MariaDB foi comprovada em 17/11 e repetida em 20/11/2026 (ex.: `2026-11-20_192137_a1d631ca`, `BACKUP OK`, 8,8 MB + SQL 22,1 KB); ensaio de recuperação completa em outra hospedagem ainda não foi feito.
+- **Implementar a agenda de verdade** (visões dia/semana/mês e cálculo de horário livre com horário de funcionamento, bloqueios e regras). Hoje a configuração existe, mas a agenda não a consome.
+- Definir a taxa de cancelamento como regra/aviso, sem gateway de pagamento.
 - Completar regressão visual da correção de menu (QA-01), já integrada e incluída nos deploys posteriores; não presumir cobertura completa apenas pelo código publicado.
 - QA-02 e QA-03 estão concluídas no fluxo principal testado; ainda revisar os cenários negativos de senha. Priorizar QA-04 a QA-08 (configuração, módulos legados, JS, textos fixos, modais) conforme impacto na feira.
 - Definir página pública do consumidor, links e fluxo sem conta/com conta.
