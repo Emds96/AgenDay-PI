@@ -1,5 +1,15 @@
 # STATUS — AgenDay 2.0
 
+## EDIT-CLI-01 — Edição de cliente (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
+
+- **Escopo autorizado:** permitir editar cliente já cadastrado (nome, e-mail, contato e troca opcional de foto), mantendo validação, CSRF e isolamento por `id_estabelecimento` da sessão. Não houve autorização de deploy; PR/merge não realizados.
+- **Arquivos:** `editar-cliente.php` (novo endpoint, somente POST) e `cad-cliente.php` (botão **Editar** por linha, modal preenchido por `data-*`, mensagem de sucesso variável, sem alterar o cadastro existente).
+- **Regras aplicadas:** cliente só é atualizado quando `id_cliente` e `id_estabelecimento` da sessão coincidem; foto nova só substitui a anterior após UPDATE bem-sucedido e o arquivo antigo só é removido se o caminho casar com o padrão gerado pelo servidor.
+- **Validação local (19/11/2026, servidor PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado nos dois arquivos; fluxo HTTP real com cadastro de teste → edição conferida no MySQL local → cliente de outro estabelecimento rejeitado com "Cliente não encontrado." → telefone inválido e POST sem CSRF rejeitados → GET devolve 405. Em 360 px não há overflow horizontal e o botão vira ícone.
+- **Pendências:** validação visual do responsável, teste de upload de foto substituta, celular físico e CI do PR.
+
+---
+
 ## FIX-01 — Reenvio duplo em Clientes/Funcionários (19/11/2026; integrado, publicado, QA técnico aprovado; validação do responsável pendente)
 
 - **Problema confirmado em produção, antes da correção:** phpMyAdmin mostrou dois registros diferentes para o mesmo nome/telefone nos exemplos da conta de teste (clientes IDs 9/10; funcionários IDs 12/13); as listagens exibiam esses pares. Nenhum registro existente foi apagado.
