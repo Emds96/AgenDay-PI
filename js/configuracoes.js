@@ -28,7 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tab.addEventListener('shown.bs.tab', () => {
             try {
                 const url = new URL(window.location.href);
-                url.searchParams.set('aba', tab.id === 'aba-minha-conta' ? 'conta' : 'estabelecimento');
+                const mapa = {
+                    'aba-estabelecimento': 'estabelecimento',
+                    'aba-horarios': 'funcionamento',
+                    'aba-minha-conta': 'conta'
+                };
+                url.searchParams.set('aba', mapa[tab.id] || 'estabelecimento');
                 window.history.replaceState(null, '', url);
             } catch (_) {
                 // Aba continua operante sem History API.
@@ -69,6 +74,22 @@ document.addEventListener('DOMContentLoaded', () => {
         telefone.addEventListener('blur', formatarTelefone);
         atualizarValidade();
     }
+
+    // Aba Horários: dia fechado desabilita os campos de hora daquela linha.
+    const linhasHorario = [...document.querySelectorAll('#formFuncionamento .ag-horario-linha')];
+    linhasHorario.forEach(linha => {
+        const caixa = linha.querySelector('.ag-horario-aberto');
+        if (!caixa) return;
+        const campos = [...linha.querySelectorAll('.ag-horario-campo')];
+        const sincronizar = () => {
+            campos.forEach(campo => {
+                campo.disabled = !caixa.checked;
+            });
+            linha.classList.toggle('ag-horario-fechado', !caixa.checked);
+        };
+        caixa.addEventListener('change', sincronizar);
+        sincronizar();
+    });
 
     const campoFoto = document.getElementById('fotoConta');
     if (campoFoto) {

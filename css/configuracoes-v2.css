@@ -265,6 +265,80 @@
     padding: 1rem 1.4rem;
 }
 
+/* Aba Horários: grade de funcionamento por dia da semana. */
+.ag-horarios-tabela {
+    margin-bottom: 1.75rem;
+}
+
+.ag-horarios {
+    margin-bottom: 0;
+    --bs-table-bg: transparent;
+}
+
+.ag-horarios th,
+.ag-horarios td {
+    padding: .55rem .5rem;
+    vertical-align: middle;
+    border-color: var(--ad-border);
+}
+
+.ag-horarios thead th {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ad-text-muted);
+    white-space: nowrap;
+}
+
+.ag-horarios .ag-horario-dia {
+    margin-bottom: 0;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ag-horario-campo {
+    min-width: 6.5rem;
+    min-height: 42px;
+    padding: .35rem .5rem;
+    border-radius: .5rem;
+}
+
+.ag-horario-almoco {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+.ag-horario-almoco > div {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.ag-horario-separador {
+    color: var(--ad-text-muted);
+}
+
+.ag-horario-fechado td {
+    opacity: .55;
+}
+
+.ag-horarios-regras {
+    padding: 1.15rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--ad-border);
+    border-radius: 14px;
+}
+
+.ag-horarios-regras legend {
+    float: none;
+    width: auto;
+    padding: 0 .4rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
 @media (max-width: 575.98px) {
     .ag-settings {
         margin-top: 1rem;
@@ -282,21 +356,90 @@
 
     .ag-settings-tabbar {
         padding: .3rem .85rem 0;
+        overflow-x: auto;
+        overflow-y: hidden;
     }
 
     .ag-settings-tabs {
-        gap: .25rem;
+        gap: 0;
+    }
+
+    /* responsivo.css deixa .nav-tabs quebrar linha; as três abas ficam em uma linha. */
+    .agenday-app .ag-settings-tabs {
+        flex-wrap: nowrap;
     }
 
     .ag-settings-tabs .nav-link {
-        flex: 1 1 50%;
+        flex: 0 1 auto;
         min-width: 0;
-        padding: .7rem .35rem;
-        font-size: .94rem;
+        padding: .65rem .4rem;
+        font-size: .82rem;
+        line-height: 1.15;
+        white-space: nowrap;
     }
 
     .ag-settings-body {
         padding: 1.15rem;
+    }
+
+    /* Grade de horários vira cartões por dia no celular. */
+    .ag-horarios thead {
+        display: none;
+    }
+
+    .ag-horarios,
+    .ag-horarios tbody,
+    .ag-horarios tr,
+    .ag-horarios th,
+    .ag-horarios td {
+        display: block;
+        width: 100%;
+    }
+
+    .ag-horarios tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .6rem .75rem;
+        padding: .85rem;
+        margin-bottom: .75rem;
+        border: 1px solid var(--ad-border);
+        border-radius: 12px;
+    }
+
+    .ag-horarios th[scope="row"] {
+        grid-column: 1 / -1;
+        padding: 0;
+        border: 0;
+    }
+
+    .ag-horarios td {
+        padding: 0;
+        border: 0;
+    }
+
+    .ag-horarios td::before {
+        content: attr(data-rotulo);
+        display: block;
+        margin-bottom: .15rem;
+        font-size: .72rem;
+        font-weight: 600;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--ad-text-muted);
+    }
+
+    .ag-horarios td[data-rotulo="Aberto"],
+    .ag-horarios td[data-rotulo="Almoço"] {
+        grid-column: 1 / -1;
+    }
+
+    .ag-horario-campo {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .ag-horarios-regras {
+        padding: .95rem;
     }
 
     .ag-settings-photo-row {

@@ -21,6 +21,11 @@ CREATE TABLE IF NOT EXISTS estabelecimento (
   contato_estabelecimento VARCHAR(20),
   senha_estabelecimento VARCHAR(255) NOT NULL,
   arquivo_servicos VARCHAR(255),
+  intervalo_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 30,
+  antecedencia_minima_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 60,
+  janela_maxima_dias SMALLINT UNSIGNED NOT NULL DEFAULT 60,
+  horas_cancelamento SMALLINT UNSIGNED NOT NULL DEFAULT 24,
+  tolerancia_atraso_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 10,
   criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id_estabelecimento),
   UNIQUE KEY uq_estabelecimento_email (email_estabelecimento),
@@ -102,6 +107,41 @@ CREATE TABLE IF NOT EXISTS funcionario_servico (
     FOREIGN KEY (id_estabelecimento, id_servicos)
     REFERENCES servicos (id_estabelecimento, id_servicos)
     ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Horario de funcionamento: uma linha por dia da semana (0 = domingo ... 6 = sabado).
+CREATE TABLE IF NOT EXISTS horario_funcionamento (
+  id_estabelecimento INT UNSIGNED NOT NULL,
+  dia_semana TINYINT UNSIGNED NOT NULL,
+  aberto TINYINT(1) NOT NULL DEFAULT 1,
+  hora_abertura TIME NOT NULL DEFAULT '08:00:00',
+  hora_fechamento TIME NOT NULL DEFAULT '18:00:00',
+  inicio_almoco TIME NULL DEFAULT NULL,
+  fim_almoco TIME NULL DEFAULT NULL,
+  PRIMARY KEY (id_estabelecimento, dia_semana),
+  CONSTRAINT fk_horario_empresa FOREIGN KEY (id_estabelecimento)
+    REFERENCES estabelecimento (id_estabelecimento)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bloqueios de agenda (feriado, folga, curso). id_funcionario NULL = estabelecimento inteiro.
+CREATE TABLE IF NOT EXISTS bloqueio (
+  id_bloqueio INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_estabelecimento INT UNSIGNED NOT NULL,
+  id_funcionario INT UNSIGNED NULL DEFAULT NULL,
+  inicio DATETIME NOT NULL,
+  fim DATETIME NOT NULL,
+  motivo VARCHAR(120) NOT NULL,
+  criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_bloqueio),
+  KEY idx_bloqueio_empresa_inicio (id_estabelecimento, inicio),
+  KEY idx_bloqueio_funcionario (id_estabelecimento, id_funcionario, inicio),
+  CONSTRAINT fk_bloqueio_empresa FOREIGN KEY (id_estabelecimento)
+    REFERENCES estabelecimento (id_estabelecimento)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_bloqueio_funcionario FOREIGN KEY (id_estabelecimento, id_funcionario)
+    REFERENCES funcionarios (id_estabelecimento, id_funcionario)
+    ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS agendamentos (
