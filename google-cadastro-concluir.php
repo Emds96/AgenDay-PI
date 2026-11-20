@@ -76,6 +76,12 @@ try {
     $stmt->execute();
     $stmt->close();
 
+    // Mesma base de tempo do cadastro comum: a conta nasce com os 7 dias
+    // gravados, sem sobrescrever nada e sem derrubar o cadastro se a
+    // migração de horário ainda não existir.
+    require_once __DIR__ . '/lib/horario-funcionamento.php';
+    agenday_horario_criar_padrao($conexao, $id);
+
     $conexao->commit();
 
     session_regenerate_id(true);

@@ -249,6 +249,16 @@ verificar(bloqueioEnvio.includes("form.addEventListener('submit'")
     && bloqueioEnvio.includes("'Salvando...'"),
     'FIX-01: bloqueio de duplo clique ausente');
 
+/* CAD-01: toda conta nova nasce com os 7 dias de horário gravados. */
+const libHorario = ler('lib/horario-funcionamento.php');
+verificar(libHorario.includes('function agenday_horario_criar_padrao(')
+    && libHorario.includes('INSERT IGNORE INTO horario_funcionamento'),
+    'CAD-01: biblioteca sem a criação do horário padrão');
+verificar(ler('cadastrar.php').includes('agenday_horario_criar_padrao($conexao, $novoId)'),
+    'CAD-01: cadastro comum não cria o horário padrão');
+verificar(ler('google-cadastro-concluir.php').includes('agenday_horario_criar_padrao($conexao, $id)'),
+    'CAD-01: cadastro via Google não cria o horário padrão');
+
 if (process.env.GITHUB_ACTIONS === 'true') {
     // A runner de CI possui PHP; o Windows remoto não precisa ter PHP instalado.
     const { spawnSync } = require('node:child_process');
