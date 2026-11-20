@@ -29,7 +29,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css?v=20261119-ui10">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
 </head>
 
 <body class="agenday-app">
@@ -235,7 +235,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                             ? htmlspecialchars((string) $funcionario['servicos_vinculados'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
                                             : 'Sem serviços vinculados' ?></small>
                                     </div>
-                                    <div class="col-auto d-flex align-items-center pe-2">
+                                    <div class="col-auto d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 pe-2 ag-acoes-registro">
                                         <button type="button" class="btn btn-sm btn-outline-primary"
                                             data-bs-toggle="modal" data-bs-target="#modalEditarFuncionario"
                                             data-id="<?= (int) $funcionario['id_funcionario'] ?>"
@@ -247,6 +247,14 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                             <i class="bi bi-pencil-square" aria-hidden="true"></i>
                                             <span class="d-none d-sm-inline ms-1">Editar</span>
                                         </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal" data-bs-target="#modalExcluirFuncionario"
+                                            data-id="<?= (int) $funcionario['id_funcionario'] ?>"
+                                            data-nome="<?= htmlspecialchars((string) $funcionario['nome_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            aria-label="Excluir funcionário <?= htmlspecialchars((string) $funcionario['nome_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                            <span class="d-none d-sm-inline ms-1">Excluir</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -256,9 +264,38 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
             </div>
         </section>
     </main>
+
+    <div class="modal fade ag-modal-excluir" id="modalExcluirFuncionario" tabindex="-1"
+         aria-labelledby="modalExcluirFuncionarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="modalExcluirFuncionarioLabel">Excluir funcionário</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir <strong data-excluir-nome>este funcionário</strong>?</p>
+                    <p class="text-muted mb-0">
+                        Essa ação não pode ser desfeita. Os vínculos com serviços e os bloqueios
+                        deste funcionário também serão removidos.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="excluir-funcionario.php" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="id_funcionario" value="" data-excluir-id>
+                        <button type="submit" class="btn btn-danger" data-excluir-confirmar>Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <section class="overlay"></section>
     <script src="js\menu-lateral.js"></script>
     <script src="js/cadastro-envio.js?v=20261119-antiduplo"></script>
+    <script src="js/excluir-registro.js?v=20261120-01"></script>
     <script>
         // Preenche o modal de edição com os dados e os serviços da linha clicada.
         document.addEventListener('DOMContentLoaded', function () {

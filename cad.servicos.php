@@ -28,7 +28,7 @@ require_once __DIR__ . '/info-servicos.php';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css?v=20261119-ui10">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
 </head>
 
 <body class="agenday-app">
@@ -209,7 +209,7 @@ require_once __DIR__ . '/info-servicos.php';
                                             <p><?= nl2br(htmlspecialchars((string) $servico['descricao_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) ?></p>
                                         <?php endif; ?>
                                     </div>
-                                    <div class="col-auto d-flex align-items-center pe-2">
+                                    <div class="col-auto d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 pe-2 ag-acoes-registro">
                                         <button type="button" class="btn btn-sm btn-outline-primary"
                                             data-bs-toggle="modal" data-bs-target="#modalEditarServico"
                                             data-id="<?= (int) $servico['id_servicos'] ?>"
@@ -221,6 +221,14 @@ require_once __DIR__ . '/info-servicos.php';
                                             <i class="bi bi-pencil-square" aria-hidden="true"></i>
                                             <span class="d-none d-sm-inline ms-1">Editar</span>
                                         </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal" data-bs-target="#modalExcluirServico"
+                                            data-id="<?= (int) $servico['id_servicos'] ?>"
+                                            data-nome="<?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            aria-label="Excluir serviço <?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                            <span class="d-none d-sm-inline ms-1">Excluir</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -230,8 +238,37 @@ require_once __DIR__ . '/info-servicos.php';
             </div>
         </section>
     </main>
+
+    <div class="modal fade ag-modal-excluir" id="modalExcluirServico" tabindex="-1"
+         aria-labelledby="modalExcluirServicoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="modalExcluirServicoLabel">Excluir serviço</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir <strong data-excluir-nome>este serviço</strong>?</p>
+                    <p class="text-muted mb-0">
+                        Essa ação não pode ser desfeita. O vínculo deste serviço com os funcionários
+                        também será removido.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="excluir-servico.php" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="id_servicos" value="" data-excluir-id>
+                        <button type="submit" class="btn btn-danger" data-excluir-confirmar>Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <section class="overlay"></section>
     <script src="js\menu-lateral.js"></script>
+    <script src="js/excluir-registro.js?v=20261120-01"></script>
     <script>
         // Preenche o modal de edição com os dados do serviço clicado.
         document.addEventListener('DOMContentLoaded', function () {

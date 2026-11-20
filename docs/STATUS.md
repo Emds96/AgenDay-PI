@@ -1,5 +1,16 @@
 # STATUS — AgenDay 2.0
 
+## DEL-01 — Excluir cliente, funcionário e serviço (20/11/2026; branch `feat/excluir-registros`, não publicada)
+
+- **Escopo autorizado:** lixeira ao lado do botão **Editar** (abaixo dele no celular) nas listas de clientes, funcionários e serviços, com pop-up de confirmação contendo **Cancelar** e **Excluir**. Nenhum deploy.
+- **Arquivos:** `excluir-cliente.php`, `excluir-funcionario.php`, `excluir-servico.php` (novos, somente POST), `js/excluir-registro.js` (novo, preenche o modal), `cad-cliente.php`, `cad-funcionario.php`, `cad.servicos.php` (botão, modal e script), `css/responsivo.css` (alvo de 44 px no celular, classe `ag-acoes-registro`), `tests/responsividade-check.js` (+12 verificações, 185 no total).
+- **Regras aplicadas:** `id_estabelecimento` sempre da sessão; CSRF obrigatório; GET responde 405; registro de outra conta devolve "não encontrado"; exclusão bloqueada quando existe **agendamento** do cliente, funcionário ou serviço, preservando o histórico. Funcionário leva junto vínculos com serviços e bloqueios; serviço leva junto o vínculo com funcionários; ambas as operações rodam em transação com rollback.
+- **Interface:** desktop mostra **Editar** e **Excluir** lado a lado; celular empilha a lixeira abaixo do Editar, com alvos de 44 × 44 px. O modal mostra o nome do registro, avisa que a ação não pode ser desfeita e, no funcionário/serviço, informa o que mais será removido. O botão de confirmar recebe foco ao abrir.
+- **Validação local (20/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado nos 11 arquivos e `node --check` no JS; exclusões reais de cliente, serviço (com vínculo) e funcionário (com vínculo) conferidas no MySQL; bloqueio confirmado para os três quando há agendamento, com registro preservado; cliente de outra conta devolve "Cliente não encontrado" e sobrevive; POST sem CSRF recusado; GET no endpoint responde 405; exclusão completa pelo navegador com o modal (id preenchido e mensagem de sucesso); desktop e 360 px sem overflow. `responsividade-check` (185), agenda (19), cancelamento (20), configuração (13) e reenvio (11) aprovados.
+- **Pendências:** validar no site publicado após o próximo deploy; celular físico; a foto do cliente/funcionário permanece em `arquivos/` após a exclusão (limpeza de arquivo órfão não faz parte deste lote).
+
+---
+
 ## DEPLOY-20261120 — Publicação do SHA 84eef5d (20/11/2026)
 
 - **Autorização:** responsável autorizou publicar o SHA `84eef5dd2ee861669c79daf592b1219410811669` em `https://agenday-sistema.infinityfree.io/`, mantendo os dados de produção.
