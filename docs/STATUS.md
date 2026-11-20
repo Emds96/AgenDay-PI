@@ -3,7 +3,7 @@
 ## CAD-02 — Horário de funcionamento no cadastro (20/11/2026; branch `feat/cadastro-horario`, não publicada)
 
 - **Escopo autorizado:** pedido do responsável para informar o horário básico já na criação da conta, antes da tela de bloqueios. Nenhum deploy e nenhuma alteração em banco de produção.
-- **Formulário (`index.php`):** bloco compacto **"Quando você atende?"** no cadastro, com os 7 dias em checkboxes (seg–sex marcados), **Abre às / Fecha às** pré-preenchidos com 08:00/18:00 e legenda apontando para Configurações → Horários. O mesmo horário vale para todos os dias marcados; almoço e horário diferente por dia continuam em Configurações.
+- **Formulário (`index.php`):** bloco compacto **"Horário de funcionamento"** no cadastro, com os 7 dias em checkboxes (seg–sex marcados), **Abre às / Fecha às** pré-preenchidos com 08:00/18:00 e legenda apontando para Configurações → Horários. O mesmo horário vale para todos os dias marcados; almoço e horário diferente por dia continuam em Configurações.
 - **Backend (`cadastrar.php`):** valida dias (0–6), exige pelo menos um dia, horário no formato HH:MM e fechamento depois da abertura; monta os 7 dias e grava com `agenday_horario_criar_padrao($conexao, $novoId, $diasFuncionamento)`.
 - **Biblioteca (`lib/horario-funcionamento.php`):** `agenday_horario_criar_padrao()` passou a aceitar o 3º parâmetro opcional `$dias`; sem ele, mantém o padrão (usado pelo cadastro Google). Continua com `INSERT IGNORE` e `try/catch`, sem interromper o cadastro se a migração não existir.
 - **Estilo (`css/login.css`):** bloco em cartão claro, checkboxes com estado marcado visível, alvos de toque de 36 px no celular; `index.php` passou a carregar `login.css?v=20261120-cad01`.
