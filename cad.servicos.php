@@ -51,7 +51,7 @@ require_once __DIR__ . '/info-servicos.php';
                 </div>
 
                 <?php if (!empty($_SESSION['sucesso_servico'])): ?>
-                    <div class="alert alert-success mx-3 mt-3" role="status">Serviço cadastrado com sucesso!</div>
+                    <div class="alert alert-success mx-3 mt-3" role="status"><?= htmlspecialchars(is_string($_SESSION['sucesso_servico']) ? $_SESSION['sucesso_servico'] : 'Serviço cadastrado com sucesso!', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div>
                 <?php endif; unset($_SESSION['sucesso_servico']); ?>
                 <?php if (!empty($_SESSION['erro_servico'])): ?>
                     <div class="alert alert-danger mx-3 mt-3" role="alert">
@@ -132,6 +132,62 @@ require_once __DIR__ . '/info-servicos.php';
                     </div>
                 </div>
 
+                <div class="modal" tabindex="-1" id="modalEditarServico" aria-labelledby="modalEditarServicoLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title m-2" id="modalEditarServicoLabel">Editar serviço</h3>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <form action="editar-servico.php" method="POST">
+                                    <input type="hidden" name="csrf_token"
+                                        value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
+                                    <input type="hidden" name="id_servicos" id="editar-servico-id" value="">
+                                    <div class="row">
+                                        <div class="mb-3 col-7">
+                                            <label for="editar-servico-nome" class="form-label">Nome do serviço</label>
+                                            <input type="text" id="editar-servico-nome" name="nome"
+                                                class="form-control rounded-3 shadow" maxlength="120"
+                                                placeholder="Ex.: Corte de cabelo" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="mb-3 col-7">
+                                            <label for="editar-servico-duracao" class="form-label">Duração (minutos)</label>
+                                            <input type="number" id="editar-servico-duracao" name="duracao_minutos"
+                                                class="form-control rounded-3 shadow" min="1" max="1440" step="1"
+                                                placeholder="Ex.: 45" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="mb-3 col-4">
+                                            <label for="editar-servico-preco" class="form-label">Preço (R$)</label>
+                                            <input type="text" id="editar-servico-preco" name="preco" inputmode="decimal"
+                                                class="form-control rounded-3 shadow" maxlength="11"
+                                                pattern="[0-9]{1,8}([,.][0-9]{1,2})?"
+                                                placeholder="Ex.: 35,90" required>
+                                            <small class="text-muted">Aceita vírgula ou ponto. Use 0 para serviço gratuito.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="mb-3 col-7">
+                                            <label for="editar-servico-descricao" class="form-label">Descrição (opcional)</label>
+                                            <textarea id="editar-servico-descricao" name="descricao"
+                                                class="form-control rounded-3 shadow" rows="3"
+                                                maxlength="2000" placeholder="Detalhes do serviço"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="float-end m-3">
+                                        <button type="submit" class="concluir rounded-3 border shadow">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="container scroll">
                     <?php if ($servicos === []): ?>
                         <p class="text-center text-muted py-4">Nenhum serviço encontrado.</p>
@@ -153,6 +209,19 @@ require_once __DIR__ . '/info-servicos.php';
                                             <p><?= nl2br(htmlspecialchars((string) $servico['descricao_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) ?></p>
                                         <?php endif; ?>
                                     </div>
+                                    <div class="col-auto d-flex align-items-center pe-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditarServico"
+                                            data-id="<?= (int) $servico['id_servicos'] ?>"
+                                            data-nome="<?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-duracao="<?= (int) $duracaoMinutos ?>"
+                                            data-preco="<?= htmlspecialchars(number_format((float) $servico['preco_servico'], 2, ',', ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-descricao="<?= htmlspecialchars((string) ($servico['descricao_servico'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            aria-label="Editar serviço <?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                            <span class="d-none d-sm-inline ms-1">Editar</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -163,6 +232,26 @@ require_once __DIR__ . '/info-servicos.php';
     </main>
     <section class="overlay"></section>
     <script src="js\menu-lateral.js"></script>
+    <script>
+        // Preenche o modal de edição com os dados do serviço clicado.
+        document.addEventListener('DOMContentLoaded', function () {
+            var modal = document.getElementById('modalEditarServico');
+            if (!modal) {
+                return;
+            }
+            modal.addEventListener('show.bs.modal', function (evento) {
+                var botao = evento.relatedTarget;
+                if (!botao) {
+                    return;
+                }
+                document.getElementById('editar-servico-id').value = botao.getAttribute('data-id') || '';
+                document.getElementById('editar-servico-nome').value = botao.getAttribute('data-nome') || '';
+                document.getElementById('editar-servico-duracao').value = botao.getAttribute('data-duracao') || '';
+                document.getElementById('editar-servico-preco').value = botao.getAttribute('data-preco') || '';
+                document.getElementById('editar-servico-descricao').value = botao.getAttribute('data-descricao') || '';
+            });
+        });
+    </script>
     <footer>
         <div class="rodape">
 
