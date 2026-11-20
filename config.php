@@ -3,6 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/verifica_login.php';
 require_once __DIR__ . '/lib/configuracao-estabelecimento.php';
 require_once __DIR__ . '/lib/avatar-estabelecimento.php';
+require_once __DIR__ . '/lib/horario-funcionamento.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($metodo, ['GET', 'POST'], true)) {
@@ -12,12 +13,18 @@ if (!in_array($metodo, ['GET', 'POST'], true)) {
 }
 
 $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
-$abaSelecionada = ($_GET['aba'] ?? '') === 'conta' ? 'conta' : 'estabelecimento';
+$abasPermitidas = ['estabelecimento', 'funcionamento', 'conta'];
+$abaSolicitada = isset($_GET['aba']) && is_string($_GET['aba']) ? $_GET['aba'] : '';
+$abaSelecionada = in_array($abaSolicitada, $abasPermitidas, true) ? $abaSolicitada : 'estabelecimento';
 $alertaEstabelecimento = null;
 $alertaConta = null;
 $alertaSenha = null;
+$alertaFuncionamento = null;
 $reabrirModalSenha = false;
 $dadosCarregados = false;
+$funcionamentoDisponivel = false;
+$diasFuncionamento = agenday_horario_padrao();
+$regrasFuncionamento = agenday_regras_padrao();
 $nomeAtual = '';
 $emailAtual = '';
 $contatoAtual = '';
@@ -35,6 +42,13 @@ if (isset($_SESSION['feedback_config_avatar']) && is_string($_SESSION['feedback_
     $alertaConta = ['tipo' => 'success', 'texto' => $_SESSION['feedback_config_avatar']];
     unset($_SESSION['feedback_config_avatar']);
     $abaSelecionada = 'conta';
+}
+
+if (isset($_SESSION['feedback_config_funcionamento'])
+    && is_string($_SESSION['feedback_config_funcionamento'])) {
+    $alertaFuncionamento = ['tipo' => 'success', 'texto' => $_SESSION['feedback_config_funcionamento']];
+    unset($_SESSION['feedback_config_funcionamento']);
+    $abaSelecionada = 'funcionamento';
 }
 
 if (isset($_SESSION['feedback_alteracao_senha'])
@@ -71,6 +85,19 @@ try {
     $alertaConta = $alertaEstabelecimento;
 }
 
+// Horário de funcionamento e regras: se a migração ainda não foi aplicada,
+// a página continua funcionando e só a aba de horários fica bloqueada.
+if (isset($conexao) && $conexao instanceof mysqli) {
+    try {
+        $diasFuncionamento = agenday_horario_carregar($conexao, $idEstabelecimento);
+        $regrasFuncionamento = agenday_regras_carregar($conexao, $idEstabelecimento);
+        $funcionamentoDisponivel = true;
+    } catch (Throwable $e) {
+        error_log('AgenDay: horário de funcionamento indisponível (' . get_class($e) . ').');
+        $funcionamentoDisponivel = false;
+    }
+}
+
 $nomeAtual = (string) $nomeAtual;
 $emailAtual = (string) $emailAtual;
 $contatoAtual = (string) ($contatoAtual ?? '');
@@ -79,13 +106,21 @@ $contatoFormulario = $contatoAtual;
 
 if ($metodo === 'POST') {
     $acao = isset($_POST['acao']) && is_string($_POST['acao']) ? $_POST['acao'] : '';
-    $abaSelecionada = $acao === 'atualizar_foto' ? 'conta' : 'estabelecimento';
+    if ($acao === 'atualizar_foto') {
+        $abaSelecionada = 'conta';
+    } elseif ($acao === 'salvar_funcionamento') {
+        $abaSelecionada = 'funcionamento';
+    } else {
+        $abaSelecionada = 'estabelecimento';
+    }
 
     if (!agenday_valida_csrf()) {
         http_response_code(403);
         $erro = ['tipo' => 'danger', 'texto' => 'Sessão de segurança expirada. Recarregue e tente novamente.'];
         if ($abaSelecionada === 'conta') {
             $alertaConta = $erro;
+        } elseif ($abaSelecionada === 'funcionamento') {
+            $alertaFuncionamento = $erro;
         } else {
             $alertaEstabelecimento = $erro;
         }
@@ -93,6 +128,8 @@ if ($metodo === 'POST') {
         $erro = ['tipo' => 'danger', 'texto' => 'Não foi possível validar esta conta.'];
         if ($abaSelecionada === 'conta') {
             $alertaConta = $erro;
+        } elseif ($abaSelecionada === 'funcionamento') {
+            $alertaFuncionamento = $erro;
         } else {
             $alertaEstabelecimento = $erro;
         }
@@ -151,6 +188,37 @@ if ($metodo === 'POST') {
                 'texto' => 'Não foi possível salvar a foto agora. Tente novamente.',
             ];
         }
+    } elseif ($acao === 'salvar_funcionamento') {
+        [$diasValidados, $errosDias] = agenday_horario_validar($_POST);
+        [$regrasValidadas, $errosRegras] = agenday_regras_validar($_POST);
+        $diasFuncionamento = $diasValidados;
+        $regrasFuncionamento = $regrasValidadas;
+        $errosFuncionamento = array_merge($errosDias, $errosRegras);
+
+        if (!$funcionamentoDisponivel) {
+            $errosFuncionamento[] = 'A estrutura de horários ainda não existe neste banco. '
+                . 'Aplique o arquivo sql/migracao-horario-funcionamento.sql antes de salvar.';
+        }
+
+        if ($errosFuncionamento !== []) {
+            $alertaFuncionamento = [
+                'tipo' => 'danger',
+                'texto' => implode(' ', array_unique($errosFuncionamento)),
+            ];
+        } else {
+            try {
+                agenday_horario_salvar($conexao, $idEstabelecimento, $diasFuncionamento, $regrasFuncionamento);
+                $_SESSION['feedback_config_funcionamento'] = 'Horário de funcionamento salvo com sucesso.';
+                header('Location: config.php?aba=funcionamento', true, 303);
+                exit;
+            } catch (Throwable $e) {
+                error_log('AgenDay: falha ao salvar horário de funcionamento (' . get_class($e) . ').');
+                $alertaFuncionamento = [
+                    'tipo' => 'danger',
+                    'texto' => 'Não foi possível salvar o horário de funcionamento agora. Tente novamente.',
+                ];
+            }
+        }
     } else {
         http_response_code(400);
         $alertaEstabelecimento = ['tipo' => 'danger', 'texto' => 'Ação desconhecida.'];
@@ -160,6 +228,9 @@ if ($metodo === 'POST') {
 $csrfToken = agenday_token_csrf();
 $avatarContaUrl = agenday_avatar_url($idEstabelecimento);
 $abaContaAtiva = $abaSelecionada === 'conta';
+$abaFuncionamentoAtiva = $abaSelecionada === 'funcionamento';
+$abaEstabelecimentoAtiva = !$abaContaAtiva && !$abaFuncionamentoAtiva;
+$nomesDias = agenday_dias_semana();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -178,11 +249,11 @@ $abaContaAtiva = $abaSelecionada === 'conta';
     <link rel="stylesheet" href="css/box.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261119-ui10">
-    <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261118-ui08">
+    <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui15">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
-    <script defer src="js/configuracoes.js?v=20261118-ui08"></script>
+    <script defer src="js/configuracoes.js?v=20261120-ui11"></script>
 </head>
 <body class="agenday-app">
 <header class="navbar navbar-light bg-light">
@@ -206,10 +277,14 @@ $abaContaAtiva = $abaSelecionada === 'conta';
     <div class="ag-settings-panel">
         <nav class="ag-settings-tabbar" aria-label="Seções das configurações">
             <div class="nav nav-tabs ag-settings-tabs" id="abasConfiguracao" role="tablist">
-                <button class="nav-link <?= !$abaContaAtiva ? 'active' : '' ?>" id="aba-estabelecimento"
+                <button class="nav-link <?= $abaEstabelecimentoAtiva ? 'active' : '' ?>" id="aba-estabelecimento"
                         type="button" role="tab" data-bs-toggle="tab" data-bs-target="#painel-estabelecimento"
-                        aria-controls="painel-estabelecimento" aria-selected="<?= !$abaContaAtiva ? 'true' : 'false' ?>"
-                        tabindex="<?= !$abaContaAtiva ? '0' : '-1' ?>">Estabelecimento</button>
+                        aria-controls="painel-estabelecimento" aria-selected="<?= $abaEstabelecimentoAtiva ? 'true' : 'false' ?>"
+                        tabindex="<?= $abaEstabelecimentoAtiva ? '0' : '-1' ?>">Estabelecimento</button>
+                <button class="nav-link <?= $abaFuncionamentoAtiva ? 'active' : '' ?>" id="aba-horarios"
+                        type="button" role="tab" data-bs-toggle="tab" data-bs-target="#painel-horarios"
+                        aria-controls="painel-horarios" aria-selected="<?= $abaFuncionamentoAtiva ? 'true' : 'false' ?>"
+                        tabindex="<?= $abaFuncionamentoAtiva ? '0' : '-1' ?>">Horários</button>
                 <button class="nav-link <?= $abaContaAtiva ? 'active' : '' ?>" id="aba-minha-conta"
                         type="button" role="tab" data-bs-toggle="tab" data-bs-target="#painel-minha-conta"
                         aria-controls="painel-minha-conta" aria-selected="<?= $abaContaAtiva ? 'true' : 'false' ?>"
@@ -218,7 +293,7 @@ $abaContaAtiva = $abaSelecionada === 'conta';
         </nav>
 
         <div class="tab-content" id="conteudoConfiguracao">
-            <section class="tab-pane fade <?= !$abaContaAtiva ? 'show active' : '' ?>" id="painel-estabelecimento"
+            <section class="tab-pane fade <?= $abaEstabelecimentoAtiva ? 'show active' : '' ?>" id="painel-estabelecimento"
                      role="tabpanel" aria-labelledby="aba-estabelecimento" tabindex="0">
                 <div class="ag-settings-body">
                     <div class="ag-settings-section-title">
@@ -256,6 +331,161 @@ $abaContaAtiva = $abaSelecionada === 'conta';
                         <div class="ag-settings-actions">
                             <button class="btn btn-primary" type="submit" <?= !$dadosCarregados ? 'disabled' : '' ?>>
                                 <i class="bi bi-check2 me-1" aria-hidden="true"></i>Salvar alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="tab-pane fade <?= $abaFuncionamentoAtiva ? 'show active' : '' ?>" id="painel-horarios"
+                     role="tabpanel" aria-labelledby="aba-horarios" tabindex="0">
+                <div class="ag-settings-body">
+                    <div class="ag-settings-section-title">
+                        <h2>Horário de funcionamento</h2>
+                        <p>Define quando o estabelecimento atende. A agenda usa estes horários para calcular os horários realmente livres.</p>
+                    </div>
+
+                    <?php if ($alertaFuncionamento !== null): ?>
+                        <div class="alert alert-<?= $alertaFuncionamento['tipo'] === 'success' ? 'success' : 'danger' ?>"
+                             role="alert" aria-live="polite">
+                            <?= agenday_config_html($alertaFuncionamento['texto']) ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!$funcionamentoDisponivel): ?>
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+                            O horário ainda não pode ser salvo porque a estrutura do banco não foi atualizada.
+                            Aplique <code>sql/migracao-horario-funcionamento.sql</code> no phpMyAdmin.
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="post" action="config.php?aba=funcionamento" id="formFuncionamento">
+                        <input type="hidden" name="acao" value="salvar_funcionamento">
+                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+
+                        <div class="ag-horarios-tabela">
+                            <table class="table align-middle ag-horarios">
+                                <caption class="visually-hidden">Horário de funcionamento por dia da semana</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Dia</th>
+                                        <th scope="col">Aberto</th>
+                                        <th scope="col">Abre</th>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Almoço (início / fim)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach ($diasFuncionamento as $numeroDia => $dia): ?>
+                                    <?php $numeroDia = (int) $numeroDia; ?>
+                                    <tr class="ag-horario-linha" data-dia="<?= $numeroDia ?>">
+                                        <th scope="row">
+                                            <label class="ag-horario-dia" for="dia-<?= $numeroDia ?>-aberto">
+                                                <?= agenday_config_html($nomesDias[$numeroDia]) ?>
+                                            </label>
+                                        </th>
+                                        <td data-rotulo="Aberto">
+                                            <input type="hidden" name="dias[<?= $numeroDia ?>][aberto]" value="0">
+                                            <input class="form-check-input ag-horario-aberto" type="checkbox"
+                                                   id="dia-<?= $numeroDia ?>-aberto"
+                                                   name="dias[<?= $numeroDia ?>][aberto]" value="1"
+                                                   aria-describedby="dia-<?= $numeroDia ?>-aberto-ajuda"
+                                                   <?= !empty($dia['aberto']) ? 'checked' : '' ?>>
+                                            <span class="visually-hidden" id="dia-<?= $numeroDia ?>-aberto-ajuda">Aberto em <?= agenday_config_html($nomesDias[$numeroDia]) ?></span>
+                                        </td>
+                                        <td data-rotulo="Abre">
+                                            <label class="visually-hidden" for="dia-<?= $numeroDia ?>-abertura">Abertura de <?= agenday_config_html($nomesDias[$numeroDia]) ?></label>
+                                            <input class="form-control ag-horario-campo" type="time" step="300"
+                                                   id="dia-<?= $numeroDia ?>-abertura"
+                                                   name="dias[<?= $numeroDia ?>][abertura]"
+                                                   value="<?= agenday_config_html($dia['abertura']) ?>">
+                                        </td>
+                                        <td data-rotulo="Fecha">
+                                            <label class="visually-hidden" for="dia-<?= $numeroDia ?>-fechamento">Fechamento de <?= agenday_config_html($nomesDias[$numeroDia]) ?></label>
+                                            <input class="form-control ag-horario-campo" type="time" step="300"
+                                                   id="dia-<?= $numeroDia ?>-fechamento"
+                                                   name="dias[<?= $numeroDia ?>][fechamento]"
+                                                   value="<?= agenday_config_html($dia['fechamento']) ?>">
+                                        </td>
+                                        <td data-rotulo="Almoço">
+                                            <div class="ag-horario-almoco">
+                                                <div>
+                                                    <label class="visually-hidden" for="dia-<?= $numeroDia ?>-almoco-inicio">Início do almoço de <?= agenday_config_html($nomesDias[$numeroDia]) ?></label>
+                                                    <input class="form-control ag-horario-campo" type="time" step="300"
+                                                           id="dia-<?= $numeroDia ?>-almoco-inicio"
+                                                           name="dias[<?= $numeroDia ?>][almoco_inicio]"
+                                                           value="<?= agenday_config_html($dia['almoco_inicio']) ?>">
+                                                </div>
+                                                <span class="ag-horario-separador" aria-hidden="true">–</span>
+                                                <div>
+                                                    <label class="visually-hidden" for="dia-<?= $numeroDia ?>-almoco-fim">Fim do almoço de <?= agenday_config_html($nomesDias[$numeroDia]) ?></label>
+                                                    <input class="form-control ag-horario-campo" type="time" step="300"
+                                                           id="dia-<?= $numeroDia ?>-almoco-fim"
+                                                           name="dias[<?= $numeroDia ?>][almoco_fim]"
+                                                           value="<?= agenday_config_html($dia['almoco_fim']) ?>">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <fieldset class="ag-horarios-regras">
+                            <legend>Regras de agendamento</legend>
+                            <div class="row g-3">
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="regraIntervalo">Novo horário a cada</label>
+                                    <select class="form-select" id="regraIntervalo" name="regras[intervalo]"
+                                            aria-describedby="regraIntervaloAjuda">
+                                        <?php foreach (AGENDAY_HORARIO_INTERVALOS as $minutosIntervalo): ?>
+                                            <option value="<?= (int) $minutosIntervalo ?>"
+                                                <?= (int) $regrasFuncionamento['intervalo'] === (int) $minutosIntervalo ? 'selected' : '' ?>>
+                                                <?= (int) $minutosIntervalo ?> minutos
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="form-text" id="regraIntervaloAjuda">
+                                        De quanto em quanto tempo o sistema oferece horários.
+                                        Com 30 minutos: 09:00, 09:30, 10:00. Vale para a semana toda e não muda a duração do serviço.
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="regraAntecedencia">Antecedência mínima (minutos)</label>
+                                    <input class="form-control" type="number" id="regraAntecedencia"
+                                           name="regras[antecedencia]" min="0" max="1440" step="5"
+                                           value="<?= (int) $regrasFuncionamento['antecedencia'] ?>">
+                                    <div class="form-text">Tempo mínimo entre agora e o horário marcado.</div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="regraJanela">Agendar com até (dias)</label>
+                                    <input class="form-control" type="number" id="regraJanela"
+                                           name="regras[janela]" min="1" max="365" step="1"
+                                           value="<?= (int) $regrasFuncionamento['janela'] ?>">
+                                    <div class="form-text">Quantos dias à frente o cliente pode marcar.</div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="regraCancelamento">Cancelar com (horas de antecedência)</label>
+                                    <input class="form-control" type="number" id="regraCancelamento"
+                                           name="regras[cancelamento]" min="0" max="720" step="1"
+                                           value="<?= (int) $regrasFuncionamento['cancelamento'] ?>">
+                                    <div class="form-text">Prazo mínimo para cancelar sem taxa. Use 0 para liberar sempre.</div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-semibold" for="regraTolerancia">Tolerância de atraso (minutos)</label>
+                                    <input class="form-control" type="number" id="regraTolerancia"
+                                           name="regras[tolerancia]" min="0" max="120" step="5"
+                                           value="<?= (int) $regrasFuncionamento['tolerancia'] ?>">
+                                    <div class="form-text">Depois disso, o atendimento pode ser liberado.</div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="ag-settings-actions">
+                            <button class="btn btn-primary" type="submit" <?= !$funcionamentoDisponivel ? 'disabled' : '' ?>>
+                                <i class="bi bi-check2 me-1" aria-hidden="true"></i>Salvar horário
                             </button>
                         </div>
                     </form>

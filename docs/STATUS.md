@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## HOR-01 — Horário de funcionamento e regras de agendamento (20/11/2026; branch `feat/horario-funcionamento`, não publicada)
+
+- **Escopo autorizado:** criar a base de tempo do agendamento — horário de funcionamento por dia (com almoço e intervalo), tabela de bloqueios e regras do estabelecimento (antecedência mínima, janela máxima, prazo de cancelamento e tolerância de atraso) — e editá-las em **Configurações → Horários**. Nenhum deploy e nenhuma alteração em banco de produção.
+- **Banco:** `sql/migracao-horario-funcionamento.sql` (aplicar no phpMyAdmin **antes** de publicar o código) cria `horario_funcionamento` (1 linha por dia: aberto, abre, fecha e almoço), `bloqueio` (estabelecimento inteiro ou funcionário) e adiciona 5 colunas em `estabelecimento`: intervalo da agenda (**um só para a semana**, padrão 30 min), antecedência mínima, janela máxima, prazo de cancelamento e tolerância de atraso. `sql/BD_v2.sql` foi atualizado como modelo para banco novo. Nenhum dado existente é apagado; quem não tem linhas em `horario_funcionamento` recebe o padrão do código (seg–sáb 08:00–18:00, sábado até 12:00, domingo fechado).
+- **Código:** `lib/horario-funcionamento.php` (padrões, carga, validação, gravação em transação e `agenday_horario_janelas()`, que devolve os períodos do dia já sem o almoço), `config.php` (terceira aba **Horários**, POST `salvar_funcionamento`), `js/configuracoes.js` (dia fechado desabilita os campos) e `css/configuracoes-v2.css` (grade em tabela no desktop e cartões no celular).
+- **Regras aplicadas:** `id_estabelecimento` sempre da sessão; CSRF obrigatório; fechamento depois da abertura; almoço dentro do expediente e com início antes do fim; pelo menos um dia aberto; intervalo da agenda restrito a 10/15/20/30/45/60 min; limites das demais regras validados no servidor. Se a migração ainda não foi aplicada, a página continua funcionando e apenas a aba de horários fica bloqueada com aviso.
+- **Ajuste de 20/11 (pedido do responsável):** o intervalo saiu da linha de cada dia e passou a ser **um único valor para a semana**, no campo renomeado **"Novo horário a cada"**, com legenda explicando que define de quanto em quanto tempo os horários são oferecidos (ex.: 30 min → 09:00, 09:30, 10:00) e que não altera a duração do serviço.
+- **Validação local (20/11/2026, PHP 8.4 + MariaDB 11.8 local):** migração aplicada e reexecutada sem erro; `php -l` e `node tests/responsividade-check.js` (165 verificações) aprovados; gravação conferida no MySQL (7 dias, almoço, intervalo da semana e as demais regras); rejeitados fechamento antes da abertura, almoço incompleto, almoço fora do expediente, todos os dias fechados, janela fora de 1–365, intervalo fora das opções e POST sem CSRF (403); estabelecimento sem linhas recebe o padrão sem gravar nada; `agenday_horario_janelas()` devolve dois períodos quando há almoço; desktop e 360 px sem overflow, com o dia fechado desabilitando os campos.
+- **Pendências:** tela de bloqueios (tabela criada, ainda sem interface), uso das janelas pela agenda, validação visual do responsável, celular físico, PR/CI e aplicação do SQL no InfinityFree antes do deploy.
+
+---
+
 ## EDIT-SER-01 — Edição de serviço (19/11/2026; implementada na branch `feat/editar-servico`, não publicada)
 
 - **Escopo autorizado:** editar serviço já cadastrado (nome, duração, preço e descrição) com validação equivalente à do cadastro, CSRF e isolamento por `id_estabelecimento` da sessão.
