@@ -1,23 +1,27 @@
 # STATUS — AgenDay 2.0
 
-## FIX-01 — Reenvio duplo em Clientes/Funcionários (19/11/2026; implementação em revisão)
+## FIX-01 — Reenvio duplo em Clientes/Funcionários (19/11/2026; integrado, publicado, QA técnico aprovado; validação do responsável pendente)
 
 - **Problema confirmado em produção, antes da correção:** phpMyAdmin mostrou dois registros diferentes para o mesmo nome/telefone nos exemplos da conta de teste (clientes IDs 9/10; funcionários IDs 12/13); as listagens exibiam esses pares. Nenhum registro existente foi apagado.
 - **Escopo aprovado:** proteção front-end e PHP para cadastro de cliente e funcionário; testes, PR/merge e publicação autorizada no InfinityFree. Não alterar tabelas, excluir duplicatas nem tocar na `main`.
 - **Solução:** bloqueio visual do botão Concluir com `Salvando...`; token único de cadastro (separado de CSRF), emitido na sessão para cada formulário e consumido **antes do INSERT e upload**. Sessão PHP permanece aberta durante o POST para serializar requisições da mesma sessão. Token expira após 30 minutos, possui limite em memória e não é usado como regra de unicidade de telefone.
 - **Arquivos:** `cad-cliente.php`, `cad-funcionario.php`, `cadastro-clientes.php`, `cadastro-funcionario.php`, `lib/cadastro-reenvio.php`, `js/cadastro-envio.js` e `tests/cadastro-reenvio.php`.
-- **Validação inicial:** no Windows, smoke `node tests/responsividade-check.js` com 159 verificações aprovado; testes PHP/CI, deploy e QA integrado pendentes nesta fotografia. Não considerar o bug resolvido no site até publicação e prova de um único INSERT para repetição da mesma solicitação.
+- **Integração:** [PR #40](https://github.com/Emds96/AgenDay-PI/pull/40) mesclado na `dev-feira-uninorte`, aplicação no SHA `0eb23f1d2e21562a5e326518a31ea8c80fbef9bf`. No Windows, `node tests/responsividade-check.js` aprovou **164 verificações**, e `node --check` aprovou os JS. CI no [run #44661762542](https://github.com/Emds96/AgenDay-PI/actions/runs/44661762542) passou, incluindo **11 verificações PHP anti-replay**; lint PHP no [run #44661762611](https://github.com/Emds96/AgenDay-PI/actions/runs/44661762611) também aprovado.
+- **Backup pré-deploy:** cópia privada `2026-11-19_223607_3f40700e`, **BACKUP OK**, 105 arquivos de `htdocs`, 10 tabelas no MySQL, importação/restauração local MariaDB aprovada. Sem backup em GitHub ou chat.
+- **Publicação controlada:** assistente `scripts/publicacao_assistida.py` em modo real para SHA exato autorizado; [run #44662655163](https://github.com/Emds96/AgenDay-PI/actions/runs/44662655163) com jobs `validar`, `diagnosticar_ftp` e `publicar` = **success**. Flags reconfirmadas por consulta independente: `AGENDAY_DEPLOY_ENABLED=false`, `AGENDAY_DEPLOY_MODE=disabled`. Nenhuma alteração em `main`, Secrets, banco ou workflow.
+- **QA real via DeskBrowse + consulta MySQL somente leitura (19/11):** na conta de QA, cadastro de `QA AntiDuplo Cliente 19Nov` feito uma vez e reenvio idêntico (mesmo token) rejeitado; listagem e phpMyAdmin confirmaram **exatamente um novo registro** (ID 12, estabelecimento de QA 19). Repetido com `QA AntiDuplo Funcionario 19Nov`, incluindo vínculo a serviço: reenvio idêntico rejeitado; listagem e MySQL confirmaram **um registro novo** (ID 15, estabelecimento de QA 19). Esses dois registros de teste foram mantidos; não apagar sem autorização. Duplicações antigas não foram alteradas.
+- **Pendências:** validação visual do responsável no celular e eventual teste de clique duplo humano em rede lenta; os testes E2E comprovam especificamente **reenvio da mesma tentativa**, não impedimento de dois cadastros novos independentes com iguais dados.
 - **Limitação conhecida:** o token por sessão protege replay da mesma tentativa e cliques duplos; **não** impede cadastros separados e intencionais com nome/telefone iguais em outras sessões. Garantia global de idempotência exigiria persistência no banco, fora deste escopo.
 
 ---
 
 
-## OPS-01 — Fluxo rapido e assistente de publicacao (19/11/2026; [PR #39](https://github.com/Emds96/AgenDay-PI/pull/39); verificar integracao no GitHub)
+## OPS-01 — Fluxo rápido e assistente de publicação ([PR #39](https://github.com/Emds96/AgenDay-PI/pull/39) integrado; piloto real validado no FIX-01)
 
 - **Autorizado:** documentar classificacao simples/media/complexa, autorizacao de tarefa com escopo claro, criar assistente operacional e testes sem publicar; criar branch e PR para `dev-feira-uninorte`. **Autorizacao inicial:** sem merge ou deploy. **Autorizacao posterior:** responsavel solicitou continuidade apos validacao Windows, permitindo revisao e integracao do PR #39. **Permanece sem autorizacao:** deploy, modificacao de Secrets, banco ou workflow.
 - **Implementacao proposta:** `scripts/publicacao_assistida.py` com simulacao padrao sem chamadas a GitHub; modo real separado por `--executar`, exigindo SHA integral, confirmacao literal, backup privado recente e integro, CI do mesmo SHA, flags em estado seguro e aprovacao humana do environment. Nao substitui backup nem rollback.
 - **Validacao no Windows do responsavel via DeskBrowse (19/11):** arquivos do commit do PR consultados pelo `gh` em pasta temporaria, `python -m py_compile` aprovado, `python -m unittest discover -s tests -p test_publicacao_assistida.py -v` **7/7 aprovados** e simulacao com SHA real `cfa8203541d7f26a251df7be9f38156aa2a79271` aprovada (`SIMULACAO_PC_OK`). A pasta temporaria foi removida. Nenhum deploy, SQL ou acesso FTP foi realizado pelos testes.
-- **Limite:** simulacao e testes foram executados no Windows com `gh` disponivel, mas o **modo real permanece nao testado** (sem liberar flags nem despachar Actions). Mesmo depois de merge aprovado, usar inicialmente somente simulacao; publicacao real exige autorizacao propria e QA.
+- **Uso real posterior e autorizado em 19/11:** modo `--executar` utilizado para publicar exclusivamente o SHA do FIX-01 com backup validado, CI aprovada e aprovação do environment no run `44662655163`; jobs bem-sucedidos e flags restauradas a `false/disabled` no final. Execução completa do assistente levou aproximadamente 222 segundos; backup completo prévio, aproximadamente 315 segundos. Esses tempos são observações desta execução e podem variar. O piloto não elimina aprovação por tarefa nem o risco de deploy FTPS parcial. Outras tarefas exigem nova autorização de publicação.
 
 ---
 

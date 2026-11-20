@@ -1,6 +1,13 @@
 # Testes e qualidade (QA) — AgenDay 2.0
 
-**Revisado em 18/11/2026** após a validação do login automático das contas QA A/B via DeskBrowse. Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+**Revisado em 19/11/2026** após o QA de prevenção de reenvio no cadastro e a validação do login automático das contas QA A/B via DeskBrowse. Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+
+## QA FIX-01 — Reenvio de cadastros (19/11/2026)
+
+- **Código e CI:** `tests/cadastro-reenvio.php` executado pelo `tests/responsividade-check.js` no GitHub Actions; 11 verificações anti-replay aprovadas, 164 verificações estruturais, lint PHP aprovado. PR #40, SHA de aplicação `0eb23f1d2e21562a5e326518a31ea8c80fbef9bf`.
+- **Deploy com evidência:** run [44662655163](https://github.com/Emds96/AgenDay-PI/actions/runs/44662655163), os três jobs concluídos em success, backup anterior com 105 arquivos e 10 tabelas/restauração local; flags em false/disabled.
+- **E2E real em conta de QA:** criação de um cliente e um funcionário (este com serviço vinculado), reenvio de `POST` com **o mesmo token** rejeitado pelo PHP em ambos os casos. A listagem e consulta direta ao MySQL confirmaram apenas um novo ID para cada tentativa (cliente 12 e funcionário 15 no estabelecimento de QA 19). Não houve exclusão de registros nem alteração de SQL.
+- **Limite do teste:** não simulou perda de rede nem duas sessões diferentes cadastrando dados iguais; o mecanismo impede reuso da mesma tentativa na mesma sessão, não é um índice global de nomes/telefones. A validação do responsável no celular permanece pendente.
 
 ## 1. Quatro níveis diferentes de evidência
 
@@ -20,6 +27,7 @@ php tests/agendamento-cancelamento.php
 php tests/configuracao-estabelecimento.php
 php tests/alteracao-senha-validacao.php
 php tests/avatar-estabelecimento.php
+php tests/cadastro-reenvio.php
 node tests/responsividade-check.js
 ```
 
