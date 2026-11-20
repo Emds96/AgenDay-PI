@@ -65,7 +65,7 @@ verificar(!fs.existsSync(path.join(raiz, 'lib/menu-conta.php')),
     'UI-10: componente exclusivo do dropdown ainda existe');
 for (const pagina of paginasAutenticadas) {
     const html = ler(pagina);
-    verificar(html.includes('href="css/responsivo.css?v=20261119-ui10"'),
+    verificar(html.includes('href="css/responsivo.css?v=20261120-del01"'),
         pagina + ': CSS do cabeçalho sem versão para invalidar cache');
     const inicio = html.indexOf('<header class="navbar');
     const fim = html.indexOf('</header>', inicio);
@@ -261,6 +261,32 @@ verificar(bloqueioEnvio.includes("form.addEventListener('submit'")
     && bloqueioEnvio.includes('botao.disabled = true')
     && bloqueioEnvio.includes("'Salvando...'"),
     'FIX-01: bloqueio de duplo clique ausente');
+
+/* DEL-01: exclusão de cliente, funcionário e serviço com confirmação. */
+for (const [pagina, endpoint, modal, campoId] of [
+    ['cad-cliente.php', 'excluir-cliente.php', '#modalExcluirCliente', 'id_cliente'],
+    ['cad-funcionario.php', 'excluir-funcionario.php', '#modalExcluirFuncionario', 'id_funcionario'],
+    ['cad.servicos.php', 'excluir-servico.php', '#modalExcluirServico', 'id_servicos'],
+]) {
+    const lista = ler(pagina);
+    const api = ler(endpoint);
+    verificar(lista.includes('data-bs-target="' + modal + '"')
+        && lista.includes('bi-trash')
+        && lista.includes('ag-acoes-registro'),
+        'DEL-01: botão de excluir ausente ou sem empilhamento: ' + pagina);
+    verificar(lista.includes('data-excluir-id')
+        && lista.includes('data-excluir-nome')
+        && lista.includes('js/excluir-registro.js'),
+        'DEL-01: confirmação de exclusão ausente: ' + pagina);
+    verificar(api.includes("($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST'")
+        && api.includes('agenday_valida_csrf()')
+        && api.includes("filter_input(INPUT_POST, '" + campoId + "'")
+        && api.includes('DELETE FROM')
+        && api.includes('$_SESSION[\'id_estabelecimento\']'),
+        'DEL-01: endpoint sem POST/CSRF/isolamento: ' + endpoint);
+    verificar(api.includes('possui agendamentos registrados'),
+        'DEL-01: endpoint não protege histórico de agendamentos: ' + endpoint);
+}
 
 /* CAD-01: toda conta nova nasce com os 7 dias de horário gravados. */
 const libHorario = ler('lib/horario-funcionamento.php');

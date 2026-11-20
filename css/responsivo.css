@@ -677,3 +677,12 @@
         padding-inline: .7rem;
     }
 }
+
+
+/* Ações de lista (editar/excluir) com alvo de toque confortável no celular. */
+@media (max-width: 575.98px) {
+    .ag-acoes-registro .btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
