@@ -113,7 +113,7 @@ if (!is_array($googlePending)
                 </div>
 
                 <fieldset class="ad-horario-cadastro">
-                    <legend>Quando você atende?</legend>
+                    <legend>Horário de funcionamento</legend>
                     <div class="ad-horario-dias" role="group" aria-label="Dias de funcionamento">
                         <?php foreach ([1 => 'Seg', 2 => 'Ter', 3 => 'Qua', 4 => 'Qui', 5 => 'Sex', 6 => 'Sáb', 0 => 'Dom'] as $numeroDia => $rotuloDia) : ?>
                             <label class="ad-horario-dia">
