@@ -52,7 +52,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                 </div>
 
                 <?php if (!empty($_SESSION['sucesso_funcionario'])): ?>
-                    <div class="alert alert-success mx-3 mt-3" role="status">Funcionário cadastrado com sucesso!</div>
+                    <div class="alert alert-success mx-3 mt-3" role="status"><?= htmlspecialchars(is_string($_SESSION['sucesso_funcionario']) ? $_SESSION['sucesso_funcionario'] : 'Funcionário cadastrado com sucesso!', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div>
                 <?php endif; unset($_SESSION['sucesso_funcionario']); ?>
                 <?php if (!empty($_SESSION['erro_funcionario'])): ?>
                     <div class="alert alert-danger mx-3 mt-3" role="alert">
@@ -143,6 +143,69 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                     </div>
                 </div>
 
+                <div class="modal" tabindex="-1" id="modalEditarFuncionario" aria-labelledby="modalEditarFuncionarioLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title m-2" id="modalEditarFuncionarioLabel">Editar funcionário</h3>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <form enctype="multipart/form-data" action="editar-funcionario.php" method="POST">
+                                    <input type="hidden" name="csrf_token"
+                                        value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
+                                    <input type="hidden" name="id_funcionario" id="editar-funcionario-id" value="">
+                                    <div class="row">
+                                        <div class="mb-3 col-7">
+                                            <input type="text" class="form-control rounded-3 shadow"
+                                                placeholder="Nome do funcionário" id="editar-funcionario-nome"
+                                                name="nome" maxlength="120" aria-label="Nome do funcionário" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4 mb-3">
+                                            <input type="tel" class="form-control rounded-3 shadow"
+                                                placeholder="Contato" id="editar-funcionario-contato"
+                                                name="contato" maxlength="20" aria-label="Contato do funcionário" required>
+                                        </div>
+                                    </div>
+
+                                    <fieldset class="mb-3">
+                                        <legend class="fs-6">Serviços que realiza (opcional)</legend>
+                                        <?php if ($servicosDisponiveis === []): ?>
+                                            <p class="text-muted mb-2">Ainda não há serviços cadastrados.</p>
+                                        <?php else: ?>
+                                            <?php foreach ($servicosDisponiveis as $servico): ?>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="servicos[]"
+                                                        value="<?= (int) $servico['id_servicos'] ?>"
+                                                        id="edit-func-servico-<?= (int) $servico['id_servicos'] ?>">
+                                                    <label class="form-check-label"
+                                                        for="edit-func-servico-<?= (int) $servico['id_servicos'] ?>">
+                                                        <?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                                    </label>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </fieldset>
+
+                                    <div class="input-group">
+                                        <input type="file" class="form-control shadow" id="editar-funcionario-arquivo"
+                                            aria-label="Nova foto do funcionário (opcional)" name="arquivo"
+                                            accept="image/jpeg,image/png">
+                                    </div>
+                                    <small class="text-muted" id="editar-funcionario-foto-atual">A foto atual será mantida se você não escolher outra.</small>
+
+                                    <div class="float-end m-3">
+                                        <button type="submit" class="concluir rounded-3 border shadow">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="container scroll">
                     <?php if ($funcionarios === []): ?>
                         <p class="text-center text-muted py-4">Nenhum funcionário encontrado.</p>
@@ -172,6 +235,19 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                             ? htmlspecialchars((string) $funcionario['servicos_vinculados'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
                                             : 'Sem serviços vinculados' ?></small>
                                     </div>
+                                    <div class="col-auto d-flex align-items-center pe-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditarFuncionario"
+                                            data-id="<?= (int) $funcionario['id_funcionario'] ?>"
+                                            data-nome="<?= htmlspecialchars((string) $funcionario['nome_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-contato="<?= htmlspecialchars((string) $funcionario['contato_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-foto="<?= htmlspecialchars((string) ($funcionario['arquivo_funcionario'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-servicos="<?= htmlspecialchars((string) ($funcionario['servicos_ids'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            aria-label="Editar funcionário <?= htmlspecialchars((string) $funcionario['nome_funcionario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                            <span class="d-none d-sm-inline ms-1">Editar</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -183,6 +259,33 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
     <section class="overlay"></section>
     <script src="js\menu-lateral.js"></script>
     <script src="js/cadastro-envio.js?v=20261119-antiduplo"></script>
+    <script>
+        // Preenche o modal de edição com os dados e os serviços da linha clicada.
+        document.addEventListener('DOMContentLoaded', function () {
+            var modal = document.getElementById('modalEditarFuncionario');
+            if (!modal) {
+                return;
+            }
+            modal.addEventListener('show.bs.modal', function (evento) {
+                var botao = evento.relatedTarget;
+                if (!botao) {
+                    return;
+                }
+                document.getElementById('editar-funcionario-id').value = botao.getAttribute('data-id') || '';
+                document.getElementById('editar-funcionario-nome').value = botao.getAttribute('data-nome') || '';
+                document.getElementById('editar-funcionario-contato').value = botao.getAttribute('data-contato') || '';
+                document.getElementById('editar-funcionario-arquivo').value = '';
+                document.getElementById('editar-funcionario-foto-atual').textContent = botao.getAttribute('data-foto')
+                    ? 'A foto atual será mantida se você não escolher outra.'
+                    : 'Sem foto cadastrada.';
+
+                var marcados = (botao.getAttribute('data-servicos') || '').split(',');
+                modal.querySelectorAll('input[name="servicos[]"]').forEach(function (caixa) {
+                    caixa.checked = marcados.indexOf(caixa.value) !== -1;
+                });
+            });
+        });
+    </script>
 
 
     <footer>

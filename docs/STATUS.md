@@ -1,5 +1,25 @@
 # STATUS — AgenDay 2.0
 
+## EDIT-FUN-01 — Edição de funcionário (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
+
+- **Escopo autorizado:** editar funcionário já cadastrado (nome, contato, foto opcional e vínculos com serviços), com validação, CSRF, transação e isolamento por `id_estabelecimento` da sessão. Sem autorização de deploy; PR/merge não realizados.
+- **Arquivos:** `editar-funcionario.php` (novo endpoint, somente POST), `cad-funcionario.php` (botão **Editar**, modal com os mesmos checkboxes de serviços e mensagem de sucesso variável) e `info-funcionario.php` (passa a expor `servicos_ids` para pré-marcar os serviços do funcionário).
+- **Regras aplicadas:** funcionário só é atualizado quando `id_funcionario` e `id_estabelecimento` da sessão coincidem; cada serviço enviado é reconferido como pertencente ao estabelecimento antes de gravar; os vínculos são recompostos em transação (DELETE + INSERT) e revertidos por rollback em caso de falha; foto antiga só é apagada após commit e se o caminho casar com o padrão gerado pelo servidor.
+- **Validação local (19/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado nos três arquivos; cadastro de teste com um serviço → edição de nome/contato → vínculos recompostos para dois serviços conferidos no MySQL; remoção de todos os vínculos funcionou; funcionário de outro estabelecimento rejeitado ("Funcionário não encontrado."); serviço de outro estabelecimento rejeitado; telefone inválido e POST sem CSRF rejeitados. Modal pré-marca o serviço existente e, em 360 px, não há overflow horizontal.
+- **Pendências:** validação visual do responsável, upload de foto substituta, celular físico e CI do PR.
+
+---
+
+## EDIT-CLI-01 — Edição de cliente (19/11/2026; implementada na branch `feat/editar-cliente`, não publicada)
+
+- **Escopo autorizado:** permitir editar cliente já cadastrado (nome, e-mail, contato e troca opcional de foto), mantendo validação, CSRF e isolamento por `id_estabelecimento` da sessão. Não houve autorização de deploy; PR/merge não realizados.
+- **Arquivos:** `editar-cliente.php` (novo endpoint, somente POST) e `cad-cliente.php` (botão **Editar** por linha, modal preenchido por `data-*`, mensagem de sucesso variável, sem alterar o cadastro existente).
+- **Regras aplicadas:** cliente só é atualizado quando `id_cliente` e `id_estabelecimento` da sessão coincidem; foto nova só substitui a anterior após UPDATE bem-sucedido e o arquivo antigo só é removido se o caminho casar com o padrão gerado pelo servidor.
+- **Validação local (19/11/2026, servidor PHP 8.4 + MariaDB 11.8 local):** `php -l` aprovado nos dois arquivos; fluxo HTTP real com cadastro de teste → edição conferida no MySQL local → cliente de outro estabelecimento rejeitado com "Cliente não encontrado." → telefone inválido e POST sem CSRF rejeitados → GET devolve 405. Em 360 px não há overflow horizontal e o botão vira ícone.
+- **Pendências:** validação visual do responsável, teste de upload de foto substituta, celular físico e CI do PR.
+
+---
+
 ## FIX-01 — Reenvio duplo em Clientes/Funcionários (19/11/2026; integrado, publicado, QA técnico aprovado; validação do responsável pendente)
 
 - **Problema confirmado em produção, antes da correção:** phpMyAdmin mostrou dois registros diferentes para o mesmo nome/telefone nos exemplos da conta de teste (clientes IDs 9/10; funcionários IDs 12/13); as listagens exibiam esses pares. Nenhum registro existente foi apagado.

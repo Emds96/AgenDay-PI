@@ -32,7 +32,11 @@ $query = 'SELECT f.id_funcionario, f.nome_funcionario, f.contato_funcionario,
                   JOIN servicos s ON s.id_estabelecimento = fs.id_estabelecimento
                                  AND s.id_servicos = fs.id_servicos
                   WHERE fs.id_estabelecimento = f.id_estabelecimento
-                    AND fs.id_funcionario = f.id_funcionario) AS servicos_vinculados
+                    AND fs.id_funcionario = f.id_funcionario) AS servicos_vinculados,
+                 (SELECT GROUP_CONCAT(fs.id_servicos ORDER BY fs.id_servicos)
+                  FROM funcionario_servico fs
+                  WHERE fs.id_estabelecimento = f.id_estabelecimento
+                    AND fs.id_funcionario = f.id_funcionario) AS servicos_ids
           FROM funcionarios f
           WHERE f.id_estabelecimento = ?';
 
@@ -57,7 +61,7 @@ if ($busca !== '') {
     $stmt->bind_param('i', $idEstabelecimento);
 }
 $stmt->execute();
-$stmt->bind_result($idFuncionario, $nomeFuncionario, $contatoFuncionario, $arquivoFuncionario, $servicosVinculados);
+$stmt->bind_result($idFuncionario, $nomeFuncionario, $contatoFuncionario, $arquivoFuncionario, $servicosVinculados, $servicosIds);
 while ($stmt->fetch()) {
     $funcionarios[] = [
         'id_funcionario' => (int) $idFuncionario,
@@ -65,6 +69,7 @@ while ($stmt->fetch()) {
         'contato_funcionario' => $contatoFuncionario,
         'arquivo_funcionario' => $arquivoFuncionario,
         'servicos_vinculados' => $servicosVinculados,
+        'servicos_ids' => $servicosIds,
     ];
 }
 $stmt->close();

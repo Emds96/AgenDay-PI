@@ -53,7 +53,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                 </div>
 
                 <?php if (!empty($_SESSION['sucesso_cliente'])): ?>
-                    <div class="alert alert-success mx-3 mt-3" role="status">Cliente cadastrado com sucesso!</div>
+                    <div class="alert alert-success mx-3 mt-3" role="status"><?= htmlspecialchars(is_string($_SESSION['sucesso_cliente']) ? $_SESSION['sucesso_cliente'] : 'Cliente cadastrado com sucesso!', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div>
                 <?php endif; unset($_SESSION['sucesso_cliente']); ?>
                 <?php if (!empty($_SESSION['erro_cliente'])): ?>
                     <div class="alert alert-danger mx-3 mt-3" role="alert">
@@ -119,6 +119,47 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                     </div>
                 </div>
 
+                <div class="modal" tabindex="-1" id="modalEditarCliente" aria-labelledby="modalEditarClienteLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title m-2" id="modalEditarClienteLabel">Editar cliente</h3>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <form enctype="multipart/form-data" action="editar-cliente.php" method="POST">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
+                                    <input type="hidden" name="id_cliente" id="editar-id" value="">
+                                    <div class="row">
+                                        <div class="mb-3 col-7">
+                                            <input type="text" class="form-control rounded-3 shadow" placeholder="Nome do cliente" id="editar-nome" name="nome" maxlength="120" aria-label="Nome do cliente" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-7 mb-3">
+                                            <input type="email" class="form-control rounded-3 shadow" placeholder="E-mail (opcional)" id="editar-email" name="email" maxlength="190" aria-label="E-mail do cliente (opcional)">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4 mb-3">
+                                            <input type="tel" class="form-control rounded-3 shadow" placeholder="Contato" id="editar-contato" name="contato" maxlength="20" aria-label="Contato do cliente" required>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control shadow" id="editar-arquivo" name="arquivo"
+                                            accept="image/jpeg,image/png" aria-label="Nova foto do cliente (opcional)">
+                                    </div>
+                                    <small class="text-muted" id="editar-foto-atual">A foto atual será mantida se você não escolher outra.</small>
+                                    <div class="float-end m-3">
+                                        <button type="submit" class="concluir rounded-3 border shadow">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="container scroll">
                     <?php if (empty($clientes)): ?>
                         <p class="text-center text-muted py-4">Nenhum cliente encontrado.</p>
@@ -148,6 +189,19 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                             <?= htmlspecialchars((string) $cliente['email_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                                         <?php endif; ?>
                                     </div>
+                                    <div class="col-auto d-flex align-items-center pe-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditarCliente"
+                                            data-id="<?= (int) $cliente['id_cliente'] ?>"
+                                            data-nome="<?= htmlspecialchars((string) $cliente['nome_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-email="<?= htmlspecialchars((string) ($cliente['email_cliente'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-contato="<?= htmlspecialchars((string) $cliente['contato_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            data-foto="<?= htmlspecialchars((string) ($cliente['arquivo_cliente'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                            aria-label="Editar cliente <?= htmlspecialchars((string) $cliente['nome_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                            <span class="d-none d-sm-inline ms-1">Editar</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -160,6 +214,29 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
     <section class="overlay"></section>
     <script src="js\menu-lateral.js"></script>
     <script src="js/cadastro-envio.js?v=20261119-antiduplo"></script>
+    <script>
+        // Preenche o modal de edição com os dados da linha clicada.
+        document.addEventListener('DOMContentLoaded', function () {
+            var modal = document.getElementById('modalEditarCliente');
+            if (!modal) {
+                return;
+            }
+            modal.addEventListener('show.bs.modal', function (evento) {
+                var botao = evento.relatedTarget;
+                if (!botao) {
+                    return;
+                }
+                document.getElementById('editar-id').value = botao.getAttribute('data-id') || '';
+                document.getElementById('editar-nome').value = botao.getAttribute('data-nome') || '';
+                document.getElementById('editar-email').value = botao.getAttribute('data-email') || '';
+                document.getElementById('editar-contato').value = botao.getAttribute('data-contato') || '';
+                document.getElementById('editar-arquivo').value = '';
+                document.getElementById('editar-foto-atual').textContent = botao.getAttribute('data-foto')
+                    ? 'A foto atual será mantida se você não escolher outra.'
+                    : 'Sem foto cadastrada.';
+            });
+        });
+    </script>
 
     <footer>
         <div class="rodape">
