@@ -115,8 +115,8 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] Deploy único com as duas pastas: run `44953952790` (workflow_dispatch), `publicar` concluído em 4m18s e teste FTPS somente leitura aprovado.
 - [x] Flags de deploy desligadas ao final (`AGENDAY_DEPLOY_ENABLED=false`, `AGENDAY_DEPLOY_MODE=disabled` às 21:59 UTC).
 - [x] Conferir os dois domínios no navegador: login do sistema e portal `?e=studio` carregando com abas Entrar/Cadastro, dropdowns e calendário; `agenda.php` no domínio do cliente redireciona para `cliente.php`.
-- [ ] Preencher **Configurações → WhatsApp** em produção (endereço do ngrok, chave e sessão `default`) e ativar — sem isso o código de acesso não sai em produção.
-- [ ] Agendamento real de teste + mensagem recebida.
+- [x] Preencher **Configurações → WhatsApp** em produção (endereço do ngrok, chave e sessão `default`) e ativar — sem isso o código de acesso não sai em produção. **Feito pelo responsável em 21/11/2026** (`ativo=1`, domínio fixo do ngrok, chave de 32 caracteres, sessão `default`).
+- [x] Agendamento real de teste + mensagem recebida: responsável criou conta com código no WhatsApp e confirmou agendamento no portal em 21/11/2026 (agendamento 189, 23/11 15:00–17:00; `confirmacao` `enviado` em 3 s).
 - [ ] Cancelamento pelo link testado.
 - [ ] Login de demonstração criado no dia anterior (sessão de 30 dias).
 - [ ] QR code gerado e impresso.
