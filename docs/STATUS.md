@@ -1,5 +1,34 @@
 # STATUS — AgenDay 2.0
 
+## ATT-01 — Comparecimento, faltou e fechamento do dia (21/11/2026; implementado no local, não publicado)
+
+- **Escopo autorizado:** lote 1 do PEND-02 — registrar chegada, falta e encerrar o atendimento sem depender de cron.
+- **Banco:** `sql/migracao-status-comparecimento.sql` acrescenta `em_atendimento` e `faltou` ao enum de status e eleva a tolerância padrão para **30 minutos** (contas ainda em 10 são atualizadas; quem configurou outro valor é preservado). `sql/BD_v2.sql` atualizado. Migração aplicada no banco local.
+- **Código:** `lib/comparecimento.php` (fechamento automático, marcação e sugestão de falta), `api/comparecimento.php` (POST com CSRF), `api/agendamentos.php` (fecha ao ler e devolve `sugere_faltou`), `agenda.php` (token CSRF no calendário), `js/calendario.js` (novos status, destaque de pendente e menu **Ações**), `css/agenda-calendario.css` (cores e selo "Confirmar presença").
+- **Fluxo:** `agendado/confirmado` → **Chegou** = `em_atendimento` → ao passar do fim vira `concluido` automaticamente na próxima leitura; **Faltou** = `faltou`; **Concluir** encerra manualmente; **Cancelar** mantém o fluxo existente. Passou o início + tolerância sem marcação, o cartão fica destacado com "Confirmar presença" (não fecha sozinho).
+- **Segurança:** CSRF no endpoint; `id_estabelecimento` da sessão; transições inválidas recusadas; agendamento de outra conta devolve "não encontrado".
+- **Validação local (21/11/2026, PHP 8.4 + MariaDB 11.8):** enum e default 30 conferidos no MySQL; atendimento passado ficou com `sugere_faltou=true`; `em_atendimento` vencido virou `concluido` na leitura; Chegou/Concluir/Faltou conferidos por API e pelo menu da agenda; transição inválida, POST sem CSRF e registro de outra conta recusados; `php -l`, `node --check` e `responsividade-check` (210) aprovados; dados de teste removidos.
+- **Pendências:** aplicar a migração no InfinityFree antes de publicar; validar no navegador do responsável; reagendamento com vínculo e lembretes (lotes seguintes).
+
+---
+
+## PEND-02 — Comparecimento, status e fechamento do dia (decisões de 21/11/2026; lote 1 implementado em ATT-01)
+
+- **Problema:** hoje só `cancelado` é escrito. `confirmado` e `concluido` existem no enum e nunca são usados, e não há `faltou`. Atendimento passado fica `agendado` para sempre e continua contando como ativo.
+- **Decisões do responsável:**
+  - Cada dia mostra **somente os atendimentos daquele dia** (comportamento atual do painel) e o passado fica como **histórico**, com status encerrado.
+  - **Chegou** coloca em **`em_atendimento`**; ao passar o horário de fim, o atendimento passa a **`concluido`** automaticamente.
+  - **Faltou** vira **status novo** (`faltou`).
+  - **Reagendar** é uma ação separada (avaliar vínculo entre o antigo e o novo).
+  - Fechamento: passou o fim + tolerância sem marcação, o sistema **sugere "faltou"** e a recepção confirma (não fecha sozinho).
+  - **Tolerância de chegada** deve subir de 10 para **25–30 minutos** (configurável em Configurações).
+  - **Lembrete ao cliente:** preferência por **SMS**; se não houver opção gratuita viável, usar **e-mail** (Brevo). WhatsApp depois.
+- **Restrição técnica registrada:** SMS no Brasil exige provedor (Twilio, Zenvia e similares) e é **pago por mensagem**; não há caminho gratuito confiável integrado ao InfinityFree. E-mail pelo Brevo é gratuito no volume atual e já está integrado. Decidir com custo em mãos antes de implementar.
+- **Fechamento sem cron:** o InfinityFree não oferece agendador confiável no plano gratuito; a atualização de status deve ser calculada ao abrir a agenda e persistida na primeira leitura (sem depender de tarefa externa).
+- **Pendências:** migração do enum de status, ações no painel do dia (dropdown), regra de sugestão de falta, ajuste da tolerância, lembrete por e-mail e avaliação de SMS.
+
+---
+
 ## AGD-01 — Tela de agendamento com horários livres (21/11/2026; branch `feat/agendar`, não publicada)
 
 - **Escopo autorizado:** implementar no local, sem publicar, a tela de agendamento desenhada e validada no protótipo — **um atendimento avulso**, com disponibilidade real vinda do servidor.

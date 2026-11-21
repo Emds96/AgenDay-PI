@@ -110,6 +110,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                                 </button>
                             </div>
                             <div class="calendar" id="agenda-calendario"
+                                data-csrf="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>"
                                 data-dia-inicial="<?= htmlspecialchars($agendaDiaInicial, ENT_QUOTES, 'UTF-8') ?>"
                                 data-fuso="<?= htmlspecialchars(
                                     defined('AGENDAY_TIMEZONE') ? (string) AGENDAY_TIMEZONE : 'America/Manaus',

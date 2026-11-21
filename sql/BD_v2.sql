@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS estabelecimento (
   antecedencia_minima_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 60,
   janela_maxima_dias SMALLINT UNSIGNED NOT NULL DEFAULT 60,
   horas_cancelamento SMALLINT UNSIGNED NOT NULL DEFAULT 24,
-  tolerancia_atraso_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 10,
+  tolerancia_atraso_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 30,
   criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id_estabelecimento),
   UNIQUE KEY uq_estabelecimento_email (email_estabelecimento),
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS agendamentos (
   id_servicos INT UNSIGNED NOT NULL,
   data_inicio DATETIME NOT NULL,
   data_fim DATETIME NOT NULL,
-  status ENUM('agendado','confirmado','concluido','cancelado')
+  status ENUM('agendado','confirmado','em_atendimento','concluido','faltou','cancelado')
     NOT NULL DEFAULT 'agendado',
   observacoes TEXT,
   criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

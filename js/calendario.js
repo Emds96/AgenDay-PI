@@ -10,8 +10,7 @@
     if (!calendario) return;
 
     // O token é emitido pelo PHP na página autenticada; nunca é inventado no navegador.
-    const tokenInput = document.querySelector('#form-novo-agendamento input[name="csrf_token"]');
-    const tokenCancelamento = tokenInput ? tokenInput.value : '';
+    const tokenCancelamento = calendario.dataset.csrf || '';
 
     const grade = document.getElementById('agenda-dias');
     const tituloMes = document.getElementById('agenda-mes-titulo');
@@ -34,7 +33,9 @@
     const nomesStatus = {
         agendado: 'Agendado',
         confirmado: 'Confirmado',
+        em_atendimento: 'Em atendimento',
         concluido: 'Concluído',
+        faltou: 'Faltou',
         cancelado: 'Cancelado'
     };
     const pad = numero => String(numero).padStart(2, '0');
@@ -176,7 +177,8 @@
         const registros = registrosNoDia(diaEscolhido)
             .sort((a, b) => a.data_inicio.localeCompare(b.data_inicio));
         const ativos = registros.filter(registro =>
-            registro.status === 'agendado' || registro.status === 'confirmado').length;
+            registro.status === 'agendado' || registro.status === 'confirmado'
+            || registro.status === 'em_atendimento').length;
         resumoDia.textContent = registros.length + (registros.length === 1
             ? ' registro neste dia' : ' registros neste dia')
             + ' · ' + ativos + (ativos === 1 ? ' atendimento ativo.' : ' atendimentos ativos.');
@@ -191,6 +193,9 @@
         for (const registro of registros) {
             const cartao = criarElemento('article', 'agenda-atendimento');
             if (registro.status === 'cancelado') cartao.classList.add('agenda-atendimento-cancelado');
+            if (registro.status === 'faltou') cartao.classList.add('agenda-atendimento-faltou');
+            if (registro.status === 'em_atendimento') cartao.classList.add('agenda-atendimento-em-curso');
+            if (registro.sugere_faltou) cartao.classList.add('agenda-atendimento-pendente');
 
             const topo = criarElemento('div', 'agenda-atendimento-topo');
             topo.appendChild(criarElemento('strong', 'agenda-atendimento-horario',
@@ -200,6 +205,9 @@
             const classe = Object.prototype.hasOwnProperty.call(nomesStatus, registro.status)
                 ? 'agenda-situacao-' + registro.status : 'agenda-situacao-outro';
             topo.appendChild(criarElemento('span', 'agenda-situacao ' + classe, nomeSituacao));
+            if (registro.sugere_faltou) {
+                topo.appendChild(criarElemento('span', 'agenda-pendencia', 'Confirmar presença'));
+            }
             cartao.appendChild(topo);
 
             cartao.appendChild(criarElemento('h3', 'agenda-atendimento-cliente',
@@ -214,11 +222,72 @@
                     'Observações: ' + registro.observacoes));
             }
 
-            // Botão somente para registros ativos. O servidor volta a validar tudo.
-            const ativo = registro.status === 'agendado' || registro.status === 'confirmado';
-            if (ativo && Number.isSafeInteger(registro.id_agendamento)
-                && registro.id_agendamento > 0 && tokenCancelamento) {
-                const formCancelamento = criarElemento('form', 'agenda-cancelar-form');
+            // Ações de comparecimento. O servidor revalida tudo.
+            const ativo = registro.status === 'agendado' || registro.status === 'confirmado'
+                || registro.status === 'em_atendimento';
+            const idValido = Number.isSafeInteger(registro.id_agendamento)
+                && registro.id_agendamento > 0;
+
+            if (ativo && idValido && tokenCancelamento) {
+                const grupo = criarElemento('div', 'dropdown agenda-acoes');
+                const botaoAcoes = criarElemento('button', 'btn btn-sm btn-outline-secondary dropdown-toggle',
+                    'Ações');
+                botaoAcoes.type = 'button';
+                botaoAcoes.dataset.bsToggle = 'dropdown';
+                botaoAcoes.setAttribute('aria-expanded', 'false');
+                grupo.appendChild(botaoAcoes);
+
+                const menu = criarElemento('ul', 'dropdown-menu');
+
+                const marcar = async (acao) => {
+                    botaoAcoes.disabled = true;
+                    try {
+                        const corpo = new URLSearchParams({
+                            csrf_token: tokenCancelamento,
+                            id_agendamento: String(registro.id_agendamento),
+                            acao: acao
+                        });
+                        const resposta = await fetch('api/comparecimento.php', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                Accept: 'application/json'
+                            },
+                            body: corpo.toString()
+                        });
+                        const json = await resposta.json();
+                        if (!json.ok) {
+                            window.alert(json.erro || 'Não foi possível atualizar o atendimento.');
+                            return;
+                        }
+                        await carregarMes();
+                    } catch (_) {
+                        window.alert('Não foi possível atualizar agora. Verifique a conexão.');
+                    } finally {
+                        botaoAcoes.disabled = false;
+                    }
+                };
+
+                const adicionarAcao = (rotulo, acao, classe) => {
+                    const item = criarElemento('li');
+                    const botao = criarElemento('button', 'dropdown-item' + (classe ? ' ' + classe : ''), rotulo);
+                    botao.type = 'button';
+                    botao.addEventListener('click', () => marcar(acao));
+                    item.appendChild(botao);
+                    menu.appendChild(item);
+                };
+
+                if (registro.status === 'agendado' || registro.status === 'confirmado') {
+                    adicionarAcao('Chegou', 'chegou');
+                    adicionarAcao('Faltou', 'faltou', 'text-danger');
+                }
+                if (registro.status === 'em_atendimento') {
+                    adicionarAcao('Concluir atendimento', 'concluir');
+                }
+
+                const itemCancelar = criarElemento('li');
+                const formCancelamento = criarElemento('form');
                 formCancelamento.method = 'post';
                 formCancelamento.action = 'cancelar-agendamento.php';
 
@@ -234,7 +303,7 @@
                 campoCsrf.value = tokenCancelamento;
                 formCancelamento.appendChild(campoCsrf);
 
-                const botaoCancelar = criarElemento('button', 'btn btn-sm btn-outline-danger',
+                const botaoCancelar = criarElemento('button', 'dropdown-item text-danger',
                     'Cancelar agendamento');
                 botaoCancelar.type = 'submit';
                 formCancelamento.appendChild(botaoCancelar);
@@ -249,7 +318,11 @@
                     botaoCancelar.disabled = true;
                     botaoCancelar.textContent = 'Cancelando...';
                 });
-                cartao.appendChild(formCancelamento);
+                itemCancelar.appendChild(formCancelamento);
+                menu.appendChild(itemCancelar);
+
+                grupo.appendChild(menu);
+                cartao.appendChild(grupo);
             }
             fragmento.appendChild(cartao);
         }
