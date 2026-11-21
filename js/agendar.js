@@ -309,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (slot.livre) {
                     botao.addEventListener('click', () => {
                         sessaoAtiva().hora = slot.hora;
+                        renderizarSlots();
                         atualizarTudo();
                     });
                 } else {
