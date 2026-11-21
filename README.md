@@ -23,7 +23,9 @@ Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados inde
 
 > **Estado confirmado em 17/11/2026:** aplicação publicada no site independente [AgenDay](https://agenday-sistema.infinityfree.io/) pelo workflow [#44212874922](https://github.com/Emds96/AgenDay-PI/actions/runs/44212874922), commit de aplicação `5749f333`; a branch de desenvolvimento possui commits documentais posteriores. Cadastro/login, agenda e outras operações foram validados em cenários delimitados; **login Google e recuperação/alteração de senha também tiveram testes manuais positivos em produção**. Na recuperação, o responsável confirmou o remetente **AgenDay Sistema** entregue na caixa de entrada com endereço `agendaysistema@12832884.brevosend.com`. Não significa que todas as telas e controles de segurança já passaram por QA. Consulte [docs/STATUS.md](docs/STATUS.md) e [docs/QA03_RECUPERACAO_SENHA_BREVO.md](docs/QA03_RECUPERACAO_SENHA_BREVO.md).
 >
-> **Estado confirmado em 20/11/2026:** novo deploy publicado pelo workflow [44837030817](https://github.com/Emds96/AgenDay-PI/actions/runs/44837030817), commit `84eef5d`, após backup verificado e aplicação da migração `sql/migracao-horario-funcionamento.sql` no phpMyAdmin. Entraram: edição de cliente, funcionário e serviço; aba **Horários** em Configurações; horário no cadastro; e tela de **Bloqueios**. A agenda ainda **não usa** horário, bloqueios e regras no cálculo de horário livre — isso é a próxima fase. Detalhes em [docs/STATUS.md](docs/STATUS.md).
+> **Estado confirmado em 20/11/2026:** novo deploy publicado pelo workflow [44837030817](https://github.com/Emds96/AgenDay-PI/actions/runs/44837030817), commit `84eef5d`, após backup verificado e aplicação da migração `sql/migracao-horario-funcionamento.sql` no phpMyAdmin. Entraram: edição de cliente, funcionário e serviço; aba **Horários** em Configurações; horário no cadastro; e tela de **Bloqueios**.
+>
+> **Estado confirmado em 21/11/2026:** deploy do commit `47fb029` pelo workflow [44856321866](https://github.com/Emds96/AgenDay-PI/actions/runs/44856321866), com backup verificado e migração `sql/migracao-status-comparecimento.sql` aplicada no phpMyAdmin. Entraram: **tela de agendamento** (`agendar.php`) com horários livres calculados pelo servidor, pacote de sessões e retorno recorrente; **comparecimento** (Chegou / Faltou / Concluir) e fechamento automático; e a **conta de demonstração** `studio@demonstracao.com` com 173 agendamentos fictícios. A agenda agora usa horário, bloqueios e regras para calcular a disponibilidade. Detalhes em [docs/STATUS.md](docs/STATUS.md).
 
 ## Funcionalidades
 
@@ -35,14 +37,15 @@ Esta versão evolui a base do projeto **AgenDay-PI**, com um banco de dados inde
 | Clientes | Cadastro, pesquisa, foto opcional e **edição em modal** (PR #42) |
 | Funcionários | Cadastro, pesquisa, foto opcional, vínculo a vários serviços e **edição em modal** (PR #42) |
 | Serviços | Cadastro com nome, duração, preço e descrição; pesquisa e **edição em modal** (PR #43) |
-| Agendamentos | Seleção de cliente, serviço, funcionário, data e hora; gravação programada no MySQL |
-| Controle de horários | Validação de dados e verificação de sobreposição de atendimentos na gravação |
-| Calendário | Navegação mensal, visualização de agendamentos por dia, status e cancelamento de atendimentos ativos |
+| Agendamento | Tela própria (`agendar.php`) com **horários livres** calculados pelo servidor, busca de cliente, cadastro rápido, "qualquer profissional", **pacote de sessões** e **retorno recorrente** |
+| Controle de horários | Disponibilidade combina horário de funcionamento, almoço, bloqueios, agendamentos ativos, duração do serviço, intervalo, antecedência e janela |
+| Comparecimento | Chegou (`em_atendimento`), Faltou, Concluir e Cancelar por atendimento; fechamento automático ao passar do fim e sugestão de falta após a tolerância |
+| Calendário | Navegação mensal, atendimentos do dia com status (agendado, confirmado, em atendimento, concluído, faltou, cancelado) e histórico |
 | Segurança | Consultas preparadas, proteção CSRF e isolamento de dados por estabelecimento nos fluxos adaptados |
 | Configurações (QA-04 / UI-08 / HOR-01 / BLQ-01) | Central com **três abas**: **Estabelecimento**, **Horários** e **Minha Conta**. Nome/telefone editáveis, e-mail somente leitura, foto JPG/PNG, troca de senha em modal; na aba Horários, funcionamento por dia com almoço, regras de agendamento e bloqueios (feriado, folga, "fecha mais cedo"). [PR #33](https://github.com/Emds96/AgenDay-PI/pull/33) e [PR #48](https://github.com/Emds96/AgenDay-PI/pull/48) publicados. |
-| Horário e bloqueios | Funcionamento semanal em `horario_funcionamento`, bloqueios por estabelecimento ou funcionário em `bloqueio` e regras na tabela `estabelecimento` (intervalo, antecedência, janela, cancelamento e tolerância). **Configurável, mas ainda não aplicado pelo cálculo da agenda.** |
+| Horário e bloqueios | Funcionamento semanal em `horario_funcionamento`, bloqueios por estabelecimento ou funcionário em `bloqueio` e regras na tabela `estabelecimento` (intervalo, antecedência, janela, cancelamento e tolerância). **Aplicados pela tela de agendamento** no cálculo dos horários livres. |
 
-**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha, validação em produção da aba Horários e dos bloqueios, comandas e financeiro. A **agenda ainda não consome** horário de funcionamento, bloqueios e regras. Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
+**Ainda não concluído:** concorrência simultânea, auditoria aprofundada de autorização entre estabelecimentos, revisão final do menu/modais, testes negativos de links de senha, reagendamento com vínculo, lembretes ao cliente (SMS/e-mail), modo híbrido de sessões (PEND-01), comandas e financeiro. Há **cenários integrados de criação, conflito e cancelamento de agendamentos já aprovados** no QA reportado; não confundir essa cobertura com testes simultâneos exaustivos.
 
 ## Tecnologias
 
