@@ -132,12 +132,14 @@ No domínio administrativo (`agenday-sistema.infinityfree.io`), entre com a cont
 | Campo | Valor |
 | --- | --- |
 | Ativar envio pelo WhatsApp | ligado |
-| Endereço do WAHA | `https://SEU-ENDERECO.ngrok-free.app` (**sem** barra no fim) |
+| Endereço do WAHA | `https://SEU-ENDERECO.ngrok-free.app` (**sem** barra no fim) — no PC do responsável é o domínio fixo `https://additionally-nondeluded-elane.ngrok-free.dev` |
 | Sessão | `default` |
 | Chave da API | a `WAHA_API_KEY` do `.env` |
 | Exigir código por WhatsApp | ligado |
 
 Salve e clique em **Testar conexão**. O retorno esperado é a sessão `WORKING`. Se houver mensagens na fila, use **Enviar pendentes agora**.
+
+> **Produção (21/11/2026):** o código do portal já está publicado no InfinityFree, mas esta aba em produção ainda está vazia (`ativo=0`). Sem preenchê-la e testar, o código de acesso não sai para os clientes em produção. É o único passo pendente antes do teste real.
 
 ## Passo 7 — Teste real (obrigatório antes da feira)
 
