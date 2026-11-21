@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## DEPLOY-01 — Migração e publicação do portal do cliente (21/11/2026)
+
+- **Autorização do responsável (21/11/2026):** fechar o lote, publicar, aplicar as migrações SQL pendentes em produção e deixar o sistema online.
+- **Backup prévio:** `Documents\AgenDay-Backups\2026-11-21_174618_aa74da7d` — `BACKUP OK`, 126 arquivos, 12 tabelas, restauração em MySQL local aprovada; `sha256_sql` `35cea56e…d4e3fd`, `sha256_zip` `52b33240…3cc402`. O backup anterior (20/11 22:28) estava fora da janela de 6 horas e não foi usado.
+- **Migração em produção (phpMyAdmin, banco `if0_43415733_agenday`, MariaDB 11.4.13):** aplicada antes do código, em blocos equivalentes a `sql/migracao-portal-cliente.sql` — `estabelecimento.slug`, `dominio`, `exigir_codigo_whatsapp`; `clientes.telefone_digits` com backfill (30 dos 32 clientes normalizados, 2 sem telefone no cadastro) e `idx_clientes_telefone`; `agendamentos.token_publico` com `uq_agendamentos_token`; tabelas `verificacao_acesso`, `sessao_cliente`, `mensagem_whatsapp`, `whatsapp_config` (linha 1 criada); índices únicos `uq_estabelecimento_slug` e `uq_estabelecimento_dominio`. O estabelecimento demo "Studio Bella Vita" (id 22) ficou com `slug=studio`, `dominio=agenday-agendamentos.infinityfree.io` e `exigir_codigo_whatsapp=1`. Conferido por consultas de leitura depois da execução.
+- **Publicação:** `workflow_dispatch` no run **`44953952790`**, SHA **`4bd707aa33d4be09c5367b2745fffcb80872f96a`** (`dev-feira-uninorte`), environment `producao-agenday` aprovado com o comentário de autorização. `publicar` concluído com sucesso em **4m18s** nas duas pastas (`htdocs` e `agenday-agendamentos.infinityfree.io/htdocs`); `diagnosticar_ftp` (somente leitura) também verde. Flags `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled` restauradas às 21:59 UTC.
+- **Conferência pós-deploy no navegador (21/11/2026):** `https://agenday-sistema.infinityfree.io/` carrega o login sem erro de PHP; `https://agenday-agendamentos.infinityfree.io/?e=studio` mostra "Studio Bella Vita" com as abas Entrar/Cadastro, dropdowns e calendário no DOM; `agenda.php` no domínio do cliente redireciona para `cliente.php` (guarda de host ativa).
+- **Pendência para o dia da feira:** a aba **Configurações → WhatsApp** de produção ainda está vazia (`whatsapp_config` com `ativo=0`, sem `base_url`/`api_key`), então o código de acesso não sai em produção enquanto isso não for preenchido. Depende do endereço do ngrok e da chave do WAHA, e de sessão de administrador do estabelecimento; não foi preenchido por esta sessão.
+- **Estado real:** código e banco de produção atualizados; CI e deploy verdes; sem teste funcional autenticado em produção (depende da configuração do WhatsApp acima).
+
+---
+
 ## OPS-01 — Script e atalho de início do WhatsApp (21/11/2026)
 
 - **Pedido do responsável:** um script para o caso de reiniciar o computador, com atalho na Área de Trabalho, e autorização para apagar o cliente de teste "Eder QA" do banco local.
@@ -21,7 +33,7 @@
 - **Estilo (`css/cliente.css`):** o `<body>` do portal também carrega `.agenday-auth`, cuja regra genérica pinta todo botão de turquesa. Os controles novos receberam overrides com o prefixo `.agenday-auth.agenday-portal`, o que também devolveu aos horários o aspecto de cartão claro (antes apareciam preenchidos). Abaixo de 576 px o painel do dropdown passa a abrir dentro do cartão (`position: static`), sem flutuar sobre o conteúdo. Os cartões ganharam `scroll-margin-top` para não ficarem sob o cabeçalho fixo.
 - **Validação visual e funcional no local (21/11/2026):** fluxo completo em **1366 px** e em **360 px** — abrir serviço, escolher "Corte Feminino", escolher "Qualquer profissional", escolher 24/11 no calendário, escolher 14:00, confirmar; o agendamento foi gravado (profissional atribuída: Ana Beatriz) e depois cancelado pela aba "Meus agendamentos". Sem rolagem horizontal em 360 px (`scrollWidth` = 360).
 - **Testes:** `php -l cliente.php`, `node --check js/cliente.js`, `tests/portal-cliente.php` (84), `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `node tests/responsividade-check.js` (210), todos limpos.
-- **Estado real:** implementado e testado no PC local; **não publicado** — entra no deploy de 22/11.
+- **Estado real:** implementado e testado no PC local; **publicado** em 21/11/2026 no deploy do SHA `4bd707a` (DEPLOY-01).
 
 ---
 
@@ -35,7 +47,7 @@
 - **Validação real (21/11/2026, local + WAHA/GOWS + ngrok):** envio com `92994331267` e com `9294331267` retornou **HTTP 201**; login na aba Entrar com o número novo entrou direto no cadastro existente ("Bem-vindo de volta!"); cadastro na aba Cadastro com o formato antigo enviou o código, mostrou `(92) 9****-1267` e concluiu com o código recebido. Dados de teste apagados e estabelecimento temporário revertido.
 - **Validação do responsável (21/11/2026, navegador local):** entrou com `92994331267` (formato novo) e criou a conta `92 98135-1207` na aba Cadastro, concluindo com o código recebido no WhatsApp. O cadastro ficou gravado como `(92) 98135-1207` / `92981351207` (cliente local `EMDS`, id 77), mantido por ser conta do responsável.
 - **Integração:** PR #68 (`feat/acesso-abas-celular-9` → `dev-feira-uninorte`) integrado em `fdde916`; CI verde nos dois workflows (runs `44948346357` e `44948346362`), com `publicar` e o teste FTPS `skipped`.
-- **Estado real:** implementado, testado no PC local e integrado na `dev-feira-uninorte`; **não publicado** — entra no deploy de 22/11.
+- **Estado real:** implementado, testado no PC local e integrado na `dev-feira-uninorte`; **publicado** em 21/11/2026 no deploy do SHA `4bd707a` (DEPLOY-01).
 
 ---
 
@@ -47,7 +59,7 @@
 - **Validação real no local (PHP 8.4 + MariaDB 11.8.9 + WAHA/GOWS):** cliente já cadastrado (`9294331267`, Studio) entrou **só com o celular**, com "Bem-vindo de volta!" e **sem** nova mensagem (contador de `mensagem_whatsapp` ficou em 3). Em um estabelecimento temporário, o mesmo número foi tratado como primeiro acesso: pediu o nome, enviou o código no WhatsApp, aceitou o código e, ao sair e entrar de novo, entrou direto. Estabelecimento temporário revertido e dados de teste apagados.
 - **Risco assumido e documentado:** quem souber o celular de um cliente pode abrir a sessão dele e ver/cancelar agendamentos. Registrado em `docs/PORTAL_CLIENTE_PLANO.md` §6.3, com o ponto único de mudança caso seja preciso exigir código em todo login.
 - **Integração:** PR #66 (`feat/login-codigo-so-cadastro` → `dev-feira-uninorte`) integrado em `01a7fa3`; CI verde nos dois workflows (runs `44946287856` e `44946287878`), com `publicar` e o teste FTPS `skipped`.
-- **Estado real:** implementado, testado no PC local e integrado na `dev-feira-uninorte`; **não publicado** — entra no próximo deploy do portal.
+- **Estado real:** implementado, testado no PC local e integrado na `dev-feira-uninorte`; **publicado** em 21/11/2026 no deploy do SHA `4bd707a` (DEPLOY-01).
 
 ---
 
@@ -57,14 +69,14 @@
 - **Novo documento:** `docs/WHATSAPP_WAHA_GUIA.md` — instalação do Docker Desktop (winget + reinício), geração das credenciais do WAHA, pareamento por QR, túnel ngrok, preenchimento da aba WhatsApp, teste real, rotina do dia da feira, falhas comuns e plano B sem WhatsApp.
 - **Código:** `lib/whatsapp.php` passou a enviar o cabeçalho `ngrok-skip-browser-warning` no envio e no teste de conexão, para o túnel gratuito não devolver a página de aviso em vez do JSON.
 - **Correção de isolamento no mesmo lote:** `agenday_portal_sessao_ler()` passou a receber o estabelecimento e a filtrar por ele; testado com dois estabelecimentos no banco local (sessão de `studio` não vale em `teste-b`, e a escrita nesse domínio devolve 401).
-- **Estado real:** implementado e testado no PC local; **não publicado** e **sem WhatsApp real** até o Docker/WAHA/ngrok serem instalados no PC.
+- **Estado real:** implementado e testado no PC local; **publicado** em 21/11/2026 no deploy do SHA `4bd707a` (DEPLOY-01). O envio real passou a ser validado depois da instalação do WAHA/GOWS no PC (ver PORTAL-04).
 
 ---
 
-## PORTAL-01 — Portal público do cliente (21/11/2026; implementado e testado no local, **não publicado**)
+## PORTAL-01 — Portal público do cliente (21/11/2026; implementado no local, **publicado** em 21/11/2026 no SHA `4bd707a`)
 
 - **Escopo autorizado:** plano aprovado em 21/11 (`docs/PORTAL_CLIENTE_PLANO.md`) — segundo domínio para o cliente, login por celular com código no WhatsApp, agendar, remarcar e cancelar. Branch `feat/portal-cliente` a partir de `849af46`. (A regra do código foi ajustada em **PORTAL-03**: só no cadastro.)
-- **Banco (aditivo, reexecutável):** `sql/migracao-portal-cliente.sql` acrescenta `estabelecimento.slug`, `dominio` e `exigir_codigo_whatsapp`; `clientes.telefone_digits` (com backfill pela mesma regra do PHP); `agendamentos.token_publico`; e cria `verificacao_acesso`, `sessao_cliente`, `mensagem_whatsapp` e `whatsapp_config`. Aplicada **somente no banco local**, duas execuções, sem erro; 29/29 clientes normalizados. **Ainda não aplicada no InfinityFree.**
+- **Banco (aditivo, reexecutável):** `sql/migracao-portal-cliente.sql` acrescenta `estabelecimento.slug`, `dominio` e `exigir_codigo_whatsapp`; `clientes.telefone_digits` (com backfill pela mesma regra do PHP); `agendamentos.token_publico`; e cria `verificacao_acesso`, `sessao_cliente`, `mensagem_whatsapp` e `whatsapp_config`. Aplicada **somente no banco local**, duas execuções, sem erro; 29/29 clientes normalizados. **Aplicada em produção em 21/11/2026, antes do código (DEPLOY-01).**
 - **Bibliotecas:** `lib/portal-cliente.php` (slug, telefone, cliente, token, sessão por cookie `AGENDAY_CLIENTE`, CSRF, origem, prazo de cancelamento, JSON); `lib/guarda-host.php`; `lib/whatsapp.php` (configuração, fila com backoff, envio WAHA, cinco templates, gatilho pós-resposta).
 - **Endpoints:** `api/cliente-acesso.php` (`estado`, `entrar`, `verificar`, `sair`), `api/cliente-dados.php`, `api/cliente-horarios.php` (reusa `lib/disponibilidade.php`), `api/cliente-agendamentos.php` (`criar`, `listar`, `cancelar`, `remarcar`).
 - **Telas:** `cliente.php` (mobile-first, etapas de acesso e agendamento, abas Agendar/Meus agendamentos, `.ics`) e `cliente-cancelar.php?t=token` (cancelamento sem login, POST com conferência de origem). `css/cliente.css` usa apenas tokens do design system.

@@ -109,12 +109,13 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 
 ## Fase 8 — Deploy e feira
 
-- [ ] Backup verificado e registrado.
-- [ ] Autorização de SHA e destino.
-- [ ] Migração aplicada em produção (phpMyAdmin) e conferida.
-- [ ] Deploy único com as duas pastas.
-- [ ] Flags de deploy desligadas ao final (também em caso de falha).
-- [ ] Conferir os dois domínios no navegador.
+- [x] Backup verificado e registrado: `2026-11-21_174618_aa74da7d` (`BACKUP OK`, 126 arquivos, 12 tabelas, restauração local aprovada).
+- [x] Autorização de SHA e destino (21/11/2026): `4bd707aa33d4be09c5367b2745fffcb80872f96a`, as duas pastas (`htdocs` e `agenday-agendamentos.infinityfree.io/htdocs`).
+- [x] Migração aplicada em produção (phpMyAdmin) e conferida: colunas `estabelecimento.slug/dominio/exigir_codigo_whatsapp`, `clientes.telefone_digits`, `agendamentos.token_publico`; índices `uq_estabelecimento_slug/dominio`, `idx_clientes_telefone`, `uq_agendamentos_token`; 4 tabelas novas; `whatsapp_config` com a linha 1; backfill de 30 dos 32 clientes (2 sem telefone).
+- [x] Deploy único com as duas pastas: run `44953952790` (workflow_dispatch), `publicar` concluído em 4m18s e teste FTPS somente leitura aprovado.
+- [x] Flags de deploy desligadas ao final (`AGENDAY_DEPLOY_ENABLED=false`, `AGENDAY_DEPLOY_MODE=disabled` às 21:59 UTC).
+- [x] Conferir os dois domínios no navegador: login do sistema e portal `?e=studio` carregando com abas Entrar/Cadastro, dropdowns e calendário; `agenda.php` no domínio do cliente redireciona para `cliente.php`.
+- [ ] Preencher **Configurações → WhatsApp** em produção (endereço do ngrok, chave e sessão `default`) e ativar — sem isso o código de acesso não sai em produção.
 - [ ] Agendamento real de teste + mensagem recebida.
 - [ ] Cancelamento pelo link testado.
 - [ ] Login de demonstração criado no dia anterior (sessão de 30 dias).
