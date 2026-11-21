@@ -9,7 +9,7 @@ const assert = require('node:assert/strict');
 const raiz = path.join(__dirname, '..');
 const ler = arquivo => fs.readFileSync(path.join(raiz, arquivo), 'utf8');
 const paginas = [
-    'index.php', 'agenda.php', 'cad-cliente.php', 'cad-funcionario.php',
+    'index.php', 'agenda.php', 'agendar.php', 'cad-cliente.php', 'cad-funcionario.php',
     'cad.servicos.php', 'comandas-abertas.php', 'financeiro.php',
     'historico-comandas.php', 'config.php'
 ];
@@ -261,6 +261,29 @@ verificar(bloqueioEnvio.includes("form.addEventListener('submit'")
     && bloqueioEnvio.includes('botao.disabled = true')
     && bloqueioEnvio.includes("'Salvando...'"),
     'FIX-01: bloqueio de duplo clique ausente');
+
+/* AGD-01: tela de agendamento com horários livres. */
+const agendar = ler('agendar.php');
+const agendarJs = ler('js/agendar.js');
+verificar(agendar.includes('action="criar-agendamento.php"')
+    && agendar.includes('name="csrf_token"')
+    && agendar.includes('id="campoClienteId"')
+    && agendar.includes('id="campoHora"'),
+    'AGD-01: formulário de agendamento incompleto');
+verificar(agendar.includes('form="formAgendar"'),
+    'AGD-01: botão do rodapé precisa estar ligado ao formulário');
+verificar(agendarJs.includes("fetch('api/horarios.php")
+    && agendarJs.includes("fetch('api/clientes-busca.php")
+    && agendarJs.includes('AbortController'),
+    'AGD-01: tela não consulta a API de horários com cancelamento');
+verificar(ler('lib/disponibilidade.php').includes('function agenday_disponibilidade_dia(')
+    && ler('api/horarios.php').includes('agenday_disponibilidade_dia('),
+    'AGD-01: cálculo de disponibilidade ausente');
+verificar(ler('lib/disponibilidade.php').includes("status IN ('agendado', 'confirmado')"),
+    'AGD-01: disponibilidade precisa ignorar agendamentos cancelados');
+verificar(ler('criar-agendamento.php').includes('agenday_valida_csrf()')
+    && ler('criar-agendamento.php').includes('FOR UPDATE'),
+    'AGD-01: gravação sem CSRF ou sem lock por funcionário');
 
 /* DEL-01: exclusão de cliente, funcionário e serviço com confirmação. */
 for (const [pagina, endpoint, modal, campoId] of [
