@@ -336,7 +336,16 @@
 
 .resumo-acoes { margin-left: auto; display: flex; gap: 10px; }
 
-.agendar-resumo .btn { min-height: 46px; padding: 0 20px; font-weight: 700; }
+.agendar-resumo .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 20px;
+    line-height: 1;
+    font-weight: 700;
+    text-decoration: none;
+}
 
 @media (max-width: 900px) {
     .agendar-grade { grid-template-columns: 1fr; }

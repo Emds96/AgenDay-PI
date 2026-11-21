@@ -83,7 +83,7 @@ $minutosDuracao = static function (string $duracao): int {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/agendar.css?v=20261121-ag05">
+    <link rel="stylesheet" href="css/agendar.css?v=20261121-ag07">
 </head>
 <body class="agenday-app" data-csrf="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"
       data-hoje="<?= htmlspecialchars($hoje, ENT_QUOTES, 'UTF-8') ?>">
