@@ -1,6 +1,18 @@
 # STATUS — AgenDay 2.0
 
-## DEL-01 — Excluir cliente, funcionário e serviço (20/11/2026; branch `feat/excluir-registros`, não publicada)
+## DEPLOY-20261120-B — Publicação do SHA 0be0606 (20/11/2026)
+
+- **Autorização:** responsável autorizou publicar o SHA `0be06062eee9f8920d06eceba49e6e40d4db1542`, seguindo a regra de **1 deploy por dia** e publicação ao concluir a funcionalidade.
+- **Backup antes da publicação:** `C:\Users\EDER\Documents\AgenDay-Backups\2026-11-20_195512_79e5f900` (`BACKUP OK`).
+- **SQL:** nenhum neste lote.
+- **Execução:** run `44840901688` na branch `dev-feira-uninorte`; `Validar codigo e pacote` ✅, `Testar FTPS sem publicar arquivos` ✅, `Enviar ao InfinityFree somente com autorizacao` ✅.
+- **Flags:** ligadas durante a execução e desligadas ao final (`false` / `disabled`, conferido em 21/11 00:04 UTC).
+- **Validação após publicar:** por FTPS — `excluir-cliente.php` presente, `js/excluir-registro.js` presente, `bi-trash` em `cad-cliente.php` e `responsivo.css?v=20261120-del01`. Nenhuma alteração de banco.
+- **Pendências:** validar a exclusão no site com a conta real e em celular físico.
+
+---
+
+## DEL-01 — Excluir cliente, funcionário e serviço (20/11/2026; integrada no PR #51 e publicada em 20/11/2026 — SHA `0be0606`)
 
 - **Escopo autorizado:** lixeira ao lado do botão **Editar** (abaixo dele no celular) nas listas de clientes, funcionários e serviços, com pop-up de confirmação contendo **Cancelar** e **Excluir**. Nenhum deploy.
 - **Arquivos:** `excluir-cliente.php`, `excluir-funcionario.php`, `excluir-servico.php` (novos, somente POST), `js/excluir-registro.js` (novo, preenche o modal), `cad-cliente.php`, `cad-funcionario.php`, `cad.servicos.php` (botão, modal e script), `css/responsivo.css` (alvo de 44 px no celular, classe `ag-acoes-registro`), `tests/responsividade-check.js` (+12 verificações, 185 no total).

@@ -73,6 +73,26 @@ O responsavel pode identificar o nivel no proprio pedido: **"simples"**, **"medi
 
 **Regra de coordenação:** se outra sessão estiver realizando deploy ou backup, não modificar a mesma branch sem combinar o momento; verificar HEAD imediatamente antes de abrir PR/mesclar. Enviar a outra sessão o link do documento e o SHA, não uma descrição vaga.
 
+## 3A. Vocabulário do dia a dia (20/11/2026)
+
+Para evitar confusão entre "subir no GitHub" e "colocar no site":
+
+| Termo | O que é | O que muda | Desfazer |
+| --- | --- | --- | --- |
+| **Commit** | registro da mudança no histórico do Git, na máquina local | só o PC | sim |
+| **Push** | envio dos commits para o GitHub | GitHub | sim |
+| **PR + merge** | revisão e junção da branch na `dev-feira-uninorte` | GitHub | sim (revert) |
+| **CI** | testes automáticos do workflow em cada push | nada no site | — |
+| **Deploy** | processo completo: backup → SQL (se houver) → variáveis → workflow → aprovação → desligar variáveis | GitHub Actions | republicando o SHA anterior |
+| **Publicar** | etapa final do deploy: cópia dos arquivos para o InfinityFree | site oficial | republicando o SHA anterior |
+
+Regras práticas:
+
+- **Cada lote** gera commit + push + PR + merge. Isso é barato e reversível.
+- **Publicar** é no máximo **1 vez por dia**, de preferência ao concluir uma funcionalidade, e sempre com **backup verificado antes**.
+- **CI verde não é publicação.** Significa apenas que o código passou nos testes.
+- "Deploy no GitHub" não existe: para o GitHub se faz push/merge.
+
 ## 4. Autorizações e limites
 
 **Sem nova autorização:** ler repositório, GitHub Actions e documentação; analisar e propor; fazer pesquisas públicas; inspecionar backup **somente leitura** se computador estiver autorizado.
