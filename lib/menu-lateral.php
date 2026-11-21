@@ -14,24 +14,14 @@ $menuPaginaAtiva = static fn(string $arquivo): bool => $paginaMenuAtual === $arq
 
     <div class="offcanvas-body ad-sidebar-body">
         <nav class="ad-sidebar-nav" aria-label="Menu principal">
-            <a class="nav-link ad-side-link<?= $menuPaginaAtiva('agenda.php') ? ' active' : '' ?>"
-               href="agenda.php"<?= $menuPaginaAtiva('agenda.php') ? ' aria-current="page"' : '' ?>>
+            <a class="nav-link ad-side-link<?= ($menuPaginaAtiva('agenda.php') || $menuPaginaAtiva('agendar.php')) ? ' active' : '' ?>"
+               href="agenda.php"<?= ($menuPaginaAtiva('agenda.php') || $menuPaginaAtiva('agendar.php')) ? ' aria-current="page"' : '' ?>>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                     <rect x="3" y="5" width="18" height="16" rx="2"></rect>
                     <path d="M7 3v4M17 3v4M3 10h18M7.5 14h2M14.5 14h2M7.5 18h2"></path>
                 </svg>
                 <span>Agenda</span>
-            </a>
-            <a class="nav-link ad-side-link<?= $menuPaginaAtiva('agendar.php') ? ' active' : '' ?>"
-               href="agendar.php"<?= $menuPaginaAtiva('agendar.php') ? ' aria-current="page"' : '' ?>>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                    <rect x="3" y="5" width="18" height="16" rx="2"></rect>
-                    <path d="M7 3v4M17 3v4M3 10h18"></path>
-                    <path d="M12 13v5M9.5 15.5h5"></path>
-                </svg>
-                <span>Novo agendamento</span>
             </a>
             <a class="nav-link ad-side-link<?= $menuPaginaAtiva('cad-cliente.php') ? ' active' : '' ?>"
                href="cad-cliente.php"<?= $menuPaginaAtiva('cad-cliente.php') ? ' aria-current="page"' : '' ?>>

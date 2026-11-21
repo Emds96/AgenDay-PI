@@ -156,7 +156,12 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                 <div class="col-12 col-lg-5">
                     <section class="card shadow-sm agenda-dia-card h-100" aria-labelledby="agenda-dia-titulo">
                         <div class="card-body">
-                            <h2 class="h5 mb-2" id="agenda-dia-titulo">Atendimentos do dia</h2>
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                <h2 class="h5 mb-0" id="agenda-dia-titulo">Atendimentos do dia</h2>
+                                <a class="btn btn-sm btn-primary" href="agendar.php">
+                                    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Agendar
+                                </a>
+                            </div>
                             <p class="small text-muted" id="agenda-dia-resumo" role="status" aria-live="polite">
                                 Escolha um dia no calendário.
                             </p>
