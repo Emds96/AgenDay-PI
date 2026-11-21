@@ -167,12 +167,12 @@ verificar(configCSS.includes('@media (max-width: 575.98px)')
 const menuLateral = ler('lib/menu-lateral.php');
 const linksMenu = [...menuLateral.matchAll(/href="([^"]+)"/g)].map(resultado => resultado[1]);
 const rotasEsperadas = [
-    'agenda.php', 'agendar.php', 'cad-cliente.php', 'cad.servicos.php',
+    'agenda.php', 'cad-cliente.php', 'cad.servicos.php',
     'cad-funcionario.php', 'config.php', 'logout.php'
 ];
 verificar(linksMenu.length === rotasEsperadas.length
     && linksMenu.every((rota, posicao) => rota === rotasEsperadas[posicao]),
-    'UI-09: menu deve ter Agenda, Novo agendamento, cadastros, Configurações e Sair, na ordem aprovada');
+    'UI-09: menu deve ter Agenda, cadastros, Configurações e Sair, na ordem aprovada');
 verificar(menuLateral.includes('id="ad-sidebar-title">Menu</h5>')
     && !menuLateral.includes('id="ad-sidebar-title">AgenDay</h5>'),
     'UI-09: título interno do menu não é Menu');
