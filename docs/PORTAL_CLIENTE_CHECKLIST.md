@@ -94,7 +94,7 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] `docs/STATUS.md` atualizado.
 - [x] PR #64 aberto, revisado e integrado em `dev-feira-uninorte` (`1e670cd`).
 - [x] CI verde: `PHP syntax check` e `Validacao e publicacao controlada` (run `44936376746`), com o teste do portal no workflow.
-- [ ] Validação visual pelo responsável no navegador (celular e desktop).
+- [x] Validação do responsável no navegador local (21/11/2026): entrou com `92994331267` e criou a conta `92 98135-1207` na aba Cadastro, concluindo com o código recebido no WhatsApp.
 
 ## Fase 8 — Deploy e feira
 
