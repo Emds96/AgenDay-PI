@@ -25,27 +25,46 @@ $idFuncionarioBruto = $_POST['id_funcionario'] ?? '';
 $idFuncionario = ($idFuncionarioBruto === '' || $idFuncionarioBruto === '0')
     ? null
     : filter_var($idFuncionarioBruto, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-$observacoes = isset($_POST['observacoes']) && is_string($_POST['observacoes'])
-    ? trim($_POST['observacoes']) : '';
+
+$modo = isset($_POST['modo']) && is_string($_POST['modo']) ? $_POST['modo'] : 'unico';
+if (!in_array($modo, ['unico', 'pacote', 'retorno'], true)) {
+    $modo = 'unico';
+}
 
 require_once __DIR__ . '/lib/disponibilidade.php';
 
-$dia = agenday_disp_data_valida($_POST['data'] ?? null);
-$hora = agenday_disp_hora_valida($_POST['hora'] ?? null);
+$sessoesEntrada = isset($_POST['sessoes']) && is_array($_POST['sessoes']) ? $_POST['sessoes'] : [];
+$sessoes = [];
+foreach ($sessoesEntrada as $indice => $item) {
+    if (!is_array($item)) {
+        continue;
+    }
+    $dia = agenday_disp_data_valida($item['data'] ?? null);
+    $hora = agenday_disp_hora_valida($item['hora'] ?? null);
+    if ($dia === null || $hora === null) {
+        agenday_agendar_voltar('erro_agendar', 'Escolha data e horário para todas as sessões.');
+    }
+    $sessoes[] = ['data' => $dia, 'hora' => $hora];
+}
 
-if (!is_int($idCliente) || !is_int($idServico) || $idFuncionario === false
-    || $dia === null || $hora === null) {
+if ($sessoes === []) {
     agenday_agendar_voltar('erro_agendar', 'Escolha cliente, serviço, data e horário.');
 }
-if (mb_strlen($observacoes) > 1000) {
-    agenday_agendar_voltar('erro_agendar', 'As observações podem ter no máximo 1.000 caracteres.');
+if (!is_int($idCliente) || !is_int($idServico) || $idFuncionario === false) {
+    agenday_agendar_voltar('erro_agendar', 'Escolha cliente, serviço, data e horário.');
+}
+if ($modo === 'unico' && count($sessoes) !== 1) {
+    agenday_agendar_voltar('erro_agendar', 'Um agendamento único precisa de um horário só.');
+}
+if (count($sessoes) > 12) {
+    agenday_agendar_voltar('erro_agendar', 'O limite é de 12 sessões por agendamento.');
 }
 
 try {
     require_once __DIR__ . '/conexao.php';
     $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
 
-    // O cliente precisa pertencer à conta.
+    // Cliente da conta.
     $consulta = $conexao->prepare(
         'SELECT id_cliente FROM clientes WHERE id_estabelecimento = ? AND id_cliente = ? LIMIT 1'
     );
@@ -58,89 +77,111 @@ try {
         agenday_agendar_voltar('erro_agendar', 'Cliente não encontrado neste estabelecimento.');
     }
 
-    // Revalida a disponibilidade inteira no servidor, no momento de salvar.
-    $disponibilidade = agenday_disponibilidade_dia(
-        $conexao,
-        $idEstabelecimento,
-        $dia,
-        $idServico,
-        $idFuncionario
-    );
-    if ($disponibilidade['servico'] === null) {
-        agenday_agendar_voltar('erro_agendar', $disponibilidade['motivo'] ?? 'Serviço não encontrado.');
-    }
-    if ($disponibilidade['motivo'] !== null) {
-        agenday_agendar_voltar('erro_agendar', $disponibilidade['motivo']);
-    }
-
-    $escolhido = null;
-    foreach ($disponibilidade['slots'] as $slot) {
-        if ($slot['hora'] === $hora && $slot['livre']) {
-            $escolhido = $slot['profissionais'][0]['id'];
-            break;
+    // Valida cada sessão e escolhe o profissional.
+    $plano = [];
+    foreach ($sessoes as $indice => $sessao) {
+        $rotulo = count($sessoes) > 1 ? 'Sessão ' . ($indice + 1) . ': ' : '';
+        $disponibilidade = agenday_disponibilidade_dia(
+            $conexao,
+            $idEstabelecimento,
+            $sessao['data'],
+            $idServico,
+            $idFuncionario
+        );
+        if ($disponibilidade['servico'] === null || $disponibilidade['motivo'] !== null) {
+            agenday_agendar_voltar(
+                'erro_agendar',
+                $rotulo . ($disponibilidade['motivo'] ?? 'serviço não encontrado.')
+            );
         }
-    }
-    if ($escolhido === null) {
-        agenday_agendar_voltar('erro_agendar', 'Este horário não está mais livre. Escolha outro.');
+        $escolhido = null;
+        foreach ($disponibilidade['slots'] as $slot) {
+            if ($slot['hora'] === $sessao['hora'] && $slot['livre']) {
+                $escolhido = (int) $slot['profissionais'][0]['id'];
+                break;
+            }
+        }
+        if ($escolhido === null) {
+            agenday_agendar_voltar('erro_agendar', $rotulo . 'este horário não está mais livre. Escolha outro.');
+        }
+        $plano[] = [
+            'data' => $sessao['data'],
+            'hora' => $sessao['hora'],
+            'funcionario' => $escolhido,
+            'duracao' => (int) $disponibilidade['servico']['duracao'],
+        ];
     }
 
-    $duracao = (int) $disponibilidade['servico']['duracao'];
-    $inicio = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $dia . ' ' . $hora, agenday_disp_fuso());
-    $fim = $inicio->modify('+' . $duracao . ' minutes');
-    $inicioBanco = $inicio->format('Y-m-d H:i:s');
-    $fimBanco = $fim->format('Y-m-d H:i:s');
-
-    // Gravação com lock por funcionário, igual ao fluxo antigo.
+    // Grava tudo junto: se uma sessão falhar, nenhuma entra.
     $conexao->begin_transaction();
     try {
-        $lock = $conexao->prepare(
-            'SELECT id_funcionario FROM funcionarios
-             WHERE id_estabelecimento = ? AND id_funcionario = ? FOR UPDATE'
-        );
-        $lock->bind_param('ii', $idEstabelecimento, $escolhido);
-        $lock->execute();
-        $lock->store_result();
-        $funcionarioExiste = $lock->num_rows === 1;
-        $lock->close();
-        if (!$funcionarioExiste) {
-            throw new DomainException('O profissional escolhido não pertence a este estabelecimento.');
-        }
-
-        $conflito = $conexao->prepare(
-            "SELECT id_agendamento FROM agendamentos
-             WHERE id_estabelecimento = ? AND id_funcionario = ?
-               AND status IN ('agendado', 'confirmado')
-               AND data_inicio < ? AND data_fim > ?
-             LIMIT 1 FOR UPDATE"
-        );
-        $conflito->bind_param('iiss', $idEstabelecimento, $escolhido, $fimBanco, $inicioBanco);
-        $conflito->execute();
-        $conflito->store_result();
-        $emConflito = $conflito->num_rows > 0;
-        $conflito->close();
-        if ($emConflito) {
-            throw new DomainException('Este horário acabou de ser ocupado. Escolha outro.');
+        $funcionarios = array_values(array_unique(array_column($plano, 'funcionario')));
+        sort($funcionarios);
+        foreach ($funcionarios as $idFunc) {
+            $lock = $conexao->prepare(
+                'SELECT id_funcionario FROM funcionarios
+                 WHERE id_estabelecimento = ? AND id_funcionario = ? FOR UPDATE'
+            );
+            $lock->bind_param('ii', $idEstabelecimento, $idFunc);
+            $lock->execute();
+            $lock->store_result();
+            $existe = $lock->num_rows === 1;
+            $lock->close();
+            if (!$existe) {
+                throw new DomainException('Um dos profissionais não pertence a este estabelecimento.');
+            }
         }
 
         $insercao = $conexao->prepare(
             "INSERT INTO agendamentos
              (id_estabelecimento, id_cliente, id_funcionario, id_servicos,
               data_inicio, data_fim, status, observacoes)
-             VALUES (?, ?, ?, ?, ?, ?, 'agendado', ?)"
+             VALUES (?, ?, ?, ?, ?, ?, 'agendado', NULL)"
         );
-        $observacoesBanco = $observacoes === '' ? null : $observacoes;
-        $insercao->bind_param(
-            'iiiisss',
-            $idEstabelecimento,
-            $idCliente,
-            $escolhido,
-            $idServico,
-            $inicioBanco,
-            $fimBanco,
-            $observacoesBanco
-        );
-        $insercao->execute();
-        $idNovo = (int) $conexao->insert_id;
+
+        $ids = [];
+        foreach ($plano as $indice => $item) {
+            $rotulo = count($plano) > 1 ? 'Sessão ' . ($indice + 1) . ': ' : '';
+            $inicio = DateTimeImmutable::createFromFormat(
+                '!Y-m-d H:i',
+                $item['data'] . ' ' . $item['hora'],
+                agenday_disp_fuso()
+            );
+            if ($inicio === false) {
+                throw new DomainException($rotulo . 'data inválida.');
+            }
+            $fim = $inicio->modify('+' . $item['duracao'] . ' minutes');
+            $inicioBanco = $inicio->format('Y-m-d H:i:s');
+            $fimBanco = $fim->format('Y-m-d H:i:s');
+
+            $conflito = $conexao->prepare(
+                "SELECT id_agendamento FROM agendamentos
+                 WHERE id_estabelecimento = ? AND id_funcionario = ?
+                   AND status IN ('agendado', 'confirmado')
+                   AND data_inicio < ? AND data_fim > ?
+                 LIMIT 1 FOR UPDATE"
+            );
+            $conflito->bind_param('iiss', $idEstabelecimento, $item['funcionario'], $fimBanco, $inicioBanco);
+            $conflito->execute();
+            $conflito->store_result();
+            $emConflito = $conflito->num_rows > 0;
+            $conflito->close();
+            if ($emConflito) {
+                throw new DomainException($rotulo . 'este horário acabou de ser ocupado. Escolha outro.');
+            }
+
+            $insercao->bind_param(
+                'iiiiss',
+                $idEstabelecimento,
+                $idCliente,
+                $item['funcionario'],
+                $idServico,
+                $inicioBanco,
+                $fimBanco
+            );
+            $insercao->execute();
+            $ids[] = (int) $conexao->insert_id;
+        }
         $insercao->close();
         $conexao->commit();
     } catch (Throwable $e) {
@@ -148,8 +189,10 @@ try {
         throw $e;
     }
 
-    $_SESSION['sucesso_agendar'] = 'Agendamento #' . $idNovo . ' salvo com sucesso.';
-    $_SESSION['agenda_dia_recem_salvo'] = $dia;
+    $_SESSION['sucesso_agendar'] = count($ids) === 1
+        ? 'Agendamento #' . $ids[0] . ' salvo com sucesso.'
+        : count($ids) . ' sessões salvas com sucesso.';
+    $_SESSION['agenda_dia_recem_salvo'] = $plano[0]['data'];
     header('Location: agendar.php?salvo=1', true, 303);
     exit;
 } catch (DomainException $e) {

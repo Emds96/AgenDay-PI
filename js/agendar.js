@@ -16,10 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
         servicoAjuda: document.getElementById('servicoAjuda'),
         profissional: document.getElementById('profissional'),
         profAjuda: document.getElementById('profAjuda'),
-        data: document.getElementById('data'),
-        campoData: document.getElementById('campoData'),
-        campoHora: document.getElementById('campoHora'),
+        repeticao: document.getElementById('repeticao'),
+        repeticaoAjuda: document.getElementById('repeticaoAjuda'),
+        campoIntervalo: document.getElementById('campoIntervalo'),
+        intervalo: document.getElementById('intervalo'),
+        campoRepeticoes: document.getElementById('campoRepeticoes'),
+        repeticoes: document.getElementById('repeticoes'),
+        repeticoesAjuda: document.getElementById('repeticoesAjuda'),
+        mapa: document.getElementById('mapa'),
+        listaSessoes: document.getElementById('listaSessoes'),
+        camposSessoes: document.getElementById('camposSessoes'),
+        campoModo: document.getElementById('campoModo'),
         campoFuncionario: document.getElementById('campoFuncionario'),
+        data: document.getElementById('data'),
         diaTitulo: document.getElementById('diaTitulo'),
         diaResumo: document.getElementById('diaResumo'),
         lista: document.getElementById('listaHorarios'),
@@ -46,54 +55,208 @@ document.addEventListener('DOMContentLoaded', () => {
         duracao: 0,
         preco: 0,
         profissional: '',
-        hora: '',
+        modo: 'unico',
+        intervalo: 30,
+        repeticoes: 3,
+        ativo: 0,
+        sessoes: [{ data: el.data.value || hoje, hora: '' }],
         slots: [],
         enviando: false
     };
 
     const dois = n => String(n).padStart(2, '0');
+    const dataDe = iso => new Date(iso + 'T12:00:00');
+    const deslocar = (iso, dias) => {
+        const d = dataDe(iso);
+        d.setDate(d.getDate() + dias);
+        return d.toISOString().slice(0, 10);
+    };
+    const somarIntervalo = (iso, vezes) => deslocar(iso, Number(estado.intervalo) * vezes);
     const fimHora = (hora, minutos) => {
         const [h, m] = hora.split(':').map(Number);
         const total = h * 60 + m + minutos;
         return dois(Math.floor(total / 60)) + ':' + dois(total % 60);
     };
-
+    const dataCurta = iso => {
+        const d = dataDe(iso);
+        const dias = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+        return dois(d.getDate()) + '/' + dois(d.getMonth() + 1) + ' (' + dias[d.getDay()] + ')';
+    };
     const dataLonga = iso => {
-        const d = new Date(iso + 'T12:00:00');
+        const d = dataDe(iso);
         const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
         const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
             'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
         return dias[d.getDay()] + ', ' + d.getDate() + ' de ' + meses[d.getMonth()];
     };
+    const totalSessoes = () => estado.modo === 'unico' ? 1 : estado.repeticoes;
+    const sessaoAtiva = () => estado.sessoes[estado.ativo] || estado.sessoes[0];
+
+    function garantirSessoes() {
+        const alvo = totalSessoes();
+        if (estado.sessoes.length === alvo) return;
+        const base = estado.sessoes[0] ? estado.sessoes[0].data : (el.data.value || hoje);
+        const novas = [];
+        for (let i = 0; i < alvo; i++) {
+            novas.push(estado.sessoes[i]
+                ? { data: estado.sessoes[i].data, hora: estado.sessoes[i].hora || '' }
+                : { data: somarIntervalo(base, i), hora: '' });
+        }
+        estado.sessoes = novas;
+        if (estado.ativo >= alvo) estado.ativo = 0;
+    }
+
+    function renderCamposOcultos() {
+        el.camposSessoes.innerHTML = '';
+        estado.sessoes.forEach((sessao, i) => {
+            const data = document.createElement('input');
+            data.type = 'hidden';
+            data.name = 'sessoes[' + i + '][data]';
+            data.value = sessao.data;
+            const hora = document.createElement('input');
+            hora.type = 'hidden';
+            hora.name = 'sessoes[' + i + '][hora]';
+            hora.value = sessao.hora || '';
+            el.camposSessoes.appendChild(data);
+            el.camposSessoes.appendChild(hora);
+        });
+        el.campoModo.value = estado.modo;
+        el.campoFuncionario.value = estado.profissional;
+        el.clienteId.value = estado.clienteId;
+    }
+
+    function renderRepeticao() {
+        const multi = estado.modo !== 'unico';
+        el.campoIntervalo.hidden = !multi;
+        el.campoRepeticoes.hidden = !multi;
+        el.mapa.hidden = !multi;
+        el.listaSessoes.hidden = !multi;
+
+        if (estado.modo === 'unico') {
+            el.repeticaoAjuda.textContent = 'Um atendimento só.';
+            return;
+        }
+        if (estado.modo === 'pacote') {
+            el.repeticaoAjuda.textContent = 'Todas as sessões são criadas juntas.';
+            [...el.repeticoes.options].forEach(o => { o.disabled = o.value === '1'; });
+            if (el.repeticoes.value === '1') el.repeticoes.value = '3';
+            el.repeticoesAjuda.textContent = 'Serão criados ' + estado.repeticoes + ' agendamentos de uma vez.';
+            return;
+        }
+        el.repeticaoAjuda.textContent = 'O próximo retorno é combinado no fim do atendimento.';
+        if (![...el.repeticoes.options].some(o => o.value === '1')) {
+            el.repeticoes.add(new Option('1 (só a próxima)', '1'), el.repeticoes.options[0]);
+        }
+        [...el.repeticoes.options].forEach(o => { o.disabled = false; });
+        el.repeticoesAjuda.textContent = estado.repeticoes === 1
+            ? 'Próximo retorno sugerido em ' + estado.intervalo + ' dias: '
+                + dataCurta(somarIntervalo(estado.sessoes[0].data, 1)) + '.'
+            : 'Serão criados ' + estado.repeticoes + ' agendamentos, um a cada ' + estado.intervalo + ' dias.';
+    }
+
+    function renderMapa() {
+        if (el.mapa.hidden) { el.mapa.innerHTML = ''; return; }
+        el.mapa.innerHTML = '';
+        estado.sessoes.forEach((sessao, i) => {
+            const no = document.createElement('button');
+            no.type = 'button';
+            no.className = 'mapa-no';
+            no.dataset.feita = sessao.hora ? 'true' : 'false';
+            if (dataDe(sessao.data).getDay() === 0) no.classList.add('fechado');
+            no.setAttribute('aria-current', i === estado.ativo ? 'true' : 'false');
+            no.setAttribute('aria-label', 'Sessão ' + (i + 1) + ', ' + dataCurta(sessao.data)
+                + (sessao.hora ? ', ' + sessao.hora : ', sem horário'));
+            no.innerHTML = '<span class="mapa-ponto"></span><span class="mapa-rotulo">'
+                + dataCurta(sessao.data).split(' ')[0] + '</span>';
+            no.addEventListener('click', () => selecionarSessao(i));
+            el.mapa.appendChild(no);
+        });
+        if (estado.modo === 'retorno' && estado.repeticoes === 1) {
+            const fantasma = document.createElement('div');
+            fantasma.className = 'mapa-no fechado';
+            fantasma.setAttribute('aria-hidden', 'true');
+            fantasma.innerHTML = '<span class="mapa-ponto" style="border-style:dashed;background:transparent;"></span>'
+                + '<span class="mapa-rotulo" style="color:var(--ad-text-muted);">próximo</span>';
+            el.mapa.appendChild(fantasma);
+        }
+    }
+
+    function renderListaSessoes() {
+        if (el.listaSessoes.hidden) { el.listaSessoes.innerHTML = ''; return; }
+        el.listaSessoes.innerHTML = '';
+        estado.sessoes.forEach((sessao, i) => {
+            const fechado = dataDe(sessao.data).getDay() === 0;
+            const botao = document.createElement('button');
+            botao.type = 'button';
+            botao.className = 'sessao-item' + (sessao.hora ? '' : ' falta') + (fechado ? ' fechado' : '');
+            botao.setAttribute('aria-current', i === estado.ativo ? 'true' : 'false');
+            const direita = fechado
+                ? '<span style="color:var(--ad-danger);font-weight:700;">fechado</span>'
+                : (sessao.hora
+                    ? sessao.hora + '–' + fimHora(sessao.hora, estado.duracao)
+                        + '<br><small>qualquer profissional</small>'
+                    : 'escolher horário');
+            botao.innerHTML = '<span class="sessao-num">' + (i + 1) + '</span>'
+                + '<span class="sessao-data">' + dataCurta(sessao.data) + '</span>'
+                + '<span class="sessao-hora' + (sessao.hora ? ' ok' : '') + '">' + direita + '</span>';
+            botao.addEventListener('click', () => selecionarSessao(i));
+            el.listaSessoes.appendChild(botao);
+        });
+    }
+
+    function atualizarCabecalho() {
+        const sessao = sessaoAtiva();
+        if (estado.modo === 'unico') {
+            el.diaTitulo.textContent = dataLonga(sessao.data);
+        } else {
+            el.diaTitulo.textContent = 'Sessão ' + (estado.ativo + 1) + ' de ' + estado.sessoes.length;
+        }
+        el.data.value = sessao.data;
+        el.botaoHoje.hidden = sessao.data !== hoje;
+    }
 
     function atualizarResumo() {
         const partes = [];
-        if (estado.hora) {
-            partes.push(estado.hora + '–' + fimHora(estado.hora, estado.duracao));
-            partes.push(estado.profissional
-                ? el.profissional.options[el.profissional.selectedIndex].textContent.trim()
-                : 'qualquer profissional');
+        const n = estado.sessoes.length;
+        const marcadas = estado.sessoes.filter(s => s.hora).length;
+
+        if (estado.modo === 'unico') {
+            const sessao = estado.sessoes[0];
+            if (sessao.hora) {
+                partes.push(sessao.hora + '–' + fimHora(sessao.hora, estado.duracao));
+                partes.push(estado.profissional
+                    ? el.profissional.options[el.profissional.selectedIndex].textContent.trim()
+                    : 'qualquer profissional');
+            }
+            if (estado.clienteNome) partes.push(estado.clienteNome);
+            el.resumoDetalhe.textContent = partes.length
+                ? partes.join(' · ')
+                : (estado.servicoNome ? estado.servicoNome + ' · ' + estado.duracao + ' min' : 'Nenhum serviço escolhido');
+            el.resumoTitulo.textContent = (estado.clienteId && sessao.hora)
+                ? 'Pronto para agendar'
+                : (sessao.hora ? 'Escolha o cliente' : 'Escolha cliente e horário');
+            el.confirmar.disabled = !(estado.clienteId && sessao.hora && estado.servicoId);
+            el.confirmar.textContent = sessao.hora ? 'Agendar ' + sessao.hora : 'Agendar horário';
+            return;
         }
-        if (estado.clienteNome) partes.push(estado.clienteNome);
 
-        if (partes.length) {
-            el.resumoDetalhe.textContent = partes.join(' · ');
-        } else {
-            el.resumoDetalhe.textContent = estado.servicoNome
-                ? estado.servicoNome + ' · ' + estado.duracao + ' min'
-                : 'Nenhum serviço escolhido';
-        }
+        el.resumoDetalhe.textContent = n + ' × ' + (estado.servicoNome || 'serviço')
+            + (estado.preco ? ' · R$ ' + (estado.preco * n).toFixed(2).replace('.', ',') : '')
+            + (estado.clienteNome ? ' · ' + estado.clienteNome : '');
+        el.resumoTitulo.textContent = marcadas === n ? 'Pronto para agendar' : marcadas + ' de ' + n + ' marcadas';
+        el.confirmar.disabled = !(estado.clienteId && estado.servicoId && marcadas === n);
+        el.confirmar.textContent = estado.modo === 'retorno' && n === 1
+            ? 'Agendar e programar retorno'
+            : (n === 1 ? 'Agendar horário' : 'Agendar ' + n + ' sessões');
+    }
 
-        const pronto = Boolean(estado.clienteId && estado.hora && estado.servicoId);
-        el.resumoTitulo.textContent = pronto ? 'Pronto para agendar'
-            : (estado.hora ? 'Escolha o cliente' : 'Escolha cliente e horário');
-        el.confirmar.disabled = !pronto;
-        el.confirmar.textContent = estado.hora ? 'Agendar ' + estado.hora : 'Agendar horário';
-
-        el.clienteId.value = estado.clienteId;
-        el.campoHora.value = estado.hora;
-        el.campoData.value = el.data.value;
-        el.campoFuncionario.value = estado.profissional;
+    function atualizarTudo() {
+        renderRepeticao();
+        renderMapa();
+        renderListaSessoes();
+        atualizarCabecalho();
+        renderCamposOcultos();
+        atualizarResumo();
     }
 
     function mostrarAviso(texto) {
@@ -111,13 +274,14 @@ document.addEventListener('DOMContentLoaded', () => {
             el.diaResumo.textContent = 'Escolha um serviço para ver os horários.';
             return;
         }
-        if (estado.slots.length === 0) {
-            mostrarAviso('Nenhum horário encontrado para este dia.');
+        const disponiveis = estado.slots.filter(s => !s.passado);
+        if (disponiveis.length === 0) {
+            mostrarAviso(estado.slots.length
+                ? 'Não há mais horários livres hoje. Escolha outro dia.'
+                : 'Nenhum horário de atendimento neste dia.');
             return;
         }
-
-        // Horários que já passaram (ou dentro da antecedência mínima) não aparecem.
-        const disponiveis = estado.slots.filter(s => !s.passado);
+        const sessao = sessaoAtiva();
         const manha = disponiveis.filter(s => Number(s.hora.slice(0, 2)) < 12);
         const tarde = disponiveis.filter(s => Number(s.hora.slice(0, 2)) >= 12);
 
@@ -130,13 +294,12 @@ document.addEventListener('DOMContentLoaded', () => {
             h.textContent = titulo;
             const grade = document.createElement('div');
             grade.className = 'grade-horarios';
-
             lista.forEach(slot => {
                 const botao = document.createElement('button');
                 botao.type = 'button';
                 botao.className = 'hora ' + (slot.livre ? 'hora-livre' : 'hora-ocupada');
                 botao.dataset.hora = slot.hora;
-                botao.setAttribute('aria-pressed', estado.hora === slot.hora ? 'true' : 'false');
+                botao.setAttribute('aria-pressed', sessao.hora === slot.hora ? 'true' : 'false');
                 const nota = slot.livre
                     ? (slot.profissionais.length === 1 ? '1 livre' : slot.profissionais.length + ' livres')
                     : 'cheio';
@@ -145,16 +308,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 botao.setAttribute('aria-label', 'Horário ' + slot.hora + ', ' + (slot.livre ? nota : 'sem vaga'));
                 if (slot.livre) {
                     botao.addEventListener('click', () => {
-                        estado.hora = slot.hora;
-                        renderizarSlots();
-                        atualizarResumo();
+                        sessaoAtiva().hora = slot.hora;
+                        atualizarTudo();
                     });
                 } else {
                     botao.disabled = true;
                 }
                 grade.appendChild(botao);
             });
-
             secao.appendChild(h);
             secao.appendChild(grade);
             el.lista.appendChild(secao);
@@ -162,18 +323,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         criarGrupo('Manhã', manha);
         criarGrupo('Tarde', tarde);
-        if (!manha.length && !tarde.length) {
-            mostrarAviso(estado.slots.length
-                ? 'Não há mais horários livres hoje. Escolha outro dia.'
-                : 'Nenhum horário de atendimento neste dia.');
-        }
     }
 
     let controlador = null;
     async function carregarHorarios() {
-        el.campoData.value = el.data.value;
-        el.botaoHoje.hidden = el.data.value !== hoje;
-        el.diaTitulo.textContent = dataLonga(el.data.value);
+        const sessao = sessaoAtiva();
+        el.data.value = sessao.data;
+        el.botaoHoje.hidden = sessao.data !== hoje;
+        el.diaTitulo.textContent = estado.modo === 'unico'
+            ? dataLonga(sessao.data)
+            : 'Sessão ' + (estado.ativo + 1) + ' de ' + estado.sessoes.length + ' · ' + dataCurta(sessao.data);
 
         if (!estado.servicoId) {
             estado.slots = [];
@@ -186,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         controlador = new AbortController();
 
         const params = new URLSearchParams({
-            data: el.data.value,
+            data: sessao.data,
             servico: estado.servicoId,
             funcionario: estado.profissional
         });
@@ -214,11 +373,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalProf = json.profissionais ? json.profissionais.length : 0;
             el.diaResumo.textContent = livres + (livres === 1 ? ' horário livre' : ' horários livres')
                 + (totalProf === 1 ? ' · 1 profissional' : ' · ' + totalProf + ' profissionais');
-            // Descarta hora que deixou de existir.
-            if (estado.hora && !estado.slots.some(s => s.hora === estado.hora && s.livre)) {
-                estado.hora = '';
+            if (sessao.hora && !estado.slots.some(s => s.hora === sessao.hora && s.livre)) {
+                sessao.hora = '';
             }
             renderizarSlots();
+            atualizarResumo();
         } catch (erro) {
             if (erro.name === 'AbortError') return;
             estado.slots = [];
@@ -233,9 +392,8 @@ document.addEventListener('DOMContentLoaded', () => {
         estado.servicoNome = estado.servicoId ? opcao.textContent.split('·')[0].trim() : '';
         estado.duracao = Number(opcao.dataset.duracao || 0);
         estado.preco = Number(opcao.dataset.preco || 0);
-        estado.hora = '';
+        estado.sessoes.forEach(s => { s.hora = ''; });
 
-        // Profissionais que realizam este serviço.
         const permitidos = pares
             .filter(p => String(p.id_servicos) === String(estado.servicoId))
             .filter((p, i, arr) => arr.findIndex(x => x.id_funcionario === p.id_funcionario) === i);
@@ -255,15 +413,18 @@ document.addEventListener('DOMContentLoaded', () => {
         el.servicoAjuda.textContent = estado.servicoId
             ? 'Duração de ' + estado.duracao + ' minutos, definida no cadastro do serviço.'
             : 'Duração definida no cadastro do serviço.';
-        el.profAjuda.textContent = estado.profissional
-            ? 'Somente ' + el.profissional.options[el.profissional.selectedIndex].textContent.trim() + ' será considerada(o).'
-            : 'O sistema escolhe um profissional livre no horário.';
 
+        atualizarTudo();
         carregarHorarios();
-        atualizarResumo();
     }
 
-    // Cliente: ao focar, lista os cadastrados; ao digitar, filtra a cada letra.
+    function selecionarSessao(i) {
+        estado.ativo = i;
+        atualizarTudo();
+        carregarHorarios();
+    }
+
+    // Cliente
     let temporizador = null;
     let controladorClientes = null;
 
@@ -289,6 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.busca.value = cliente.nome;
                 el.clienteEscolhido.textContent = 'Cliente: ' + cliente.nome;
                 el.sugestoes.hidden = true;
+                renderCamposOcultos();
                 atualizarResumo();
             });
             li.appendChild(botao);
@@ -307,10 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 signal: controladorClientes.signal
             });
             const json = await resposta.json();
-            if (!json.ok) {
-                el.sugestoes.hidden = true;
-                return;
-            }
+            if (!json.ok) { el.sugestoes.hidden = true; return; }
             mostrarSugestoes(json.clientes || []);
         } catch (erro) {
             if (erro.name === 'AbortError') return;
@@ -319,20 +478,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     el.busca.addEventListener('focus', () => {
-        // Ao abrir o campo sem ter escolhido ninguém, mostra a lista completa.
-        if (!estado.clienteId) {
-            buscarClientes(el.busca.value.trim());
-        }
+        if (!estado.clienteId) buscarClientes(el.busca.value.trim());
     });
-
     el.busca.addEventListener('input', () => {
         estado.clienteId = '';
         estado.clienteNome = '';
         el.clienteEscolhido.textContent = 'Nenhum cliente escolhido.';
+        renderCamposOcultos();
         atualizarResumo();
-
         clearTimeout(temporizador);
-        // 1 letra já filtra (A → nomes com A; Ar → Ariel, Arnaldo…).
         temporizador = setTimeout(() => buscarClientes(el.busca.value.trim()), 200);
     });
 
@@ -383,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.novoNome.value = '';
             el.novoTel.value = '';
             el.avisoNovo.textContent = '';
+            renderCamposOcultos();
             atualizarResumo();
         } catch (_) {
             el.avisoNovo.textContent = 'Não foi possível salvar agora.';
@@ -394,40 +549,74 @@ document.addEventListener('DOMContentLoaded', () => {
     el.servico.addEventListener('change', aplicarServico);
     el.profissional.addEventListener('change', () => {
         estado.profissional = el.profissional.value;
-        estado.hora = '';
+        estado.sessoes.forEach(s => { s.hora = ''; });
         el.profAjuda.textContent = estado.profissional
             ? 'Somente ' + el.profissional.options[el.profissional.selectedIndex].textContent.trim() + ' será considerada(o).'
             : 'O sistema escolhe um profissional livre no horário.';
+        renderCamposOcultos();
         carregarHorarios();
         atualizarResumo();
     });
 
-    el.data.addEventListener('change', () => {
-        estado.hora = '';
+    el.repeticao.addEventListener('change', () => {
+        estado.modo = el.repeticao.value;
+        estado.ativo = 0;
+        if (estado.modo === 'retorno') {
+            estado.intervalo = 20;
+            el.intervalo.value = '20';
+            estado.repeticoes = 1;
+            el.repeticoes.value = '1';
+        }
+        garantirSessoes();
+        atualizarTudo();
         carregarHorarios();
-        atualizarResumo();
+    });
+
+    el.intervalo.addEventListener('change', () => {
+        estado.intervalo = Number(el.intervalo.value);
+        const base = estado.sessoes[0].data;
+        estado.sessoes.forEach((s, i) => {
+            if (i > 0) { s.data = somarIntervalo(base, i); s.hora = ''; }
+        });
+        estado.ativo = 0;
+        atualizarTudo();
+        carregarHorarios();
+    });
+
+    el.repeticoes.addEventListener('change', () => {
+        estado.repeticoes = Number(el.repeticoes.value);
+        estado.ativo = 0;
+        garantirSessoes();
+        atualizarTudo();
+        carregarHorarios();
+    });
+
+    el.data.addEventListener('change', () => {
+        sessaoAtiva().data = el.data.value;
+        sessaoAtiva().hora = '';
+        atualizarTudo();
+        carregarHorarios();
     });
     el.anterior.addEventListener('click', () => {
-        const d = new Date(el.data.value + 'T12:00:00');
-        d.setDate(d.getDate() - 1);
-        el.data.value = d.toISOString().slice(0, 10);
-        estado.hora = '';
+        const sessao = sessaoAtiva();
+        sessao.data = deslocar(sessao.data, -1);
+        sessao.hora = '';
+        atualizarTudo();
         carregarHorarios();
-        atualizarResumo();
     });
     el.seguinte.addEventListener('click', () => {
-        const d = new Date(el.data.value + 'T12:00:00');
-        d.setDate(d.getDate() + 1);
-        el.data.value = d.toISOString().slice(0, 10);
-        estado.hora = '';
+        const sessao = sessaoAtiva();
+        sessao.data = deslocar(sessao.data, 1);
+        sessao.hora = '';
+        atualizarTudo();
         carregarHorarios();
-        atualizarResumo();
     });
     el.botaoHoje.addEventListener('click', () => {
-        el.data.value = hoje;
-        estado.hora = '';
+        const sessao = sessaoAtiva();
+        sessao.data = hoje;
+        sessao.hora = '';
+        atualizarTudo();
         carregarHorarios();
-        atualizarResumo();
     });
 
     el.form.addEventListener('submit', evento => {
@@ -444,9 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el.servico.value) {
         aplicarServico();
     } else {
-        el.botaoHoje.hidden = el.data.value !== hoje;
-        el.diaTitulo.textContent = dataLonga(el.data.value);
-        mostrarAviso('Escolha um serviço para ver os horários.');
-        atualizarResumo();
+        atualizarTudo();
+        renderizarSlots();
     }
 });

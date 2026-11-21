@@ -69,121 +69,22 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
     </header>
     <main>
         <!-- 4.3: formulário autenticado; validação final e gravação no servidor. -->
+                <!-- O agendamento tem tela própria (AGD-01); a agenda apenas consulta. -->
         <section class="container-fluid py-4" aria-labelledby="novo-agendamento-titulo">
             <div class="card shadow-sm agendamento-card mx-auto">
-                <div class="card-body p-3 p-md-4">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                        <h1 id="novo-agendamento-titulo" class="h4 mb-0">Novo agendamento</h1>
-                        <a class="btn btn-sm btn-primary" href="agendar.php">
-                            <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>
-                            Tela com horários livres
-                        </a>
+                <div class="card-body p-3 p-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h1 id="novo-agendamento-titulo" class="h4 mb-1">Novo agendamento</h1>
+                        <p class="text-muted mb-0">Escolha serviço, profissional e um horário livre.</p>
                     </div>
-                    <p class="text-muted mb-3">Escolha cliente, serviço, funcionário, data e horário para registrar um atendimento.</p>
-                    <?php if (!empty($_SESSION['sucesso_agendamento'])): ?>
-                        <div class="alert alert-success" role="status">
-                            <?= htmlspecialchars((string) $_SESSION['sucesso_agendamento'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
-                        </div>
-                    <?php endif; unset($_SESSION['sucesso_agendamento']); ?>
-                    <?php if (!empty($_SESSION['erro_agendamento'])): ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?= htmlspecialchars((string) $_SESSION['erro_agendamento'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
-                        </div>
-                    <?php endif; unset($_SESSION['erro_agendamento']); ?>
-                    <div class="alert alert-info" role="note">
-                        O sistema confere conflitos de horários ao salvar. A agenda abaixo consulta os atendimentos registrados.
-                    </div>
-                    <?php if ($erroOpcoesAgenda): ?>
-                        <div class="alert alert-danger" role="alert">
-                            Não foi possível carregar os dados do formulário. Tente novamente mais tarde.
-                        </div>
-                    <?php else: ?>
-                        <?php if (!$agendaTemClientes): ?>
-                            <p class="alert alert-warning mb-2">Primeiro cadastre um <a href="cad-cliente.php">cliente</a>.</p>
-                        <?php endif; ?>
-                        <?php if (!$agendaTemServicos): ?>
-                            <p class="alert alert-warning mb-2">Primeiro cadastre um <a href="cad.servicos.php">serviço</a>.</p>
-                        <?php endif; ?>
-                        <?php if (!$agendaTemVinculos): ?>
-                            <p class="alert alert-warning mb-2">
-                                É necessário <a href="cad-funcionario.php">vincular um funcionário a um serviço</a>.
-                            </p>
-                        <?php endif; ?>
-                    <?php endif; ?>
-
-                    <script id="agendamento-pares" type="application/json"><?= json_encode(
-                        $opcoesAgenda['funcionarios_servicos'],
-                        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE
-                    ) ?></script>
-                    <form id="form-novo-agendamento" method="post" action="salvar-agendamento.php" autocomplete="off">
-                        <input type="hidden" name="csrf_token"
-                            value="<?= htmlspecialchars(agenday_token_csrf(), ENT_QUOTES, 'UTF-8') ?>">
-                        <div class="row g-3">
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="agendamento-cliente">Cliente</label>
-                                <select class="form-select" id="agendamento-cliente" name="id_cliente" required
-                                    <?= !$agendaPodePreparar ? 'disabled' : '' ?>>
-                                    <option value="">Selecione um cliente</option>
-                                    <?php foreach ($opcoesAgenda['clientes'] as $cliente): ?>
-                                        <option value="<?= (int) $cliente['id_cliente'] ?>">
-                                            <?= htmlspecialchars((string) $cliente['nome_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="agendamento-servico">Serviço</label>
-                                <select class="form-select" id="agendamento-servico" name="id_servicos" required
-                                    <?= !$agendaPodePreparar ? 'disabled' : '' ?>>
-                                    <option value="">Selecione um serviço</option>
-                                    <?php foreach ($opcoesAgenda['servicos'] as $servico): ?>
-                                        <option value="<?= (int) $servico['id_servicos'] ?>"
-                                            data-duracao="<?= htmlspecialchars((string) $servico['duracao_servico'], ENT_QUOTES, 'UTF-8') ?>">
-                                            <?= htmlspecialchars((string) $servico['nome_servico'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="agendamento-funcionario">Funcionário</label>
-                                <select class="form-select" id="agendamento-funcionario" name="id_funcionario" required disabled>
-                                    <option value="">Selecione o serviço primeiro</option>
-                                </select>
-                                <small class="form-text text-muted" id="agendamento-aviso-funcionario" aria-live="polite">
-                                    Serão mostrados apenas funcionários vinculados ao serviço.
-                                </small>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-3">
-                                <label class="form-label" for="agendamento-data">Data</label>
-                                <input type="date" class="form-control" id="agendamento-data"
-                                    name="data" required <?= !$agendaPodePreparar ? 'disabled' : '' ?>>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-3">
-                                <label class="form-label" for="agendamento-hora">Horário de início</label>
-                                <input type="time" class="form-control" id="agendamento-hora"
-                                    name="hora" step="900" required <?= !$agendaPodePreparar ? 'disabled' : '' ?>>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label" for="agendamento-observacoes">Observações (opcional)</label>
-                                <textarea class="form-control" id="agendamento-observacoes" name="observacoes"
-                                    rows="2" maxlength="1000" placeholder="Detalhes do atendimento"
-                                    <?= !$agendaPodePreparar ? 'disabled' : '' ?>></textarea>
-                            </div>
-                        </div>
-                        <div class="agendamento-resumo rounded-3 mt-3 p-3" id="agendamento-resumo" aria-live="polite">
-                            Selecione os campos para visualizar a previsão do atendimento.
-                        </div>
-                        <div class="mt-3 d-flex flex-wrap gap-3 align-items-center">
-                            <button type="submit" class="btn btn-primary" id="agendamento-salvar"
-                                <?= !$agendaPodePreparar ? 'disabled' : '' ?>>Salvar agendamento</button>
-                            <span class="text-muted small">A confirmação acontece após a validação no servidor.</span>
-                        </div>
-                    </form>
+                    <a class="btn btn-primary" href="agendar.php">
+                        <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>
+                        Abrir agendamento
+                    </a>
                 </div>
             </div>
         </section>
-
-        <!-- Microtarefa 4.4: agendamentos reais via API protegida por sessão. -->
+<!-- Microtarefa 4.4: agendamentos reais via API protegida por sessão. -->
         <section class="container-fluid py-3 pb-4 agenda-consulta" aria-labelledby="agenda-calendario-titulo">
             <?php if (!empty($_SESSION['sucesso_cancelamento'])): ?>
                 <div class="alert alert-success" role="status">
