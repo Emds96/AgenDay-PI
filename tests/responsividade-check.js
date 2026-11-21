@@ -55,8 +55,8 @@ verificar(css.includes('.modal-body .row > [class*="col-"]'), 'Campos do modal n
 verificar(css.includes('#agenda-calendario .agenda-dia-botao'), 'Calendário mobile não ajustado');
 verificar((css.match(/\{/g) || []).length === (css.match(/\}/g) || []).length,
     'Chaves CSS desbalanceadas');
-verificar(ler('agenda.php').includes('action="salvar-agendamento.php"'),
-    'Endpoint de agendamentos alterado sem necessidade');
+verificar(ler('agenda.php').includes('href="agendar.php"'),
+    'AGD-01: agenda precisa levar à tela de agendamento');
 
 
 /* UI-07: smoke test do cabeçalho compartilhado (sem renderização no navegador). */
@@ -167,12 +167,12 @@ verificar(configCSS.includes('@media (max-width: 575.98px)')
 const menuLateral = ler('lib/menu-lateral.php');
 const linksMenu = [...menuLateral.matchAll(/href="([^"]+)"/g)].map(resultado => resultado[1]);
 const rotasEsperadas = [
-    'agenda.php', 'cad-cliente.php', 'cad.servicos.php',
+    'agenda.php', 'agendar.php', 'cad-cliente.php', 'cad.servicos.php',
     'cad-funcionario.php', 'config.php', 'logout.php'
 ];
 verificar(linksMenu.length === rotasEsperadas.length
     && linksMenu.every((rota, posicao) => rota === rotasEsperadas[posicao]),
-    'UI-09: menu deve ter exatamente cinco rotas individuais e Sair, na ordem aprovada');
+    'UI-09: menu deve ter Agenda, Novo agendamento, cadastros, Configurações e Sair, na ordem aprovada');
 verificar(menuLateral.includes('id="ad-sidebar-title">Menu</h5>')
     && !menuLateral.includes('id="ad-sidebar-title">AgenDay</h5>'),
     'UI-09: título interno do menu não é Menu');
@@ -268,7 +268,8 @@ const agendarJs = ler('js/agendar.js');
 verificar(agendar.includes('action="criar-agendamento.php"')
     && agendar.includes('name="csrf_token"')
     && agendar.includes('id="campoClienteId"')
-    && agendar.includes('id="campoHora"'),
+    && agendar.includes('id="camposSessoes"')
+    && agendar.includes('id="campoModo"'),
     'AGD-01: formulário de agendamento incompleto');
 verificar(agendar.includes('form="formAgendar"'),
     'AGD-01: botão do rodapé precisa estar ligado ao formulário');

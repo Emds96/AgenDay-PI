@@ -368,3 +368,126 @@
 .agendar-resumo a.btn {
     text-decoration: none;
 }
+
+/* Repetição, mapa e lista de sessões (mesmo desenho do protótipo). */
+#campoIntervalo, #campoRepeticoes { margin-top: 0; }
+
+.mapa {
+    display: flex;
+    align-items: flex-start;
+    margin: 16px 0 4px;
+    padding: 10px 4px 2px;
+    overflow-x: auto;
+}
+
+.mapa-no {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 52px;
+    padding: 0 2px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.mapa-no::before {
+    content: "";
+    position: absolute;
+    top: 7px;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background: var(--ad-border);
+}
+
+.mapa-no:first-child::before { display: none; }
+.mapa-no[data-feita="true"]::before { background: var(--ad-accent-hover); }
+
+.mapa-ponto {
+    position: relative;
+    z-index: 1;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--ad-border);
+    background: var(--ad-surface);
+}
+
+.mapa-no[data-feita="true"] .mapa-ponto { border-color: var(--ad-primary); background: var(--ad-primary); }
+.mapa-no[aria-current="true"] .mapa-ponto { box-shadow: 0 0 0 4px rgba(24, 84, 77, .18); }
+
+.mapa-rotulo {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--ad-text-muted);
+    white-space: nowrap;
+}
+
+.mapa-no[aria-current="true"] .mapa-rotulo { color: var(--ad-primary); }
+.mapa-no.fechado .mapa-ponto { border-color: var(--ad-danger); background: #FBE9EB; }
+.mapa-no.fechado .mapa-rotulo { color: var(--ad-danger); }
+
+.sessoes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 14px;
+}
+
+.sessao-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface);
+    text-align: left;
+    cursor: pointer;
+}
+
+.sessao-item:hover { border-color: var(--ad-primary); }
+.sessao-item[aria-current="true"] {
+    border-color: var(--ad-primary);
+    background: var(--ad-primary-soft);
+    box-shadow: inset 0 0 0 1px var(--ad-primary);
+}
+.sessao-item.falta { border-style: dashed; }
+
+.sessao-num {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ad-primary);
+    color: #fff;
+    font-size: .74rem;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+}
+
+.sessao-item.falta .sessao-num { background: #9DB9B4; }
+.sessao-data { font-weight: 700; font-size: .84rem; white-space: nowrap; }
+.sessao-hora {
+    margin-left: auto;
+    font-size: .8rem;
+    color: var(--ad-text-muted);
+    text-align: right;
+}
+.sessao-hora.ok { color: var(--ad-primary); font-weight: 700; }
+.sessao-hora small { font-weight: 500; opacity: .85; }
+
+.sugestoes-vazio {
+    padding: 12px;
+    color: var(--ad-text-muted);
+    font-size: .86rem;
+}
+
+/* Contêiner de campos ocultos não participa da grade. */
+#camposSessoes { display: none; }

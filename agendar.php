@@ -83,7 +83,7 @@ $minutosDuracao = static function (string $duracao): int {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/agendar.css?v=20261121-ag03">
+    <link rel="stylesheet" href="css/agendar.css?v=20261121-ag05">
 </head>
 <body class="agenday-app" data-csrf="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"
       data-hoje="<?= htmlspecialchars($hoje, ENT_QUOTES, 'UTF-8') ?>">
@@ -129,9 +129,9 @@ $minutosDuracao = static function (string $duracao): int {
     <form method="post" action="criar-agendamento.php" class="agendar-grade" id="formAgendar">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
         <input type="hidden" name="id_cliente" id="campoClienteId" value="">
-        <input type="hidden" name="data" id="campoData" value="<?= htmlspecialchars($dataInicial, ENT_QUOTES, 'UTF-8') ?>">
-        <input type="hidden" name="hora" id="campoHora" value="">
         <input type="hidden" name="id_funcionario" id="campoFuncionario" value="">
+        <input type="hidden" name="modo" id="campoModo" value="unico">
+        <div id="camposSessoes"></div>
 
         <section class="agendar-painel agendar-form" aria-label="Dados do agendamento">
             <div class="campo">
@@ -183,11 +183,43 @@ $minutosDuracao = static function (string $duracao): int {
                 <p class="campo-ajuda" id="profAjuda">O sistema escolhe um profissional livre no horário.</p>
             </div>
 
-            <div class="campo" style="margin-bottom:0;">
-                <label for="observacoes">Observações (opcional)</label>
-                <textarea id="observacoes" name="observacoes" rows="2" maxlength="1000"
-                          placeholder="Detalhes do atendimento"></textarea>
+            <div class="campo" id="campoRepeticao">
+                <label for="repeticao">Repetição</label>
+                <select id="repeticao">
+                    <option value="unico" selected>Não se repete</option>
+                    <option value="pacote">Pacote de sessões</option>
+                    <option value="retorno">Retorno recorrente</option>
+                </select>
+                <p class="campo-ajuda" id="repeticaoAjuda">Um atendimento só.</p>
             </div>
+
+            <div class="campo" id="campoIntervalo" hidden>
+                <label for="intervalo">A cada</label>
+                <select id="intervalo">
+                    <option value="7">7 dias (semanal)</option>
+                    <option value="14">14 dias</option>
+                    <option value="20">20 dias</option>
+                    <option value="30" selected>30 dias (mensal)</option>
+                    <option value="45">45 dias</option>
+                    <option value="60">60 dias</option>
+                </select>
+            </div>
+
+            <div class="campo" id="campoRepeticoes" hidden>
+                <label for="repeticoes">Quantas vezes</label>
+                <select id="repeticoes">
+                    <option value="2">2 vezes</option>
+                    <option value="3" selected>3 vezes</option>
+                    <option value="4">4 vezes</option>
+                    <option value="6">6 vezes</option>
+                    <option value="10">10 vezes</option>
+                    <option value="12">12 vezes</option>
+                </select>
+                <p class="campo-ajuda" id="repeticoesAjuda"></p>
+            </div>
+
+            <div class="mapa" id="mapa" hidden aria-label="Mapa das sessões"></div>
+            <div class="sessoes" id="listaSessoes" hidden></div>
         </section>
 
         <section class="agendar-painel agendar-horarios" aria-labelledby="diaTitulo">
@@ -236,6 +268,6 @@ $minutosDuracao = static function (string $duracao): int {
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
 <script src="js/menu-lateral.js"></script>
-<script src="js/agendar.js?v=20261121-ag03"></script>
+<script src="js/agendar.js?v=20261121-ag05"></script>
 </body>
 </html>
