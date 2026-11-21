@@ -84,18 +84,18 @@ verificar(css.includes('grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr
 verificar(!css.includes('ad-account-') && !css.includes('.navbar .dropdown'),
     'UI-10: CSS exclusivo do antigo dropdown ainda existe');
 
-/* UI-08: abas (Estabelecimento, Horários, Minha Conta), foto, modal e fonte. */
+/* UI-08: abas (Estabelecimento, Horários, WhatsApp, Minha Conta), foto, modal e fonte. */
 const config = ler('config.php');
 const configJS = ler('js/configuracoes.js');
 const configCSS = ler('css/configuracoes-v2.css');
 const avatar = ler('lib/avatar-estabelecimento.php');
 const perfil = ler('perfil.php');
 const alterarSenha = ler('alterar-senha.php');
-verificar((config.match(/role="tab"/g) || []).length === 3
-    && (config.match(/role="tabpanel"/g) || []).length === 3,
-    'UI-08: Configurações precisa ter exatamente três abas exclusivas');
+verificar((config.match(/role="tab"/g) || []).length === 4
+    && (config.match(/role="tabpanel"/g) || []).length === 4,
+    'UI-08: Configurações precisa ter exatamente quatro abas exclusivas');
 verificar(config.includes('Estabelecimento</button>') && config.includes('Horários</button>')
-    && config.includes('Minha Conta</button>'),
+    && config.includes('WhatsApp</button>') && config.includes('Minha Conta</button>'),
     'UI-08: nomes das abas incorretos');
 verificar(config.includes('id="formFuncionamento"')
     && config.includes('name="dias[')

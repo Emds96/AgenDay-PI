@@ -1,0 +1,475 @@
+/*
+ * AgenDay 2.0 — portal público do cliente.
+ * Escopo: body.agenday-portal. Mobile-first (360 px) usando os tokens do
+ * design system; nenhuma cor fixa fora dos tokens.
+ */
+
+.agenday-portal [hidden] {
+  display: none !important;
+}
+
+.agenday-portal {
+  min-height: 100vh;
+  background-color: var(--ad-background);
+}
+
+.agenday-portal .cliente-main {
+  max-width: 720px;
+  padding: 1rem .75rem 2rem;
+}
+
+/* Topo */
+.agenday-portal .cliente-topo {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ad-surface);
+  border-bottom: 1px solid var(--ad-border);
+  box-shadow: 0 2px 12px rgba(24, 84, 77, .06);
+}
+
+.agenday-portal .cliente-topo-conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .7rem .75rem;
+  max-width: 720px;
+}
+
+.agenday-portal .cliente-marca {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-width: 0;
+}
+
+.agenday-portal .cliente-logo {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-primary-soft);
+  color: var(--ad-primary);
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+}
+
+.agenday-portal .cliente-marca-texto {
+  min-width: 0;
+}
+
+.agenday-portal .cliente-sobretitulo {
+  margin: 0;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ad-text-muted);
+}
+
+.agenday-portal .cliente-titulo {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  color: var(--ad-text);
+  overflow-wrap: anywhere;
+}
+
+.agenday-portal .cliente-sessao {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex: 0 0 auto;
+}
+
+.agenday-portal .cliente-sessao-nome {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .82rem;
+  color: var(--ad-text-muted);
+}
+
+/* Cartões */
+.agenday-portal .cliente-card {
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-lg);
+  box-shadow: var(--ad-shadow);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.agenday-portal .cliente-card-titulo {
+  margin: 0 0 .7rem;
+  font-size: 1rem;
+  color: var(--ad-primary);
+}
+
+.agenday-portal .cliente-texto {
+  margin: 0 0 .9rem;
+  font-size: .925rem;
+  color: var(--ad-text-muted);
+}
+
+.agenday-portal .cliente-campo {
+  margin-bottom: .9rem;
+}
+
+.agenday-portal .cliente-campo label {
+  display: block;
+  margin-bottom: .3rem;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--ad-text);
+}
+
+.agenday-portal .form-control {
+  min-height: 46px;
+  border-color: var(--ad-border);
+  border-radius: var(--ad-radius-sm);
+  color: var(--ad-text);
+}
+
+.agenday-portal .form-control:focus {
+  border-color: var(--ad-focus);
+  box-shadow: 0 0 0 .2rem rgba(17, 103, 92, .15);
+}
+
+.agenday-portal .cliente-botao-largo {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  font-weight: 600;
+}
+
+.agenday-portal .cliente-codigo {
+  letter-spacing: .45em;
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Serviços */
+.agenday-portal .cliente-servicos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .6rem;
+}
+
+.agenday-portal .cliente-servico {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .15rem;
+  width: 100%;
+  min-height: 64px;
+  padding: .8rem .9rem;
+  text-align: left;
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-surface-muted);
+  color: var(--ad-text);
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+.agenday-portal .cliente-servico:hover {
+  border-color: var(--ad-primary);
+}
+
+.agenday-portal .cliente-servico[aria-pressed="true"] {
+  border-color: var(--ad-primary);
+  background: var(--ad-primary-soft);
+}
+
+.agenday-portal .cliente-servico-nome {
+  font-weight: 700;
+  font-size: .95rem;
+}
+
+.agenday-portal .cliente-servico-meta {
+  font-size: .8rem;
+  color: var(--ad-text-muted);
+}
+
+.agenday-portal .cliente-servico-preco {
+  font-weight: 700;
+  color: var(--ad-primary);
+  font-size: .9rem;
+}
+
+/* Profissionais */
+.agenday-portal .cliente-profissionais {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.agenday-portal .cliente-pessoa {
+  min-height: 44px;
+  padding: .5rem .95rem;
+  border: 1px solid var(--ad-border);
+  border-radius: 999px;
+  background: var(--ad-surface);
+  color: var(--ad-text);
+  font-weight: 600;
+  font-size: .9rem;
+}
+
+.agenday-portal .cliente-pessoa:hover {
+  border-color: var(--ad-primary);
+}
+
+.agenday-portal .cliente-pessoa[aria-pressed="true"] {
+  background: var(--ad-primary);
+  border-color: var(--ad-primary);
+  color: #fff;
+}
+
+/* Horários */
+.agenday-portal .cliente-horarios {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .45rem;
+}
+
+.agenday-portal .cliente-hora {
+  min-height: 44px;
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-sm);
+  background: var(--ad-surface);
+  color: var(--ad-text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.agenday-portal .cliente-hora:hover:not(:disabled) {
+  border-color: var(--ad-primary);
+}
+
+.agenday-portal .cliente-hora[aria-pressed="true"] {
+  background: var(--ad-primary);
+  border-color: var(--ad-primary);
+  color: #fff;
+}
+
+.agenday-portal .cliente-hora:disabled {
+  opacity: .38;
+  text-decoration: line-through;
+}
+
+/* Abas */
+.agenday-portal .cliente-abas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .3rem;
+  padding: .3rem;
+  margin-bottom: 1rem;
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-md);
+}
+
+.agenday-portal .cliente-aba {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  border: 0;
+  border-radius: var(--ad-radius-sm);
+  background: transparent;
+  color: var(--ad-text-muted);
+  font-weight: 600;
+  font-size: .9rem;
+}
+
+.agenday-portal .cliente-aba.is-ativa {
+  background: var(--ad-primary);
+  color: #fff;
+}
+
+/* Resumo e listas */
+.agenday-portal .cliente-resumo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .3rem .8rem;
+  margin: 0 0 1rem;
+  font-size: .925rem;
+}
+
+.agenday-portal .cliente-resumo dt {
+  color: var(--ad-text-muted);
+  font-weight: 600;
+}
+
+.agenday-portal .cliente-resumo dd {
+  margin: 0;
+  color: var(--ad-text);
+}
+
+.agenday-portal .cliente-item {
+  padding: .85rem;
+  margin-bottom: .6rem;
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-surface);
+}
+
+.agenday-portal .cliente-item-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+.agenday-portal .cliente-item-quando {
+  margin: 0;
+  font-weight: 700;
+  font-size: .95rem;
+}
+
+.agenday-portal .cliente-item-detalhe {
+  margin: .2rem 0 0;
+  font-size: .85rem;
+  color: var(--ad-text-muted);
+}
+
+.agenday-portal .cliente-status {
+  flex: 0 0 auto;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  background: var(--ad-primary-soft);
+  color: var(--ad-primary);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.agenday-portal .cliente-status[data-status="cancelado"],
+.agenday-portal .cliente-status[data-status="faltou"] {
+  background: #FBE9EB;
+  color: var(--ad-danger);
+}
+
+.agenday-portal .cliente-status[data-status="concluido"] {
+  background: var(--ad-surface-muted);
+  color: var(--ad-text-muted);
+}
+
+.agenday-portal .cliente-item-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .7rem;
+}
+
+.agenday-portal .cliente-item-acoes .btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.agenday-portal .cliente-remarcar {
+  margin-top: .75rem;
+  padding-top: .75rem;
+  border-top: 1px dashed var(--ad-border);
+}
+
+/* Ações e estados */
+.agenday-portal .cliente-acoes-secundarias {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .4rem;
+  margin-top: .6rem;
+}
+
+.agenday-portal .cliente-acoes-coluna {
+  flex-direction: column;
+}
+
+.agenday-portal .cliente-acoes-secundarias .btn-link {
+  color: var(--ad-primary);
+  text-decoration: underline;
+  text-underline-offset: .15em;
+}
+
+.agenday-portal .cliente-vazio {
+  margin: 0;
+  padding: 1rem .5rem;
+  text-align: center;
+  color: var(--ad-text-muted);
+  font-size: .9rem;
+}
+
+.agenday-portal .cliente-icone-sucesso {
+  margin: 0 0 .3rem;
+  text-align: center;
+  font-size: 2.4rem;
+  color: var(--ad-primary);
+}
+
+.agenday-portal .cliente-icone-erro {
+  margin: 0 0 .5rem;
+  font-size: 2.4rem;
+  color: var(--ad-danger);
+}
+
+.agenday-portal .cliente-rodape {
+  padding: 1.25rem 0 2rem;
+  text-align: center;
+  color: var(--ad-text-muted);
+  font-size: .78rem;
+}
+
+.agenday-portal .cliente-rodape p {
+  margin: 0;
+}
+
+.agenday-portal .alert {
+  border-radius: var(--ad-radius-md);
+  font-size: .9rem;
+}
+
+/* Telas maiores */
+@media (min-width: 576px) {
+  .agenday-portal .cliente-main {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+
+  .agenday-portal .cliente-topo-conteudo {
+    padding: .8rem 1rem;
+  }
+
+  .agenday-portal .cliente-card {
+    padding: 1.25rem;
+  }
+
+  .agenday-portal .cliente-servicos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .agenday-portal .cliente-horarios {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .agenday-portal .cliente-sessao-nome {
+    max-width: 12rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agenday-portal .cliente-servico {
+    transition: none;
+  }
+}

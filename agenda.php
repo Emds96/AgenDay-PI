@@ -9,6 +9,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
 }
 
 require_once __DIR__ . '/lib/agendamentos.php';
+require_once __DIR__ . '/lib/whatsapp.php';
 
 $opcoesAgenda = ['clientes' => [], 'servicos' => [], 'funcionarios_servicos' => []];
 $erroOpcoesAgenda = false;
@@ -18,6 +19,10 @@ try {
 } catch (Throwable $e) {
     error_log('AgenDay: falha ao carregar agendamento (' . get_class($e) . ').');
     $erroOpcoesAgenda = true;
+}
+if (isset($conexao) && $conexao instanceof mysqli) {
+    // Sem cron: aproveita a abertura da agenda para esvaziar a fila.
+    agenday_whatsapp_gatilho_apos_resposta($conexao);
 }
 // Data do último agendamento salvo, validada pelo backend (uso único na interface).
 $agendaDiaInicial = $_SESSION['agenda_dia_recem_salvo'] ?? '';

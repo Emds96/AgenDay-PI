@@ -91,12 +91,34 @@ function agenday_agenda_validar_post(array $post): array
 function agenday_agenda_criar(mysqli $conexao, array $post): int
 {
     $dados = agenday_agenda_validar_post($post);
-    $empresa = agenday_agenda_estabelecimento();
-    $cliente = $dados['cliente'];
-    $funcionario = $dados['funcionario'];
-    $servico = $dados['servico'];
-    $inicio = $dados['inicio'];
+    return agenday_agenda_inserir(
+        $conexao,
+        agenday_agenda_estabelecimento(),
+        $dados['cliente'],
+        $dados['servico'],
+        $dados['funcionario'],
+        $dados['inicio'],
+        $dados['observacoes']
+    );
+}
 
+/**
+ * Mesma gravação, com estabelecimento e cliente explícitos.
+ *
+ * Usada pelo portal do cliente, onde não existe sessão administrativa: o
+ * estabelecimento e o cliente são resolvidos no servidor antes da chamada.
+ * Nenhum valor de duração, fim ou status vem do navegador.
+ */
+function agenday_agenda_inserir(
+    mysqli $conexao,
+    int $empresa,
+    int $cliente,
+    int $servico,
+    int $funcionario,
+    DateTimeImmutable $inicio,
+    ?string $observacoes,
+    ?string $tokenPublico = null
+): int {
     $conexao->begin_transaction();
     try {
         // Lock transacional determinístico por funcionário e estabelecimento.
@@ -175,13 +197,12 @@ function agenday_agenda_criar(mysqli $conexao, array $post): int
         $stmt = $conexao->prepare(
             "INSERT INTO agendamentos
              (id_estabelecimento, id_cliente, id_funcionario, id_servicos,
-              data_inicio, data_fim, status, observacoes)
-             VALUES (?, ?, ?, ?, ?, ?, 'agendado', ?)"
+              data_inicio, data_fim, status, observacoes, token_publico)
+             VALUES (?, ?, ?, ?, ?, ?, 'agendado', ?, ?)"
         );
-        $observacoes = $dados['observacoes'];
         $stmt->bind_param(
-            'iiiisss', $empresa, $cliente, $funcionario, $servico,
-            $inicioBanco, $fimBanco, $observacoes
+            'iiiissss', $empresa, $cliente, $funcionario, $servico,
+            $inicioBanco, $fimBanco, $observacoes, $tokenPublico
         );
         $stmt->execute();
         $idNovo = (int) $conexao->insert_id;
@@ -193,6 +214,144 @@ function agenday_agenda_criar(mysqli $conexao, array $post): int
             $conexao->rollback();
         } catch (Throwable $falhaRollback) {
             error_log('AgenDay: falha no rollback do agendamento.');
+        }
+        throw $e;
+    }
+}
+
+/**
+ * Remarca um agendamento do próprio cliente, mantendo o serviço e a duração.
+ *
+ * Usa a mesma ordem de locks da criação: primeiro as linhas de funcionários em
+ * ordem crescente de ID (evita deadlock quando troca de profissional), depois
+ * a checagem de conflito e a atualização, tudo na mesma transação.
+ *
+ * @return array{anterior:string,novo:string}
+ */
+function agenday_agenda_remarcar(
+    mysqli $conexao,
+    int $empresa,
+    int $idAgendamento,
+    int $idCliente,
+    int $funcionarioNovo,
+    DateTimeImmutable $inicioNovo
+): array {
+    $conexao->begin_transaction();
+    try {
+        $stmt = $conexao->prepare(
+            'SELECT id_funcionario, id_servicos, status, data_inicio
+               FROM agendamentos
+              WHERE id_estabelecimento = ? AND id_agendamento = ? AND id_cliente = ?
+              LIMIT 1'
+        );
+        $stmt->bind_param('iii', $empresa, $idAgendamento, $idCliente);
+        $stmt->execute();
+        $atual = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if (!$atual) {
+            throw new DomainException('Agendamento não encontrado.');
+        }
+        if ($atual['status'] !== 'agendado' && $atual['status'] !== 'confirmado') {
+            throw new DomainException('Somente agendamentos ativos podem ser remarcados.');
+        }
+
+        $funcionarioAtual = (int) $atual['id_funcionario'];
+        $servico = (int) $atual['id_servicos'];
+        $anterior = (string) $atual['data_inicio'];
+
+        // Duração vem do banco, nunca do navegador.
+        $stmt = $conexao->prepare(
+            'SELECT duracao_servico FROM servicos
+              WHERE id_estabelecimento = ? AND id_servicos = ? LIMIT 1'
+        );
+        $stmt->bind_param('ii', $empresa, $servico);
+        $stmt->execute();
+        $stmt->bind_result($duracaoBanco);
+        $existeServico = $stmt->fetch();
+        $stmt->close();
+        if (!$existeServico || !is_string($duracaoBanco)
+            || !preg_match('/\A(\d{1,3}):([0-5]\d):([0-5]\d)\z/D', $duracaoBanco, $grupos)) {
+            throw new DomainException('A duração cadastrada para este serviço é inválida.');
+        }
+        $segundos = (int) $grupos[1] * 3600 + (int) $grupos[2] * 60 + (int) $grupos[3];
+        if ($segundos < 60 || $segundos > 86400) {
+            throw new DomainException('O serviço precisa ter duração entre 1 e 1440 minutos.');
+        }
+
+        $fim = $inicioNovo->modify('+' . $segundos . ' seconds');
+        $inicioBanco = $inicioNovo->format('Y-m-d H:i:s');
+        $fimBanco = $fim->format('Y-m-d H:i:s');
+
+        // Bloqueia os dois funcionários em ordem crescente de ID.
+        $ids = array_values(array_unique([$funcionarioAtual, $funcionarioNovo]));
+        sort($ids);
+        foreach ($ids as $idFunc) {
+            $lock = $conexao->prepare(
+                'SELECT id_funcionario FROM funcionarios
+                  WHERE id_estabelecimento = ? AND id_funcionario = ? FOR UPDATE'
+            );
+            $lock->bind_param('ii', $empresa, $idFunc);
+            $lock->execute();
+            $lock->store_result();
+            $existe = $lock->num_rows === 1;
+            $lock->close();
+            if (!$existe) {
+                throw new DomainException('O profissional escolhido não pertence a este estabelecimento.');
+            }
+        }
+
+        // O novo profissional precisa realizar o serviço do agendamento.
+        $stmt = $conexao->prepare(
+            'SELECT 1 FROM funcionario_servico
+              WHERE id_estabelecimento = ? AND id_funcionario = ? AND id_servicos = ? LIMIT 1'
+        );
+        $stmt->bind_param('iii', $empresa, $funcionarioNovo, $servico);
+        $stmt->execute();
+        $stmt->store_result();
+        $vinculado = $stmt->num_rows === 1;
+        $stmt->close();
+        if (!$vinculado) {
+            throw new DomainException('Este profissional não realiza o serviço agendado.');
+        }
+
+        // Conflito com outros agendamentos ativos (o próprio é excluído).
+        $stmt = $conexao->prepare(
+            "SELECT id_agendamento FROM agendamentos
+              WHERE id_estabelecimento = ? AND id_funcionario = ? AND id_agendamento <> ?
+                AND status IN ('agendado', 'confirmado')
+                AND data_inicio < ? AND data_fim > ?
+              LIMIT 1 FOR UPDATE"
+        );
+        $stmt->bind_param('iiiss', $empresa, $funcionarioNovo, $idAgendamento, $fimBanco, $inicioBanco);
+        $stmt->execute();
+        $stmt->store_result();
+        $emConflito = $stmt->num_rows > 0;
+        $stmt->close();
+        if ($emConflito) {
+            throw new DomainException('Este horário acabou de ser ocupado. Escolha outro.');
+        }
+
+        $stmt = $conexao->prepare(
+            'UPDATE agendamentos
+                SET id_funcionario = ?, data_inicio = ?, data_fim = ?
+              WHERE id_estabelecimento = ? AND id_agendamento = ? AND id_cliente = ?
+                AND status IN (\'agendado\', \'confirmado\')'
+        );
+        $stmt->bind_param('issiii', $funcionarioNovo, $inicioBanco, $fimBanco, $empresa, $idAgendamento, $idCliente);
+        $stmt->execute();
+        $alterados = $stmt->affected_rows;
+        $stmt->close();
+        if ($alterados !== 1) {
+            throw new DomainException('O agendamento foi alterado. Atualize a página e tente novamente.');
+        }
+
+        $conexao->commit();
+        return ['anterior' => $anterior, 'novo' => $inicioBanco];
+    } catch (Throwable $e) {
+        try {
+            $conexao->rollback();
+        } catch (Throwable $falhaRollback) {
+            error_log('AgenDay: falha no rollback da remarcação.');
         }
         throw $e;
     }

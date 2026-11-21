@@ -1,5 +1,23 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-01 — Portal público do cliente (21/11/2026; implementado e testado no local, **não publicado**)
+
+- **Escopo autorizado:** plano aprovado em 21/11 (`docs/PORTAL_CLIENTE_PLANO.md`) — segundo domínio para o cliente, login por celular com código no WhatsApp, agendar, remarcar e cancelar. Branch `feat/portal-cliente` a partir de `849af46`.
+- **Banco (aditivo, reexecutável):** `sql/migracao-portal-cliente.sql` acrescenta `estabelecimento.slug`, `dominio` e `exigir_codigo_whatsapp`; `clientes.telefone_digits` (com backfill pela mesma regra do PHP); `agendamentos.token_publico`; e cria `verificacao_acesso`, `sessao_cliente`, `mensagem_whatsapp` e `whatsapp_config`. Aplicada **somente no banco local**, duas execuções, sem erro; 29/29 clientes normalizados. **Ainda não aplicada no InfinityFree.**
+- **Bibliotecas:** `lib/portal-cliente.php` (slug, telefone, cliente, token, sessão por cookie `AGENDAY_CLIENTE`, CSRF, origem, prazo de cancelamento, JSON); `lib/guarda-host.php`; `lib/whatsapp.php` (configuração, fila com backoff, envio WAHA, cinco templates, gatilho pós-resposta).
+- **Endpoints:** `api/cliente-acesso.php` (`estado`, `entrar`, `verificar`, `sair`), `api/cliente-dados.php`, `api/cliente-horarios.php` (reusa `lib/disponibilidade.php`), `api/cliente-agendamentos.php` (`criar`, `listar`, `cancelar`, `remarcar`).
+- **Telas:** `cliente.php` (mobile-first, etapas de acesso e agendamento, abas Agendar/Meus agendamentos, `.ics`) e `cliente-cancelar.php?t=token` (cancelamento sem login, POST com conferência de origem). `css/cliente.css` usa apenas tokens do design system.
+- **Reaproveitamento:** `lib/agendamento-gravar.php` e `lib/agendamento-cancelar.php` passaram a aceitar o estabelecimento por parâmetro (`agenday_agenda_inserir`, `agenday_agenda_cancelar_para`), mantendo as funções antigas com a sessão. `agenday_agenda_remarcar` usa a mesma ordem de locks da criação.
+- **Configurações:** nova aba **WhatsApp** em `config.php` (ativar, endereço do WAHA, sessão, chave, exigir código, link do portal com botão copiar, testar conexão e enviar pendentes). Salvamento por `acao=salvar_whatsapp` dentro da própria página, com CSRF — não foi criado `salvar-whatsapp.php`.
+- **Segurança:** código de 6 dígitos com salt e hash, 10 minutos, uso único, 5 tentativas, 3/10 min e 10/dia por telefone, 20/h por IP; `id_estabelecimento` e `id_cliente` sempre resolvidos no servidor; nenhuma escrita aceita sem CSRF (sessão) ou origem (pré-login); `conexao.php` continua fora do Git.
+- **Guarda de host:** `sessao.php` aplica a guarda antes de `session_start()`. Testado por `curl` com `Host` falso: `agenda.php`, `index.php`, `login.php`, `api/horarios.php` e `config.php` devolvem 302 para `/cliente.php`; `cliente.php`, `cliente-cancelar.php` e `api/cliente-*.php` respondem normalmente.
+- **Validação local (21/11/2026, PHP 8.4.28 + MariaDB 11.8.9):** login com código enviado a um **WAHA simulado local**; código errado contabilizou tentativa; código certo abriu sessão; reuso recusado; criar, listar, remarcar, cancelar e cancelar por link funcionaram; conflito de horário recusado (409); POST sem origem recusado (403); página de cancelamento inativa mostra "Nada a cancelar"; fila ficou em `erro` com o serviço fora e foi reenviada sozinha ao abrir o portal, sem atrasar a página (8 ms). `php -l` limpo, `tests/portal-cliente.php` (69), `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `responsividade-check` (210) aprovados. Dados de teste removidos; conta demo voltou a 173 agendamentos e 15 clientes.
+- **Publicação:** `scripts/publicar_ftp.py` passou a enviar o mesmo pacote para `htdocs` e para `agenday-agendamentos.infinityfree.io/htdocs` (cliente primeiro; a configuração privada do Brevo só na pasta principal). O teste de FTPS somente leitura do workflow confere as duas pastas.
+- **Pendências:** PR para `dev-feira-uninorte` e CI; validação visual do responsável; instalar Docker/WAHA e parear o número; publicar o túnel ngrok; aplicar a migração em produção; deploy único com as duas pastas; teste real de mensagem.
+- **Riscos registrados:** sem cron, a fila depende de visita ao portal/agenda ou do botão manual; com o WAHA fora, a primeira tentativa espera até 8 s por mensagem, mas fora do tempo de resposta da página; o link `cliente.php` no domínio principal é o plano B caso o domínio novo apresente problema.
+
+---
+
 ## DOC-01 — Passagem de contexto para qualquer IA e ambiente local documentado (21/11/2026)
 
 - **Escopo:** somente documentação. Sem alteração de código, banco, hospedagem, workflow, Secrets ou deploy.

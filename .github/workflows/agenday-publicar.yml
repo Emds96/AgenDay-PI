@@ -110,9 +110,15 @@ jobs:
               ftp.connect(os.environ["AGENDAY_FTP_HOST"], 21)
               ftp.login(os.environ["AGENDAY_FTP_USERNAME"], os.environ["AGENDAY_FTP_PASSWORD"])
               ftp.prot_p()
-              ftp.cwd("htdocs")
-              ftp.pwd()
-              print("OK: FTP com TLS autenticado; pasta htdocs acessível, sem qualquer upload.")
+              ftp.cwd("/")
+              pastas = ["agenday-agendamentos.infinityfree.io/htdocs", "htdocs"]
+              for caminho in pastas:
+                  ftp.cwd("/")
+                  for parte in caminho.split("/"):
+                      if parte:
+                          ftp.cwd(parte)
+                  ftp.pwd()
+              print("OK: FTP com TLS autenticado; pastas do site e do cliente acessíveis, sem qualquer upload.")
           except Exception as error:
               print("Teste de conexão falhou: " + type(error).__name__, file=sys.stderr)
               raise SystemExit(1)

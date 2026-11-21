@@ -38,6 +38,29 @@ def ensure_folder(ftp: FTP_TLS, root: str, folder: Path) -> None:
             ftp.mkd(name)
             ftp.cwd(name)
 
+def ir_para(ftp: FTP_TLS, caminho: str) -> str:
+    """Entra em uma pasta a partir da raiz da conta, criando o que faltar."""
+    ftp.cwd("/")
+    for parte in caminho.split("/"):
+        if parte in ("", "."):
+            continue
+        try:
+            ftp.cwd(parte)
+        except error_perm:
+            ftp.mkd(parte)
+            ftp.cwd(parte)
+    return ftp.pwd()
+
+def enviar_arquivos(ftp: FTP_TLS, raiz: str, files, package: Path) -> int:
+    enviados = 0
+    for file in files:
+        rel = file.relative_to(package)
+        ensure_folder(ftp, raiz, rel.parent)
+        with file.open("rb") as stream:
+            ftp.storbinary("STOR " + rel.name, stream)
+        enviados += 1
+    return enviados
+
 def publish() -> None:
     if os.getenv("AGENDAY_DEPLOY_ENABLED") != "true" \
        or os.getenv("AGENDAY_DEPLOY_MODE") != "publish":
@@ -72,24 +95,40 @@ def publish() -> None:
         ftp.login(username, password)
         ftp.prot_p()
         ftp.set_pasv(True)
-        ftp.cwd("htdocs")
-        root = ftp.pwd()
+
+        # O mesmo pacote vai para as duas pastas: o site do estabelecimento e o
+        # domínio do cliente. O domínio do cliente é publicado primeiro; se a
+        # pasta não existir, o envio falha antes de mexer no site principal.
+        pasta_cliente = os.environ.get(
+            "AGENDAY_FTP_DIR_CLIENTE", "agenday-agendamentos.infinityfree.io/htdocs"
+        ).strip("/")
+        pasta_principal = os.environ.get("AGENDAY_FTP_DIR_PRINCIPAL", "htdocs").strip("/")
+
         # O index.php é enviado por último.
         files.sort(key=lambda f: (
             f.relative_to(PACKAGE).as_posix() == "index.php",
             f.relative_to(PACKAGE).as_posix(),
         ))
-        for file in files:
-            rel = file.relative_to(PACKAGE)
-            ensure_folder(ftp, root, rel.parent)
-            with file.open("rb") as stream:
-                ftp.storbinary("STOR " + rel.name, stream)
+
+        total_cliente = 0
+        total_principal = 0
+        if pasta_cliente:
+            raiz_cliente = ir_para(ftp, pasta_cliente)
+            total_cliente = enviar_arquivos(ftp, raiz_cliente, files, PACKAGE)
+        raiz_principal = ir_para(ftp, pasta_principal)
+        total_principal = enviar_arquivos(ftp, raiz_principal, files, PACKAGE)
+
         # A regra config/.htaccess foi publicada antes de criar a credencial no servidor.
-        ensure_folder(ftp, root, Path("config"))
+        # A configuração privada existe apenas na pasta do site principal.
+        ensure_folder(ftp, raiz_principal, Path("config"))
         payload = ("<?php\n// Configuracao privada: jamais versionar.\n"
                    "return ['api_key' => '" + brevo_key + "'];\n").encode("ascii")
         ftp.storbinary("STOR brevo-api-config.php", BytesIO(payload))
-        print(f"Envio concluído: {len(files)} arquivos e configuracao privada protegida; nenhum arquivo remoto apagado.")
+        print(
+            f"Envio concluído: {total_principal} arquivos no site principal, "
+            f"{total_cliente} no domínio do cliente e configuração privada protegida; "
+            "nenhum arquivo remoto apagado."
+        )
     finally:
         try:
             ftp.quit()

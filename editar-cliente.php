@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/verifica_login.php';
+require_once __DIR__ . '/lib/portal-cliente.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     http_response_code(405);
@@ -31,6 +32,8 @@ $email = trim($email);
 $contato = trim($contato);
 $letrasNome = strlen($nome) <= 480 && preg_match('//u', $nome) ? preg_match_all('/./us', $nome) : 0;
 $digitos = preg_replace('/[^0-9]/', '', $contato);
+// Identidade do portal: DDD + número. Null quando o telefone não se encaixa.
+$telefoneDigits = agenday_portal_telefone_normalizar($contato);
 
 if ($nome === '' || $letrasNome === 0 || $letrasNome > 120) {
     agenday_erro_cliente_edicao('O nome é obrigatório (máximo de 120 caracteres).');
@@ -122,10 +125,10 @@ try {
 
     $stmt = $conexao->prepare(
         'UPDATE clientes
-         SET nome_cliente = ?, email_cliente = ?, contato_cliente = ?, arquivo_cliente = ?
+         SET nome_cliente = ?, email_cliente = ?, contato_cliente = ?, telefone_digits = ?, arquivo_cliente = ?
          WHERE id_cliente = ? AND id_estabelecimento = ?'
     );
-    $stmt->bind_param('ssssii', $nome, $emailBanco, $contato, $arquivoFinal, $idCliente, $idEstabelecimento);
+    $stmt->bind_param('sssssii', $nome, $emailBanco, $contato, $telefoneDigits, $arquivoFinal, $idCliente, $idEstabelecimento);
     $stmt->execute();
     $stmt->close();
 
