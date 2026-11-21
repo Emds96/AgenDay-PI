@@ -150,6 +150,9 @@
                 el.hidden = id !== etapa;
             }
         });
+        if (etapa === 'etapa-entrar') {
+            mostrarAcesso('login');
+        }
     }
 
     function atualizarSessao(nome) {
@@ -764,64 +767,140 @@
     }
 
     /* --------------------------------------------------------------- login */
+    function mostrarAcesso(qual) {
+        var login = document.getElementById('painel-login');
+        var cadastro = document.getElementById('painel-cadastro');
+        if (!login || !cadastro) {
+            return;
+        }
+        var ehCadastro = qual === 'cadastro';
+        login.hidden = ehCadastro;
+        cadastro.hidden = !ehCadastro;
+        document.querySelectorAll('[role="tab"][data-acesso]').forEach(function (aba) {
+            var ativa = aba.getAttribute('data-acesso') === qual;
+            aba.classList.toggle('is-ativa', ativa);
+            aba.setAttribute('aria-selected', ativa ? 'true' : 'false');
+        });
+        var destino = document.getElementById(ehCadastro ? 'campo-telefone-cadastro' : 'campo-telefone');
+        if (destino && !destino.value) {
+            var origem = document.getElementById(ehCadastro ? 'campo-telefone' : 'campo-telefone-cadastro');
+            if (origem && origem.value) {
+                destino.value = origem.value;
+            }
+        }
+        if (destino) {
+            destino.focus();
+        }
+    }
+
+    function entrarDireto(resposta) {
+        S.csrf = resposta.csrf || '';
+        atualizarSessao(resposta.cliente && resposta.cliente.nome);
+        return carregarDados().then(function () {
+            mostrar('etapa-agendar');
+            alerta(resposta.cliente_existente
+                ? 'Bem-vindo de volta!'
+                : 'Você entrou com seu celular.', 'success');
+        });
+    }
+
+    function pedirCodigo(resposta) {
+        var mascarado = $('[data-telefone-mascarado]');
+        if (mascarado) {
+            mascarado.textContent = resposta.telefone || '';
+        }
+        var minutos = $('[data-minutos]');
+        if (minutos) {
+            minutos.textContent = String(resposta.expira_minutos || 10);
+        }
+        var campoCodigo = $('#campo-codigo');
+        if (campoCodigo) {
+            campoCodigo.value = '';
+        }
+        mostrar('etapa-codigo');
+        if (campoCodigo) {
+            campoCodigo.focus();
+        }
+    }
+
+    function ligarFormularioAcesso(formulario, comNome) {
+        formulario.addEventListener('submit', function (evento) {
+            evento.preventDefault();
+            limparAlerta();
+            var botao = formulario.querySelector('button[type="submit"]');
+            var campoTelefone = document.getElementById(comNome ? 'campo-telefone-cadastro' : 'campo-telefone');
+            var telefone = campoTelefone ? campoTelefone.value.trim() : '';
+            var campoNome = comNome ? $('#campo-nome') : null;
+            var nome = campoNome ? campoNome.value.trim() : '';
+            if (!telefone) {
+                alerta('Informe seu celular com DDD.');
+                if (campoTelefone) {
+                    campoTelefone.focus();
+                }
+                return;
+            }
+            if (comNome && !nome) {
+                alerta('Informe seu nome completo.');
+                if (campoNome) {
+                    campoNome.classList.add('is-invalid');
+                    campoNome.focus();
+                }
+                return;
+            }
+            var corpo = { telefone: telefone };
+            if (nome) {
+                corpo.nome = nome;
+            }
+            ocupado(botao, true);
+            api('cliente-acesso.php', 'entrar', { corpo: corpo }).then(function (resposta) {
+                S.telefone = telefone;
+                if (nome) {
+                    S.nome = nome;
+                }
+                if (resposta.sem_codigo) {
+                    return entrarDireto(resposta);
+                }
+                pedirCodigo(resposta);
+            }).catch(function (erro) {
+                if (erro.dados && erro.dados.precisa_nome) {
+                    mostrarAcesso('cadastro');
+                    var telCadastro = document.getElementById('campo-telefone-cadastro');
+                    if (telCadastro && !telCadastro.value) {
+                        telCadastro.value = telefone;
+                    }
+                    var nomeCadastro = $('#campo-nome');
+                    if (nomeCadastro) {
+                        nomeCadastro.focus();
+                    }
+                    alerta('Não encontramos esse celular. Preencha seu nome para fazer o primeiro acesso.', 'warning');
+                    return;
+                }
+                alerta(erro.message);
+            }).finally(function () {
+                ocupado(botao, false);
+            });
+        });
+    }
+
     function iniciarLogin() {
         var formEntrar = $('#form-entrar');
         if (formEntrar) {
-            formEntrar.addEventListener('submit', function (evento) {
-                evento.preventDefault();
-                limparAlerta();
-                var botao = formEntrar.querySelector('button[type="submit"]');
-                var telefone = $('#campo-telefone').value.trim();
-                var nome = $('#campo-nome').value.trim();
-                if (!telefone) {
-                    alerta('Informe seu celular com DDD.');
-                    $('#campo-telefone').focus();
-                    return;
-                }
-                ocupado(botao, true);
-                api('cliente-acesso.php', 'entrar', { corpo: { telefone: telefone, nome: nome } }).then(function (resposta) {
-                    S.telefone = telefone;
-                    S.nome = nome || S.nome;
-                    if (resposta.sem_codigo) {
-                        S.csrf = resposta.csrf || '';
-                        atualizarSessao(resposta.cliente && resposta.cliente.nome);
-                        return carregarDados().then(function () {
-                            mostrar('etapa-agendar');
-                            alerta(resposta.cliente_existente
-                                ? 'Bem-vindo de volta!'
-                                : 'Você entrou com seu celular.', 'success');
-                        });
-                    }
-                    var mascarado = $('[data-telefone-mascarado]');
-                    if (mascarado) {
-                        mascarado.textContent = resposta.telefone || '';
-                    }
-                    var minutos = $('[data-minutos]');
-                    if (minutos) {
-                        minutos.textContent = String(resposta.expira_minutos || 10);
-                    }
-                    var campoCodigo = $('#campo-codigo');
-                    if (campoCodigo) {
-                        campoCodigo.value = '';
-                    }
-                    mostrar('etapa-codigo');
-                    if (campoCodigo) {
-                        campoCodigo.focus();
-                    }
-                }).catch(function (erro) {
-                    if (erro.dados && erro.dados.precisa_nome) {
-                        var campoNome = $('#campo-nome');
-                        if (campoNome) {
-                            campoNome.classList.add('is-invalid');
-                            campoNome.focus();
-                        }
-                    }
-                    alerta(erro.message);
-                }).finally(function () {
-                    ocupado(botao, false);
-                });
-            });
+            ligarFormularioAcesso(formEntrar, false);
         }
+
+        var formCadastro = $('#form-cadastro');
+        if (formCadastro) {
+            ligarFormularioAcesso(formCadastro, true);
+        }
+
+        document.addEventListener('click', function (evento) {
+            var alvo = evento.target.closest('[data-acesso]');
+            if (!alvo) {
+                return;
+            }
+            limparAlerta();
+            mostrarAcesso(alvo.getAttribute('data-acesso'));
+        });
 
         var formCodigo = $('#form-codigo');
         if (formCodigo) {
@@ -880,10 +959,10 @@
             });
         }
 
-        $$('.cliente-aba').forEach(function (aba) {
+        $$('.cliente-aba[data-aba]').forEach(function (aba) {
             aba.addEventListener('click', function () {
                 var qual = aba.dataset.aba;
-                $$('.cliente-aba').forEach(function (outra) {
+                $$('.cliente-aba[data-aba]').forEach(function (outra) {
                     var ativa = outra === aba;
                     outra.classList.toggle('is-ativa', ativa);
                     outra.setAttribute('aria-selected', String(ativa));
@@ -929,6 +1008,9 @@
                 api('cliente-acesso.php', 'entrar', {
                     corpo: { telefone: S.telefone, nome: S.nome }
                 }).then(function (resposta) {
+                    if (resposta.sem_codigo) {
+                        return entrarDireto(resposta);
+                    }
                     var mascarado = $('[data-telefone-mascarado]');
                     if (mascarado && resposta.telefone) {
                         mascarado.textContent = resposta.telefone;
@@ -941,11 +1023,8 @@
                 });
             } else if (acao === 'trocar-telefone') {
                 mostrar('etapa-entrar');
+                mostrarAcesso(S.nome ? 'cadastro' : 'login');
                 limparAlerta();
-                var campo = $('#campo-telefone');
-                if (campo) {
-                    campo.focus();
-                }
             }
         });
     }

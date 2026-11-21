@@ -47,6 +47,13 @@ $casos = [
     '5592981111001' => '92981111001',
     '92 3333-4444' => '9233334444',
     '55 92 3333-4444' => '9233334444',
+    // Celular no formato antigo recebe o 9 (padrão atual no Brasil).
+    '(92) 9433-1267' => '92994331267',
+    '92 9433-1267' => '92994331267',
+    '+55 92 9433-1267' => '92994331267',
+    '559294331267' => '92994331267',
+    '92 8111-1001' => '92981111001',
+    '92 7777-6666' => '92977776666',
 ];
 foreach ($casos as $entrada => $esperado) {
     verificar(agenday_portal_telefone_normalizar($entrada) === $esperado, 'telefone: ' . $entrada);
@@ -60,6 +67,15 @@ verificar(agenday_portal_telefone_formatar('92981111001') === '(92) 98111-1001',
 verificar(agenday_portal_telefone_formatar('9233334444') === '(92) 3333-4444', 'formato fixo');
 verificar(agenday_portal_telefone_mascarado('92981111001') === '(92) 9****-1001', 'máscara celular');
 verificar(agenday_portal_telefone_whatsapp('92981111001') === '5592981111001', 'whatsapp com país');
+
+$variantes = agenday_portal_telefone_variantes('9294331267');
+verificar($variantes === ['9294331267', '92994331267'], 'variantes: celular antigo ganha a versão com 9');
+$variantes = agenday_portal_telefone_variantes('92994331267');
+verificar($variantes === ['92994331267', '9294331267'], 'variantes: celular novo aceita a versão antiga');
+$variantes = agenday_portal_telefone_variantes('9233334444');
+verificar($variantes === ['9233334444'], 'variantes: fixo não ganha 9');
+$variantes = agenday_portal_telefone_variantes('92333344445');
+verificar($variantes === ['92333344445'], 'variantes: 11 dígitos sem 9 fica igual');
 
 /* ----------------------------------------------------------------- token */
 $token = agenday_portal_token_gerar();

@@ -54,7 +54,7 @@ if ($estabelecimento === null) {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl01">
+    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl03">
 </head>
 <body class="agenday-auth agenday-portal">
     <main class="container cliente-main">
@@ -89,7 +89,7 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl01">
+    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl03">
 </head>
 <body class="agenday-auth agenday-portal"
       data-slug="<?= $esc($slug) ?>"
@@ -127,35 +127,71 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
 
     <div id="cliente-alerta" class="alert d-none" role="alert" aria-live="polite"></div>
 
-    <!-- Etapa 1: entrar com o celular -->
+    <!-- Etapa 1: entrar (login) ou primeiro acesso (cadastro) -->
     <section id="etapa-entrar" class="cliente-card" <?= $logado ? 'hidden' : '' ?>>
-        <h2 class="cliente-card-titulo">Entre com seu celular</h2>
-        <p class="cliente-texto">
-            <?php if ($exigirCodigo): ?>
-                No primeiro acesso, confirmamos seu celular com um código de 6 números no WhatsApp.
-                Se você já é cliente, basta informar o celular.
-            <?php else: ?>
-                Informe seu celular para ver e gerenciar seus agendamentos.
-            <?php endif; ?>
-        </p>
-        <form id="form-entrar" novalidate>
-            <div class="cliente-campo">
-                <label for="campo-telefone">Celular com DDD</label>
-                <input type="tel" class="form-control" id="campo-telefone" name="telefone"
-                       inputmode="tel" autocomplete="tel" placeholder="(92) 99999-9999"
-                       maxlength="20" required>
-            </div>
-            <div class="cliente-campo">
-                <label for="campo-nome">Seu nome completo</label>
-                <input type="text" class="form-control" id="campo-nome" name="nome"
-                       autocomplete="name" placeholder="Nome e sobrenome" maxlength="120">
-                <p class="form-text">Só é necessário no primeiro acesso.</p>
-            </div>
-            <button type="submit" class="btn btn-primary cliente-botao-largo">
-                <span class="cliente-botao-texto">Continuar</span>
-                <span class="spinner-border spinner-border-sm d-none" data-carregando aria-hidden="true"></span>
+        <div class="cliente-abas" role="tablist" aria-label="Acesso ao portal">
+            <button type="button" class="cliente-aba is-ativa" role="tab" aria-selected="true"
+                    aria-controls="painel-login" id="aba-login" data-acesso="login">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Entrar
             </button>
-        </form>
+            <button type="button" class="cliente-aba" role="tab" aria-selected="false"
+                    aria-controls="painel-cadastro" id="aba-cadastro" data-acesso="cadastro">
+                <i class="bi bi-person-plus" aria-hidden="true"></i> Cadastro
+            </button>
+        </div>
+
+        <div id="painel-login" role="tabpanel" aria-labelledby="aba-login">
+            <h2 class="cliente-card-titulo">Entrar</h2>
+            <p class="cliente-texto">Digite o celular que você cadastrou no estabelecimento.</p>
+            <form id="form-entrar" novalidate>
+                <div class="cliente-campo">
+                    <label for="campo-telefone">Celular com DDD</label>
+                    <input type="tel" class="form-control" id="campo-telefone" name="telefone"
+                           inputmode="tel" autocomplete="tel" placeholder="(92) 99999-9999"
+                           maxlength="20" required>
+                </div>
+                <button type="submit" class="btn btn-primary cliente-botao-largo">
+                    <span class="cliente-botao-texto">Entrar</span>
+                    <span class="spinner-border spinner-border-sm d-none" data-carregando aria-hidden="true"></span>
+                </button>
+            </form>
+            <p class="cliente-acesso-alternar">
+                Ainda não tem cadastro?
+                <button type="button" class="btn btn-link" data-acesso="cadastro">Faça o primeiro acesso</button>
+            </p>
+        </div>
+
+        <div id="painel-cadastro" role="tabpanel" aria-labelledby="aba-cadastro" hidden>
+            <h2 class="cliente-card-titulo">Primeiro acesso</h2>
+            <p class="cliente-texto">
+                <?php if ($exigirCodigo): ?>
+                    Informe o celular e seu nome. Enviamos um código de 6 números no WhatsApp para confirmar o número.
+                <?php else: ?>
+                    Informe o celular e seu nome para começar a agendar.
+                <?php endif; ?>
+            </p>
+            <form id="form-cadastro" novalidate>
+                <div class="cliente-campo">
+                    <label for="campo-telefone-cadastro">Celular com DDD</label>
+                    <input type="tel" class="form-control" id="campo-telefone-cadastro" name="telefone"
+                           inputmode="tel" autocomplete="tel" placeholder="(92) 99999-9999"
+                           maxlength="20" required>
+                </div>
+                <div class="cliente-campo">
+                    <label for="campo-nome">Seu nome completo</label>
+                    <input type="text" class="form-control" id="campo-nome" name="nome"
+                           autocomplete="name" placeholder="Nome e sobrenome" maxlength="120" required>
+                </div>
+                <button type="submit" class="btn btn-primary cliente-botao-largo">
+                    <span class="cliente-botao-texto">Criar cadastro</span>
+                    <span class="spinner-border spinner-border-sm d-none" data-carregando aria-hidden="true"></span>
+                </button>
+            </form>
+            <p class="cliente-acesso-alternar">
+                Já tem cadastro?
+                <button type="button" class="btn btn-link" data-acesso="login">Entrar com o celular</button>
+            </p>
+        </div>
     </section>
 
     <!-- Etapa 2: código recebido -->
@@ -274,6 +310,6 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-<script defer src="js/cliente.js?v=20261121-cl02"></script>
+<script defer src="js/cliente.js?v=20261121-cl03"></script>
 </body>
 </html>

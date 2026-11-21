@@ -202,6 +202,13 @@ if ($acao === 'entrar') {
         $stmt->bind_param('i', $idVerificacao);
         $stmt->execute();
         $stmt->close();
+        if (!empty($envio['sem_whatsapp'])) {
+            agenday_portal_json([
+                'ok' => false,
+                'sem_whatsapp' => true,
+                'erro' => 'Este número não tem WhatsApp. Confira o número e tente de novo.',
+            ], 422);
+        }
         agenday_portal_erro('Não foi possível enviar o código agora. Tente novamente em instantes.', 503);
     }
 

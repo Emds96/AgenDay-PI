@@ -48,7 +48,8 @@ ALTER TABLE clientes
 
 -- Preenche a partir do telefone já cadastrado, na mesma regra usada por
 -- lib/portal-cliente.php: só dígitos; remove o prefixo 55 (país) quando houver;
--- guarda apenas DDD + número (10 ou 11 dígitos).
+-- guarda DDD + número. Celular antigo (DDD + 8 dígitos começando em 6, 7, 8 ou
+-- 9) é padronizado no formato atual, com o 9 na frente.
 UPDATE clientes
 SET telefone_digits = CASE
     WHEN CHAR_LENGTH(REGEXP_REPLACE(contato_cliente, '[^0-9]', '')) IN (12, 13)
@@ -64,6 +65,12 @@ UPDATE clientes
 SET telefone_digits = NULL
 WHERE telefone_digits IS NOT NULL
   AND CHAR_LENGTH(telefone_digits) NOT IN (10, 11);
+
+-- Padroniza celular no formato atual: DDD + 9 + 8 dígitos.
+UPDATE clientes
+SET telefone_digits = CONCAT(SUBSTRING(telefone_digits, 1, 2), '9', SUBSTRING(telefone_digits, 3))
+WHERE CHAR_LENGTH(telefone_digits) = 10
+  AND SUBSTRING(telefone_digits, 3, 1) IN ('6', '7', '8', '9');
 
 SET @sql := IF(
   (SELECT COUNT(*) FROM information_schema.STATISTICS

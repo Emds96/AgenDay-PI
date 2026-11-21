@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-04 — Acesso em duas abas e celular com o 9 (21/11/2026)
+
+- **Pedido do responsável:** a tela do cliente deve lembrar o login do sistema, com uma aba para **entrar** (só o celular) e outra para **cadastro** (celular + nome). O celular deve seguir o padrão atual do Brasil, com o 9 na frente (ex.: `92 99433-1267`).
+- **Tela:** `cliente.php` ganhou as abas "Entrar" e "Cadastro", no mesmo componente visual das abas internas. Quem digita na aba Entrar um celular sem cadastro é levado automaticamente para Cadastro, com o número preenchido e o aviso correspondente. `js/cliente.js` centraliza o comportamento em `mostrarAcesso`, `entrarDireto`, `pedirCodigo` e `ligarFormularioAcesso`.
+- **Celular com o 9:** `agenday_portal_telefone_normalizar()` passou a converter o formato antigo (DDD + 8 dígitos começando em 6, 7, 8 ou 9) para DDD + 9 + 8 dígitos; fixos continuam com 10. A migração `sql/migracao-portal-cliente.sql` faz o mesmo backfill. `agenday_portal_telefone_variantes()` procura as duas formas, então cadastros antigos continuam sendo encontrados e não duplicam.
+- **Envio no WhatsApp:** o motor GOWS recusava (`no LID found`) números cujo WhatsApp usa o formato antigo. `agenday_whatsapp_resolver_chat()` consulta `check-exists` e envia para o JID real (`pn`); em falha da consulta, mantém o formato padrão. O erro de "número sem WhatsApp" agora tem mensagem própria.
+- **Testes:** `tests/portal-cliente.php` subiu para **84 verificações** (normalização, variantes e casos antigos). `php -l`, `node --check`, `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `responsividade-check` (210) limpos.
+- **Validação real (21/11/2026, local + WAHA/GOWS + ngrok):** envio com `92994331267` e com `9294331267` retornou **HTTP 201**; login na aba Entrar com o número novo entrou direto no cadastro existente ("Bem-vindo de volta!"); cadastro na aba Cadastro com o formato antigo enviou o código, mostrou `(92) 9****-1267` e concluiu com o código recebido. Dados de teste apagados e estabelecimento temporário revertido.
+- **Integração:** PR #68 (`feat/acesso-abas-celular-9` → `dev-feira-uninorte`); a CI roda no push da `dev-feira-uninorte`.
+- **Estado real:** implementado, testado no PC local e integrado na `dev-feira-uninorte`; **não publicado** — entra no deploy de 22/11.
+
+---
+
 ## PORTAL-03 — Código no WhatsApp só no cadastro (21/11/2026)
 
 - **Decisão do responsável (21/11/2026):** o código de 6 dígitos confirma o número **no primeiro acesso**; cliente já cadastrado entra digitando apenas o celular. Antes, o código era pedido sempre que não havia sessão válida.

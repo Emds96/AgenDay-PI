@@ -31,6 +31,9 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] Cliente criado no primeiro acesso (nome + telefone + código), sem duplicar por telefone.
 - [x] Cliente já cadastrado entra só com o celular, sem código (regra de 21/11/2026).
 - [x] `cliente.php` com as etapas de telefone e código (código só no cadastro).
+- [x] Acesso em duas abas: **Entrar** (só o celular) e **Cadastro** (celular + nome); celular sem cadastro em Entrar leva a tela para Cadastro já preenchida.
+- [x] Celular padronizado com o 9 (DDD + 9 + 8 dígitos); busca aceita a forma antiga para não duplicar cadastros.
+- [x] Envio resolve o JID real do WhatsApp (`check-exists`), cobrindo números no formato antigo sem o 9.
 - [x] Código enviado pelo caminho imediato (WAHA); falha de envio apaga a verificação.
 - [x] Contingência: `exigir_codigo_whatsapp` desligado entra só com o celular, inclusive no primeiro acesso.
 - [x] Testes de `agenday_portal_acesso_decidir` cobrindo as quatro combinações.
@@ -62,9 +65,9 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 
 ## Fase 5 — WhatsApp
 
-- [ ] Instalar Docker Desktop + WSL2 (com reinício autorizado) — guia: `docs/WHATSAPP_WAHA_GUIA.md`.
-- [ ] Subir o WAHA e parear o número (QR escaneado pelo responsável do número).
-- [ ] Publicar o endereço HTTPS do túnel (ngrok) e testar de fora.
+- [x] Instalar Docker Desktop + WSL2 (com reinício autorizado) — guia: `docs/WHATSAPP_WAHA_GUIA.md`. Dados do Docker em `E:\Docker\wsl\disk`.
+- [x] Subir o WAHA (motor **GOWS**, `devlikeapro/waha:gows` 2026.10.1) e parear o número: sessão `default` **WORKING**, conta `559294331267@c.us`.
+- [x] Publicar o endereço HTTPS do túnel (ngrok dev domain `additionally-nondeluded-elane.ngrok-free.dev`) e testar de fora — envio real HTTP 201.
 - [x] Aba "WhatsApp" em Configurações (URL, chave, sessão, ativo, exigir código, link do portal).
 - [x] Salvamento com CSRF e validação dentro de `config.php` (`acao=salvar_whatsapp`) — não foi criado `salvar-whatsapp.php`; a tela já concentra os formulários das outras abas.
 - [x] Botão "Testar conexão" e "Enviar pendentes agora".
@@ -82,11 +85,12 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 
 ## Fase 7 — Testes e PR
 
-- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo) — 69 verificações.
+- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo) — 84 verificações.
 - [x] Regressão: `tests/agendamento-validacao.php` (19) e `tests/agendamento-cancelamento.php` (20).
 - [x] `node tests/responsividade-check.js` — 210 verificações (inclui as quatro abas de Configurações).
 - [x] Fluxo completo por HTTP local: entrar com código, criar, listar, remarcar, cancelar, cancelar por link.
-- [x] Envio real contra um WAHA simulado local (confirmação, retry após falha e cancelamento).
+- [x] Envio real pelo WAHA/GOWS com número no formato novo e no antigo (HTTP 201 nos dois).
+- [x] Ciclo completo com WhatsApp real: código, confirmação, remarcação e cancelamento (3 mensagens `enviado`).
 - [x] `docs/STATUS.md` atualizado.
 - [x] PR #64 aberto, revisado e integrado em `dev-feira-uninorte` (`1e670cd`).
 - [x] CI verde: `PHP syntax check` e `Validacao e publicacao controlada` (run `44936376746`), com o teste do portal no workflow.
