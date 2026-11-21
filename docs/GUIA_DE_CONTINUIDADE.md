@@ -1,8 +1,8 @@
 # Guia operacional e de continuidade — AgenDay 2.0
 
-**Revisão:** 18/11/2026 · **Status:** procedimento de trabalho e passagem de contexto; não é autorização para alterar sistemas.
+**Revisão:** 21/11/2026 · **Status:** procedimento de trabalho e passagem de contexto; não é autorização para alterar sistemas.
 
-> **Leia este guia primeiro em uma sessão nova.** Depois consulte [AGENTS.md](../AGENTS.md), [STATUS.md](STATUS.md) e o documento específico da tarefa. Revalide o estado no GitHub: estas instruções não substituem os dados atuais.
+> **Leia este guia primeiro em uma sessão nova.** Depois consulte [AGENTS.md](../AGENTS.md), [PASSAGEM_DE_CONTEXTO.md](PASSAGEM_DE_CONTEXTO.md), [STATUS.md](STATUS.md) e o documento específico da tarefa. Revalide o estado no GitHub: estas instruções não substituem os dados atuais. Para trabalhar no PC, leia também [AMBIENTE_LOCAL.md](AMBIENTE_LOCAL.md).
 
 ## 1. Identidade, objetivo e prazos
 
@@ -25,6 +25,8 @@
 | QA no sistema real | **DeskBrowse** para login automático usando cofre local; **ZERO Browser MCP** para navegação/QA quando disponível; **TinyFish** para auditoria exploratória | Conferir conexão, identidade da conta e sessão; escrita exige escopo próprio; não misturar cookies entre testes |
 | Pesquisa externa/documentação de provedores | Documentação oficial, fontes confiáveis e código atual | Não substituir o exame do nosso repositório por suposições; separar fatos e hipóteses |
 | Comunicação entre conversas | Documentação persistente versionada em `docs/`, especialmente `STATUS.md` | Uma sessão não acessa automaticamente todo o histórico de outra; nunca depender de chat como única memória |
+
+> **Ferramentas são exemplos, não requisitos.** As colunas acima descrevem o que as sessões anteriores usaram. O trabalho depende das capacidades (ler/editar arquivos, `git`/`gh`, terminal, navegador), não dos produtos. A tabela de equivalência — inclusive para agentes que rodam no PC e agentes que rodam só na nuvem — está em [PASSAGEM_DE_CONTEXTO.md](PASSAGEM_DE_CONTEXTO.md#5-equivalência-de-ferramentas).
 
 ### Login autônomo de contas QA — procedimento vigente (18/11/2026)
 
@@ -124,8 +126,10 @@ Há dois papéis de usuário previstos:
 
 ## 7. Como iniciar outra sessão
 
+Para uma IA ou pessoa nova, o caminho mais curto é [PASSAGEM_DE_CONTEXTO.md](PASSAGEM_DE_CONTEXTO.md) (estado, regras, equivalência de ferramentas e checklist de acessos) + [AMBIENTE_LOCAL.md](AMBIENTE_LOCAL.md) (se o trabalho for no PC). O antigo `HANDOFF-CHATGPT.md`, na pasta `AgenDay-Local`, está vencido e é apenas histórico.
+
 Mensagem de retomada sugerida:
 
-> Trabalhe no AgenDay 2.0, repositório `Emds96/AgenDay-PI`, branch `dev-feira-uninorte`. Antes de agir, leia `AGENTS.md`, `docs/GUIA_DE_CONTINUIDADE.md`, `docs/INDICE_DA_DOCUMENTACAO.md` e `docs/STATUS.md`. Para a tarefa, leia o runbook específico de backup, QA ou deploy. Confira HEAD, PRs, execução CI, Variables e possível atividade simultânea de outra sessão. Diferencie integrado/testado/publicado, não use `main`, não altere código/banco/infraestrutura sem minha autorização. Comece pelo estado real e informe a próxima ação segura.
+> Trabalhe no AgenDay 2.0, repositório `Emds96/AgenDay-PI`, branch `dev-feira-uninorte`, pasta local `C:\Users\EDER\AgenDay-PI`. Antes de agir, leia `AGENTS.md`, `docs/PASSAGEM_DE_CONTEXTO.md`, `docs/AMBIENTE_LOCAL.md`, `docs/GUIA_DE_CONTINUIDADE.md`, `docs/INDICE_DA_DOCUMENTACAO.md` e o topo de `docs/STATUS.md`. Para a tarefa, leia o runbook específico de backup, QA ou deploy. Confira HEAD, PRs, execução CI, Variables e possível atividade simultânea de outra sessão. Diferencie integrado/testado/publicado, não use `main`, não altere código/banco/infraestrutura sem minha autorização. Comece pelo estado real e informe a próxima ação segura.
 
 **Ao terminar qualquer trabalho:** atualizar status, links e pendências **no repositório**, não apenas no texto da conversa. Se uma etapa falhar, registrar *o que foi tentado*, evidência e bloqueio; não afirmar conclusão e não contornar segurança.

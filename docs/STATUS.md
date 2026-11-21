@@ -1,5 +1,19 @@
 # STATUS — AgenDay 2.0
 
+## DOC-01 — Passagem de contexto para qualquer IA e ambiente local documentado (21/11/2026)
+
+- **Escopo:** somente documentação. Sem alteração de código, banco, hospedagem, workflow, Secrets ou deploy.
+- **Motivo:** permitir que outra IA (rodando no PC ou na nuvem) ou outra pessoa continue o projeto sem depender do histórico de chat desta sessão.
+- **Novos documentos:** `docs/PASSAGEM_DE_CONTEXTO.md` (estado em 21/11/2026, regras, **equivalência das ferramentas** citadas nos documentos antigos, checklist de acessos, primeiros 30 minutos e mensagem pronta de retomada) e `docs/AMBIENTE_LOCAL.md` (PHP 8.4.28, MariaDB 11.8.9, portas 3306/8080, banco `agenday_local`, `iniciar.ps1`/`parar.ps1`, testes e problemas comuns).
+- **Atualizados:** `docs/GUIA_DE_CONTINUIDADE.md` (ferramentas como exemplos + ponteiro para a equivalência; nova mensagem de retomada), `docs/PUBLICACAO_AUTOMATICA.md` (nova seção **Mudança de banco em produção**, com phpMyAdmin e semeador temporário), `docs/INDICE_DA_DOCUMENTACAO.md`, `README.md` e este arquivo.
+- **Handoff antigo:** `C:\Users\EDER\AgenDay-Local\HANDOFF-CHATGPT.md` marcado como vencido — apontava o SHA `18f83a9`, anterior ao deploy de 21/11 e à conta demo.
+- **Fatos conferidos no PC em 21/11/2026:** PHP 8.4.28, MariaDB 11.8.9, Node v24.22.0, Python 3.15.0, Git 2.55.0 e `gh` 2.104.0 autenticado como `Emds96`; banco local com 12 tabelas; `conexao.php` fora do Git; portas 3306 e 8080 ativas.
+- **Sem senhas:** os documentos indicam **onde** cada credencial está (`.env.backup`, `.mysql-local.cnf`, `credenciais-locais.txt`) e não versionam valores; a senha da conta de demonstração continua com o responsável.
+- **Validação:** links conferidos, arquivos gravados em UTF-8 sem BOM e CI do PR. Nenhum teste funcional foi necessário, pois não houve mudança de aplicação.
+- **Pendências:** nenhuma operacional nova; seguem PEND-01 (modo híbrido), PEND-02 (lembretes), reagendamento com vínculo e QA em celular.
+
+---
+
 ## DEPLOY-20261121 — Publicação do SHA 47fb029 e conta de demonstração (21/11/2026)
 
 - **Autorização:** responsável autorizou publicar tudo o que estava no local e criar a conta de demonstração no site oficial.

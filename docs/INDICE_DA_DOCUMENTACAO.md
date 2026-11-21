@@ -5,10 +5,12 @@
 ## Para qualquer nova sessão
 
 1. [`AGENTS.md`](../AGENTS.md): regras de segurança, autorização e versionamento.
-2. [`GUIA_DE_CONTINUIDADE.md`](GUIA_DE_CONTINUIDADE.md): **como trabalhávamos**, ferramentas, sequência de ações, comunicação entre sessões e decisão do responsável.
-3. [`STATUS.md`](STATUS.md): histórico recente, PRs, CI, QA, defeitos e bloqueios. **Sempre verificar GitHub/infra antes de afirmar estado atual**.
-4. [`ARQUITETURA_E_DECISOES.md`](ARQUITETURA_E_DECISOES.md): módulos, limites, decisões tomadas e opções pendentes.
-5. [`README.md`](../README.md): visão geral e como executar em desenvolvimento.
+2. [`PASSAGEM_DE_CONTEXTO.md`](PASSAGEM_DE_CONTEXTO.md): **estado atual, regras, equivalência de ferramentas e checklist de acessos** para qualquer IA ou pessoa.
+3. [`GUIA_DE_CONTINUIDADE.md`](GUIA_DE_CONTINUIDADE.md): **como trabalhávamos**, ferramentas, sequência de ações, comunicação entre sessões e decisão do responsável.
+4. [`AMBIENTE_LOCAL.md`](AMBIENTE_LOCAL.md): PHP, MariaDB, portas, banco local, scripts, testes e problemas comuns no PC de desenvolvimento.
+5. [`STATUS.md`](STATUS.md): histórico recente, PRs, CI, QA, defeitos e bloqueios. **Sempre verificar GitHub/infra antes de afirmar estado atual**.
+6. [`ARQUITETURA_E_DECISOES.md`](ARQUITETURA_E_DECISOES.md): módulos, limites, decisões tomadas e opções pendentes.
+7. [`README.md`](../README.md): visão geral e como executar em desenvolvimento.
 
 **Fluxo rapido (piloto):** a classificacao simples/media/complexa e a regra de autorizacao unica estao em [AGENTS.md](../AGENTS.md) e [GUIA_DE_CONTINUIDADE.md](GUIA_DE_CONTINUIDADE.md). Para o assistente de deploy (simulacao por padrao e publicacao real ainda nao validada), consultar [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) e `scripts/publicacao_assistida.py`. A aprovacao de PR e a documentacao nao equivalem a autorizacao de deploy.
 
@@ -16,6 +18,9 @@
 
 | Tarefa | Documento | Conteúdo |
 | --- | --- | --- |
+| Continuar o projeto em outra IA ou PC | [`PASSAGEM_DE_CONTEXTO.md`](PASSAGEM_DE_CONTEXTO.md) | Estado atual, regras, **equivalência das ferramentas** citadas nos docs e checklist do que passar para a IA nova |
+| Subir ou recriar o ambiente local | [`AMBIENTE_LOCAL.md`](AMBIENTE_LOCAL.md) | PHP 8.4, MariaDB 11.8, portas, banco `agenday_local`, scripts, testes e problemas comuns |
+| Alterar o banco de produção | [`PUBLICACAO_AUTOMATICA.md`](PUBLICACAO_AUTOMATICA.md) | Seção "Mudança de banco em produção": phpMyAdmin, semeador temporário e o que nunca fazer |
 | Preparar/validar backup ou recuperar | [`BACKUP_E_RECUPERACAO.md`](BACKUP_E_RECUPERACAO.md) | Download de `htdocs`, exportação MySQL, confidencialidade, integridade e recuperação autorizada |
 | Publicar código no InfinityFree | [`PUBLICACAO_AUTOMATICA.md`](PUBLICACAO_AUTOMATICA.md) | **Workflow existente** + Desktop Commander + `gh` + aprovação/Variables/FTPS; exige backup validado |
 | QA/regressão/testes | [`TESTES_E_QUALIDADE.md`](TESTES_E_QUALIDADE.md) | Casos reais, diferenças entre evidências, ferramentas e defeitos |

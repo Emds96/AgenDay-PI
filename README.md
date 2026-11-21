@@ -141,6 +141,8 @@ php -S localhost:8000
 
 Acesse `http://localhost:8000/index.php`. O servidor embutido é destinado ao **desenvolvimento**, não à produção. Dependendo do provedor de banco, conexões remotas podem exigir configuração específica; utilize um MySQL local de teste se necessário.
 
+> **No PC de desenvolvimento do projeto** o ambiente já está montado: PHP 8.4 e MariaDB 11.8 em `http://127.0.0.1:8080`, banco `agenday_local` e scripts de subir/parar. Caminhos, testes e diagnóstico estão em [`docs/AMBIENTE_LOCAL.md`](docs/AMBIENTE_LOCAL.md). Para retomar o projeto em outra sessão ou outra IA, ver [`docs/PASSAGEM_DE_CONTEXTO.md`](docs/PASSAGEM_DE_CONTEXTO.md).
+
 Crie um estabelecimento de teste, faça login e cadastre um **cliente**, um **serviço** e um **funcionário vinculado ao serviço** antes de testar os agendamentos.
 
 ## Testes
