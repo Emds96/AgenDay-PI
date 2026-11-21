@@ -26,7 +26,7 @@
 | QA/regressão/testes | [`TESTES_E_QUALIDADE.md`](TESTES_E_QUALIDADE.md) | Casos reais, diferenças entre evidências, ferramentas e defeitos |
 | Login automático com contas A/B | [`DESKBROWSE_LOGIN_QA.md`](DESKBROWSE_LOGIN_QA.md) | DeskBrowse + cofre local, aliases `agenday-conta-a/b`, logout obrigatório, verificação real na agenda; sem senhas |
 | Nova funcionalidade/bug | [`STATUS.md`](STATUS.md) + código atual | Branch curta, testes, PR direcionado à dev, merge autorizado, registro de resultados |
-| Portal do cliente (implementado no local, não publicado) | [`PORTAL_CLIENTE_PLANO.md`](PORTAL_CLIENTE_PLANO.md) e [`PORTAL_CLIENTE_CHECKLIST.md`](PORTAL_CLIENTE_CHECKLIST.md) | Página pública, login por telefone, agendamento, remarcação, cancelamento, WhatsApp (WAHA) e publicação nas duas pastas |
+| Portal do cliente (**publicado em 21/11/2026**, SHA `4bd707a`) | [`PORTAL_CLIENTE_PLANO.md`](PORTAL_CLIENTE_PLANO.md) e [`PORTAL_CLIENTE_CHECKLIST.md`](PORTAL_CLIENTE_CHECKLIST.md) | Página pública em `agenday-agendamentos.infinityfree.io/?e=slug`, login por celular (código só no primeiro acesso), agendamento, remarcação, cancelamento, WhatsApp (WAHA) e publicação nas duas pastas |
 | Instalar/operar o WhatsApp (WAHA + ngrok) | [`WHATSAPP_WAHA_GUIA.md`](WHATSAPP_WAHA_GUIA.md) | Docker Desktop, credenciais, QR do número, túnel, configuração no AgenDay, rotina da feira, falhas comuns e plano B |
 | Configurações do estabelecimento (QA-04) | [`QA04_CONFIG_ESTABELECIMENTO.md`](QA04_CONFIG_ESTABELECIMENTO.md) | Histórico da configuração básica publicada |
 | Nova central Configurações (UI-08) | [`CONFIGURACOES_UI08.md`](CONFIGURACOES_UI08.md) | Duas abas, avatar sem migração, senha em modal, Space Grotesk e QA pendente |

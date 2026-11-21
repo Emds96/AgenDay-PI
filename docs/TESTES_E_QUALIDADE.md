@@ -24,6 +24,9 @@ Um agente deve reportar **qual nível foi atingido**, identificando ferramenta, 
 find . -type f -name '*.php' -not -path './deploy-package/*' -print0 | xargs -0 -n 1 php -l
 php tests/agendamento-validacao.php
 php tests/agendamento-cancelamento.php
+php tests/portal-cliente.php
+php tests/google-identidade-validacao.php
+php tests/recuperacao-senha-test.php
 php tests/configuracao-estabelecimento.php
 php tests/alteracao-senha-validacao.php
 php tests/avatar-estabelecimento.php
@@ -32,6 +35,8 @@ node tests/responsividade-check.js
 ```
 
 Workflows: `.github/workflows/php-lint.yml` e `.github/workflows/agenday-publicar.yml` (job `validar`). **Testes não acessam o MySQL do InfinityFree.** O teste de responsividade é estrutural; não substitui navegador real.
+
+`tests/portal-cliente.php` (84 verificações) cobre normalização do celular com o 9 e formato antigo, variantes de busca, slug, código de acesso, token público, sessão do cliente, CSRF, conferência de origem e prazo de cancelamento.
 
 ## 3. Ferramentas para auditoria online
 
@@ -123,3 +128,11 @@ Documento específico: [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md). **Não co
 - **Publicação comprovada:** PR #37 integrado no SHA `22ff46775d4c373159538b4a6436e1e67fd752e8`; CI [#44519684723](https://github.com/Emds96/AgenDay-PI/actions/runs/44519684723), [#44522416531](https://github.com/Emds96/AgenDay-PI/actions/runs/44522416531) e [#44522416532](https://github.com/Emds96/AgenDay-PI/actions/runs/44522416532) aprovadas. Backup privado `2026-11-19_081115_3ea3891b` BACKUP OK (97 arquivos, 10 tabelas, restauração local e hashes); deploy [#44522593229](https://github.com/Emds96/AgenDay-PI/actions/runs/44522593229) com 3 jobs `success`; flags `false/disabled` restauradas.
 - **QA real read-only no Edge:** página Configurações em 320/360/390/412/768/1366px com centro do título deslocado 0px do centro do cabeçalho em todos os casos; duas únicas peças no topo (botão do menu e marca), sem conta, avatar, seta ou dropdown, fonte Space Grotesk 500 e sem overflow. As oito páginas administrativas em 412px também passaram (marca centralizada 0px, CSS UI-10, menu mantido, nenhum erro PHP visível). Hambúrguer abriu e fechou por Escape/X; links Configurações e Sair presentes. Navegação Agenda → Configurações passou; abas Estabelecimento/Minha Conta e foto/upload da conta mantidos.
 - **Ainda pendente:** aceite visual em celular físico do responsável, ativação real do link Sair e leitores de tela/navegadores adicionais. Nenhuma alteração de dados foi feita neste QA.
+
+## 11. PORTAL-01 a PORTAL-05 — Portal do cliente (publicado; fluxo principal validado em produção)
+
+- **Escopo:** domínio do cliente com `cliente.php` e `cliente-cancelar.php`; login por celular (código de 6 dígitos só no primeiro acesso); agendamento com serviço e profissional em menu e dia em calendário; remarcação; cancelamento logado e por link; fila de WhatsApp (WAHA) com cinco tipos de mensagem.
+- **Testes automatizados:** `tests/portal-cliente.php` (84 verificações) mais `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `responsividade-check` (210), executados na CI e no local; `php -l` e `node --check` limpos nos arquivos alterados.
+- **Validação local (21/11/2026):** fluxo completo em 1366 px e 360 px, com agendamento real gravado e cancelado em seguida; sem rolagem horizontal em 360 px. Envio real pelo WAHA/GOWS com número novo e antigo (HTTP 201) e ciclo completo com WhatsApp real.
+- **Validação em produção (21/11/2026, relato do responsável + conferência no banco):** conta criada pelo portal com o código recebido no WhatsApp, agendamento confirmado (id 189, 23/11 15:00–17:00) e mensagem `confirmacao` `enviado` em 3 segundos; cliente novo no Studio (17 para 18).
+- **Ainda pendente:** cancelamento pelo link em produção, celular físico do responsável e leitores de tela.
