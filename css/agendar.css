@@ -109,6 +109,12 @@
 
 .sugestoes button:hover { background: var(--ad-primary-soft); }
 
+.sugestoes-vazio {
+    padding: 12px;
+    color: var(--ad-text-muted);
+    font-size: .86rem;
+}
+
 .sugestoes small { color: var(--ad-text-muted); }
 
 .link-acao {
