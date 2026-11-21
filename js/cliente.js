@@ -23,11 +23,28 @@
         nome: corpo.dataset.cliente || '',
         servico: null,
         profissional: null,
+        profissionalNome: '',
+        profissionalEscolhido: false,
         data: '',
         hora: '',
         ultimo: null,
-        meusCarregado: false
+        meusCarregado: false,
+        janelaDias: 14,
+        hoje: '',
+        dataMax: '',
+        mesCalendario: null,
+        diaFoco: '',
+        dropdownAberto: null
     };
+
+    var NOMES_MES = [
+        'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+        'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+    ];
+    var NOMES_DIA = [
+        'domingo', 'segunda-feira', 'terça-feira', 'quarta-feira',
+        'quinta-feira', 'sexta-feira', 'sábado'
+    ];
 
     var ROTULOS = {
         agendado: 'Agendado',
@@ -51,6 +68,13 @@
         p.className = 'cliente-vazio';
         p.textContent = texto;
         return p;
+    }
+
+    function marcaSelecao() {
+        var marca = document.createElement('i');
+        marca.className = 'bi bi-check2-circle cliente-dropdown-marca';
+        marca.setAttribute('aria-hidden', 'true');
+        return marca;
     }
 
     function alerta(mensagem, tipo) {
@@ -186,6 +210,42 @@
         return partes[2] + '/' + partes[1] + '/' + partes[0];
     }
 
+    function dataDeIso(iso) {
+        var partes = String(iso).split('-');
+        if (partes.length !== 3) {
+            return null;
+        }
+        return new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
+    }
+
+    function indiceMes(ano, mes) {
+        return ano * 12 + mes;
+    }
+
+    function rotuloMes(ano, mes) {
+        var nome = NOMES_MES[mes];
+        return nome.charAt(0).toUpperCase() + nome.slice(1) + ' de ' + ano;
+    }
+
+    function rotuloDiaCompleto(data) {
+        return NOMES_DIA[data.getDay()] + ', ' + data.getDate() + ' de ' + NOMES_MES[data.getMonth()]
+            + ' de ' + data.getFullYear();
+    }
+
+    function iniciais(nome) {
+        var partes = String(nome || '').trim().split(/\s+/).filter(function (parte) {
+            return parte.length > 0;
+        });
+        if (!partes.length) {
+            return '?';
+        }
+        var letras = partes[0].charAt(0);
+        if (partes.length > 1) {
+            letras += partes[partes.length - 1].charAt(0);
+        }
+        return letras.toUpperCase();
+    }
+
     function nomeProfissional() {
         if (S.profissional === null) {
             return 'Qualquer profissional';
@@ -217,22 +277,29 @@
     }
 
     /* ------------------------------------------------------------ serviços */
+    function resumoServico(servico) {
+        return servico.duracao + ' min · R$ ' + servico.preco;
+    }
+
     function renderServicos() {
-        var alvo = $('#lista-servicos');
-        if (!alvo) {
+        var painel = $('#opcoes-servico');
+        if (!painel) {
             return;
         }
-        alvo.textContent = '';
+        painel.textContent = '';
         if (!S.dados || !S.dados.servicos.length) {
-            alvo.appendChild(vazio('Nenhum serviço disponível no momento.'));
+            painel.appendChild(vazio('Nenhum serviço disponível no momento.'));
+            atualizarGatilhoServico();
             return;
         }
         S.dados.servicos.forEach(function (servico) {
+            var selecionado = !!S.servico && S.servico.id === servico.id;
             var botao = document.createElement('button');
             botao.type = 'button';
-            botao.className = 'cliente-servico';
+            botao.className = 'cliente-servico cliente-dropdown-opcao';
             botao.dataset.servico = String(servico.id);
-            botao.setAttribute('aria-pressed', String(!!S.servico && S.servico.id === servico.id));
+            botao.setAttribute('aria-current', selecionado ? 'true' : 'false');
+            botao.tabIndex = -1;
 
             var nome = document.createElement('span');
             nome.className = 'cliente-servico-nome';
@@ -249,21 +316,51 @@
             botao.appendChild(nome);
             botao.appendChild(meta);
             botao.appendChild(preco);
+            if (selecionado) {
+                botao.appendChild(marcaSelecao());
+            }
             botao.addEventListener('click', function () {
                 escolherServico(servico);
             });
-            alvo.appendChild(botao);
+            painel.appendChild(botao);
         });
+        atualizarGatilhoServico();
+    }
+
+    function atualizarGatilhoServico() {
+        var conteudo = $('#conteudo-servico');
+        if (!conteudo) {
+            return;
+        }
+        conteudo.textContent = '';
+        if (!S.servico) {
+            var vazioTexto = document.createElement('span');
+            vazioTexto.className = 'cliente-dropdown-placeholder';
+            vazioTexto.textContent = 'Selecione o serviço';
+            conteudo.appendChild(vazioTexto);
+            return;
+        }
+        var nome = document.createElement('span');
+        nome.className = 'cliente-dropdown-valor';
+        nome.textContent = S.servico.nome;
+        var meta = document.createElement('span');
+        meta.className = 'cliente-dropdown-meta';
+        meta.textContent = resumoServico(S.servico);
+        conteudo.appendChild(nome);
+        conteudo.appendChild(meta);
     }
 
     function escolherServico(servico) {
         S.servico = servico;
         S.profissional = null;
+        S.profissionalEscolhido = false;
         S.data = '';
         S.hora = '';
         limparAlerta();
+        fecharDropdown();
         renderServicos();
         renderProfissionais();
+        renderCalendario();
 
         ['bloco-data', 'bloco-horarios', 'bloco-confirmar', 'bloco-sucesso'].forEach(function (id) {
             var el = document.getElementById(id);
@@ -276,43 +373,105 @@
             bloco.hidden = false;
             bloco.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        var proximo = $('#gatilho-profissional');
+        if (proximo) {
+            proximo.focus({ preventScroll: true });
+        }
     }
 
     /* -------------------------------------------------------- profissionais */
-    function renderProfissionais() {
-        var alvo = $('#lista-profissionais');
-        if (!alvo || !S.servico || !S.dados) {
-            return;
+    function profissionaisDoServico() {
+        var lista = [];
+        if (!S.dados || !S.servico) {
+            return lista;
         }
-        alvo.textContent = '';
-        var opcoes = [{ id: null, nome: 'Qualquer profissional' }];
         S.dados.profissionais.forEach(function (p) {
             if (p.servicos.indexOf(S.servico.id) !== -1) {
-                opcoes.push(p);
+                lista.push(p);
             }
         });
-        opcoes.forEach(function (opcao) {
-            var botao = document.createElement('button');
-            botao.type = 'button';
-            botao.className = 'cliente-pessoa';
-            botao.textContent = opcao.nome;
-            botao.setAttribute('aria-pressed', String(S.profissional === opcao.id));
-            botao.addEventListener('click', function () {
-                escolherProfissional(opcao.id);
-            });
-            alvo.appendChild(botao);
-        });
+        return lista;
     }
 
-    function escolherProfissional(id) {
+    function renderProfissionais() {
+        var painel = $('#opcoes-profissional');
+        if (!painel) {
+            return;
+        }
+        painel.textContent = '';
+        if (!S.servico || !S.dados) {
+            atualizarGatilhoProfissional();
+            return;
+        }
+        var opcoes = [{ id: null, nome: 'Qualquer profissional' }].concat(profissionaisDoServico());
+        opcoes.forEach(function (opcao) {
+            var selecionado = S.profissionalEscolhido && S.profissional === opcao.id;
+            var botao = document.createElement('button');
+            botao.type = 'button';
+            botao.className = 'cliente-pessoa cliente-dropdown-opcao';
+            botao.setAttribute('aria-current', selecionado ? 'true' : 'false');
+            botao.tabIndex = -1;
+
+            var avatar = document.createElement('span');
+            avatar.className = 'cliente-dropdown-avatar';
+            avatar.setAttribute('aria-hidden', 'true');
+            avatar.textContent = opcao.id === null ? '★' : iniciais(opcao.nome);
+
+            var texto = document.createElement('span');
+            texto.className = 'cliente-dropdown-pessoa-texto';
+            var nome = document.createElement('span');
+            nome.textContent = opcao.nome;
+            var dica = document.createElement('span');
+            dica.className = 'cliente-dropdown-pessoa-dica';
+            dica.textContent = opcao.id === null ? 'Ver horários de todos' : 'Atende ' + S.servico.nome;
+            texto.appendChild(nome);
+            texto.appendChild(dica);
+
+            botao.appendChild(avatar);
+            botao.appendChild(texto);
+            if (selecionado) {
+                botao.appendChild(marcaSelecao());
+            }
+            botao.addEventListener('click', function () {
+                escolherProfissional(opcao.id, opcao.nome);
+            });
+            painel.appendChild(botao);
+        });
+        atualizarGatilhoProfissional();
+    }
+
+    function atualizarGatilhoProfissional() {
+        var conteudo = $('#conteudo-profissional');
+        if (!conteudo) {
+            return;
+        }
+        conteudo.textContent = '';
+        if (!S.profissionalEscolhido) {
+            var vazioTexto = document.createElement('span');
+            vazioTexto.className = 'cliente-dropdown-placeholder';
+            vazioTexto.textContent = 'Selecione o profissional';
+            conteudo.appendChild(vazioTexto);
+            return;
+        }
+        var nome = document.createElement('span');
+        nome.className = 'cliente-dropdown-valor';
+        nome.textContent = S.profissionalNome || 'Qualquer profissional';
+        var meta = document.createElement('span');
+        meta.className = 'cliente-dropdown-meta';
+        meta.textContent = S.profissional === null ? 'Todos os disponíveis' : 'Profissional escolhido';
+        conteudo.appendChild(nome);
+        conteudo.appendChild(meta);
+    }
+
+    function escolherProfissional(id, nome) {
         S.profissional = id;
+        S.profissionalNome = nome || 'Qualquer profissional';
+        S.profissionalEscolhido = true;
         S.data = '';
         S.hora = '';
+        fecharDropdown();
         renderProfissionais();
-        var campo = $('#campo-data');
-        if (campo) {
-            campo.value = '';
-        }
+        renderCalendario();
         ['bloco-horarios', 'bloco-confirmar'].forEach(function (blocoId) {
             var el = document.getElementById(blocoId);
             if (el) {
@@ -324,6 +483,258 @@
             bloco.hidden = false;
             bloco.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        var dia = $('.cliente-calendario-dia.is-hoje:not(:disabled)') || $('.cliente-calendario-dia:not(:disabled)');
+        if (dia) {
+            dia.focus({ preventScroll: true });
+        }
+    }
+
+    /* ------------------------------------------------------------ dropdowns */
+    function abrirDropdown(qual) {
+        fecharDropdown();
+        var raiz = document.getElementById('dropdown-' + qual);
+        var gatilho = document.getElementById('gatilho-' + qual);
+        var painel = document.getElementById('opcoes-' + qual);
+        if (!raiz || !gatilho || !painel || !painel.children.length) {
+            return;
+        }
+        painel.hidden = false;
+        raiz.classList.add('is-aberto');
+        gatilho.setAttribute('aria-expanded', 'true');
+        S.dropdownAberto = qual;
+        var selecionado = $('[aria-current="true"]', painel);
+        var alvo = selecionado || $('.cliente-dropdown-opcao', painel);
+        if (alvo) {
+            alvo.focus();
+        }
+    }
+
+    function fecharDropdown(devolverFoco) {
+        var qual = S.dropdownAberto;
+        if (!qual) {
+            return;
+        }
+        var raiz = document.getElementById('dropdown-' + qual);
+        var gatilho = document.getElementById('gatilho-' + qual);
+        var painel = document.getElementById('opcoes-' + qual);
+        if (painel) {
+            painel.hidden = true;
+        }
+        if (raiz) {
+            raiz.classList.remove('is-aberto');
+        }
+        if (gatilho) {
+            gatilho.setAttribute('aria-expanded', 'false');
+        }
+        S.dropdownAberto = null;
+        if (devolverFoco && gatilho) {
+            gatilho.focus();
+        }
+    }
+
+    function alternarDropdown(qual) {
+        if (S.dropdownAberto === qual) {
+            fecharDropdown(true);
+            return;
+        }
+        abrirDropdown(qual);
+    }
+
+    function ligarDropdown(qual) {
+        var gatilho = document.getElementById('gatilho-' + qual);
+        var painel = document.getElementById('opcoes-' + qual);
+        if (!gatilho || !painel) {
+            return;
+        }
+        gatilho.addEventListener('click', function () {
+            alternarDropdown(qual);
+        });
+        gatilho.addEventListener('keydown', function (evento) {
+            if (evento.key === 'ArrowDown' || evento.key === 'ArrowUp') {
+                evento.preventDefault();
+                abrirDropdown(qual);
+            } else if (evento.key === 'Escape') {
+                fecharDropdown();
+            }
+        });
+        painel.addEventListener('keydown', function (evento) {
+            var opcoes = $$('.cliente-dropdown-opcao', painel);
+            var indice = opcoes.indexOf(document.activeElement);
+            if (evento.key === 'ArrowDown') {
+                evento.preventDefault();
+                opcoes[Math.min(opcoes.length - 1, indice + 1)].focus();
+            } else if (evento.key === 'ArrowUp') {
+                evento.preventDefault();
+                opcoes[Math.max(0, indice - 1)].focus();
+            } else if (evento.key === 'Home') {
+                evento.preventDefault();
+                opcoes[0].focus();
+            } else if (evento.key === 'End') {
+                evento.preventDefault();
+                opcoes[opcoes.length - 1].focus();
+            } else if (evento.key === 'Escape') {
+                evento.preventDefault();
+                fecharDropdown(true);
+            } else if (evento.key === 'Tab') {
+                fecharDropdown();
+            }
+        });
+    }
+
+    /* ------------------------------------------------------------ calendário */
+    function renderCalendario() {
+        var grade = $('#calendario-grade');
+        var rotulo = $('#calendario-mes');
+        if (!grade || !rotulo) {
+            return;
+        }
+        var hojeIso = S.hoje || isoData(new Date());
+        var maxIso = S.dataMax || hojeIso;
+        var hoje = dataDeIso(hojeIso);
+        var max = dataDeIso(maxIso);
+        var ref = S.mesCalendario || { ano: hoje.getFullYear(), mes: hoje.getMonth() };
+        var minimo = indiceMes(hoje.getFullYear(), hoje.getMonth());
+        var maximo = indiceMes(max.getFullYear(), max.getMonth());
+        var atual = indiceMes(ref.ano, ref.mes);
+        if (atual < minimo) {
+            ref = { ano: hoje.getFullYear(), mes: hoje.getMonth() };
+        } else if (atual > maximo) {
+            ref = { ano: max.getFullYear(), mes: max.getMonth() };
+        }
+        S.mesCalendario = ref;
+
+        rotulo.textContent = rotuloMes(ref.ano, ref.mes);
+        var anterior = $('[data-calendario="anterior"]');
+        var proximo = $('[data-calendario="proximo"]');
+        if (anterior) {
+            anterior.disabled = indiceMes(ref.ano, ref.mes) <= minimo;
+        }
+        if (proximo) {
+            proximo.disabled = indiceMes(ref.ano, ref.mes) >= maximo;
+        }
+
+        grade.textContent = '';
+        var primeiro = new Date(ref.ano, ref.mes, 1);
+        var diasNoMes = new Date(ref.ano, ref.mes + 1, 0).getDate();
+        var linha = document.createElement('div');
+        linha.className = 'cliente-calendario-linha';
+        var coluna = 0;
+        for (var v = 0; v < primeiro.getDay(); v++) {
+            var vazioCelula = document.createElement('span');
+            vazioCelula.className = 'cliente-calendario-vazio';
+            vazioCelula.setAttribute('aria-hidden', 'true');
+            linha.appendChild(vazioCelula);
+            coluna++;
+        }
+        for (var dia = 1; dia <= diasNoMes; dia++) {
+            if (coluna === 7) {
+                grade.appendChild(linha);
+                linha = document.createElement('div');
+                linha.className = 'cliente-calendario-linha';
+                coluna = 0;
+            }
+            var data = new Date(ref.ano, ref.mes, dia);
+            var iso = isoData(data);
+            var disponivel = iso >= hojeIso && iso <= maxIso;
+            var botao = document.createElement('button');
+            botao.type = 'button';
+            botao.className = 'cliente-calendario-dia';
+            botao.textContent = String(dia);
+            botao.dataset.data = iso;
+            botao.setAttribute('aria-label', rotuloDiaCompleto(data));
+            botao.setAttribute('aria-pressed', String(S.data === iso));
+            if (iso === hojeIso) {
+                botao.classList.add('is-hoje');
+            }
+            if (S.data === iso) {
+                botao.classList.add('is-selecionado');
+            }
+            botao.disabled = !disponivel;
+            botao.addEventListener('click', function () {
+                escolherData(this.dataset.data);
+            });
+            linha.appendChild(botao);
+            coluna++;
+        }
+        grade.appendChild(linha);
+    }
+
+    function escolherData(iso) {
+        if (!iso) {
+            return;
+        }
+        S.data = iso;
+        S.hora = '';
+        renderCalendario();
+        var selecionado = $('.cliente-calendario-dia[data-data="' + iso + '"]');
+        if (selecionado) {
+            selecionado.focus({ preventScroll: true });
+        }
+        var confirmar = $('#bloco-confirmar');
+        if (confirmar) {
+            confirmar.hidden = true;
+        }
+        var dica = $('#dica-data');
+        if (dica) {
+            dica.textContent = 'Dia escolhido: ' + rotuloDiaCompleto(dataDeIso(iso)) + '.';
+        }
+        carregarHorarios();
+        var horarios = $('#bloco-horarios');
+        if (horarios) {
+            horarios.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function moverMes(delta) {
+        if (!S.mesCalendario) {
+            return;
+        }
+        var total = indiceMes(S.mesCalendario.ano, S.mesCalendario.mes) + delta;
+        var ano = Math.floor(total / 12);
+        var mes = total % 12;
+        if (mes < 0) {
+            mes += 12;
+            ano -= 1;
+        }
+        S.mesCalendario = { ano: ano, mes: mes };
+        renderCalendario();
+    }
+
+    function moverFocoCalendario(evento) {
+        var atual = document.activeElement;
+        if (!atual || !atual.classList.contains('cliente-calendario-dia')) {
+            return;
+        }
+        var delta = 0;
+        if (evento.key === 'ArrowRight') {
+            delta = 1;
+        } else if (evento.key === 'ArrowLeft') {
+            delta = -1;
+        } else if (evento.key === 'ArrowDown') {
+            delta = 7;
+        } else if (evento.key === 'ArrowUp') {
+            delta = -7;
+        } else {
+            return;
+        }
+        evento.preventDefault();
+        var data = dataDeIso(atual.dataset.data);
+        data.setDate(data.getDate() + delta);
+        var novoIso = isoData(data);
+        if (novoIso < (S.hoje || '') || novoIso > (S.dataMax || '')) {
+            return;
+        }
+        var alvo = $('.cliente-calendario-dia[data-data="' + novoIso + '"]');
+        if (alvo) {
+            alvo.focus();
+            return;
+        }
+        S.mesCalendario = { ano: data.getFullYear(), mes: data.getMonth() };
+        renderCalendario();
+        alvo = $('.cliente-calendario-dia[data-data="' + novoIso + '"]');
+        if (alvo) {
+            alvo.focus();
+        }
     }
 
     /* --------------------------------------------------------------- dados */
@@ -334,18 +745,19 @@
                 S.csrf = dados.sessao.csrf;
                 atualizarSessao(dados.sessao.cliente.nome);
             }
+            var regras = dados.regras || {};
+            S.janelaDias = regras.janela_dias || 14;
+            S.hoje = isoData(new Date());
+            var limite = new Date();
+            limite.setDate(limite.getDate() + S.janelaDias);
+            S.dataMax = isoData(limite);
+            S.mesCalendario = null;
             renderServicos();
+            renderProfissionais();
+            renderCalendario();
             var dica = $('#dica-data');
             if (dica) {
-                dica.textContent = 'Agendamentos até ' + dados.regras.janela_dias + ' dias à frente.';
-            }
-            var campo = $('#campo-data');
-            if (campo) {
-                var hoje = new Date();
-                var limite = new Date();
-                limite.setDate(limite.getDate() + dados.regras.janela_dias);
-                campo.min = isoData(hoje);
-                campo.max = isoData(limite);
+                dica.textContent = 'Agendamentos até ' + S.janelaDias + ' dias à frente.';
             }
         });
     }
@@ -485,15 +897,14 @@
         }
         S.servico = null;
         S.profissional = null;
+        S.profissionalNome = '';
+        S.profissionalEscolhido = false;
         S.data = '';
         S.hora = '';
+        S.mesCalendario = null;
         var obs = $('#campo-observacoes');
         if (obs) {
             obs.value = '';
-        }
-        var campo = $('#campo-data');
-        if (campo) {
-            campo.value = '';
         }
     }
 
@@ -502,12 +913,25 @@
         if (sucesso) {
             sucesso.hidden = true;
         }
+        S.servico = null;
+        S.profissional = null;
+        S.profissionalNome = '';
+        S.profissionalEscolhido = false;
+        S.data = '';
+        S.hora = '';
+        S.mesCalendario = null;
+        renderServicos();
+        renderProfissionais();
+        renderCalendario();
+        var dica = $('#dica-data');
+        if (dica) {
+            dica.textContent = 'Agendamentos até ' + S.janelaDias + ' dias à frente.';
+        }
         var bloco = $('#bloco-servico');
         if (bloco) {
             bloco.hidden = false;
             bloco.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        renderServicos();
     }
 
     /* ------------------------------------------------------------------ ICS */
@@ -946,18 +1370,25 @@
 
     /* -------------------------------------------------------------- eventos */
     function iniciarEventos() {
-        var campoData = $('#campo-data');
-        if (campoData) {
-            campoData.addEventListener('change', function () {
-                S.data = campoData.value;
-                S.hora = '';
-                var confirmar = $('#bloco-confirmar');
-                if (confirmar) {
-                    confirmar.hidden = true;
-                }
-                carregarHorarios();
+        ligarDropdown('servico');
+        ligarDropdown('profissional');
+
+        $$('[data-calendario]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                moverMes(botao.dataset.calendario === 'anterior' ? -1 : 1);
             });
+        });
+
+        var grade = $('#calendario-grade');
+        if (grade) {
+            grade.addEventListener('keydown', moverFocoCalendario);
         }
+
+        document.addEventListener('click', function (evento) {
+            if (!evento.target.closest('.cliente-dropdown')) {
+                fecharDropdown();
+            }
+        });
 
         $$('.cliente-aba[data-aba]').forEach(function (aba) {
             aba.addEventListener('click', function () {

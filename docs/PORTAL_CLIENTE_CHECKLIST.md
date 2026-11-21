@@ -48,6 +48,17 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] Mensagem de confirmação enfileirada e enviada na hora quando o WAHA responde.
 - [x] Tela de sucesso com link de cancelamento e arquivo `.ics`.
 
+## Fase 2.1 — Redesenho da escolha de serviço, profissional e dia (21/11/2026)
+
+- [x] Serviço e profissional em menu dropdown, no visual de campo dos controles atuais.
+- [x] Opção escolhida marcada com `aria-current` e ícone de check; painel com `role="group"` e rótulo da etapa.
+- [x] Teclado: setas, `Home`, `End` e `Esc`; foco devolvido ao gatilho e levado à etapa seguinte ao escolher.
+- [x] Dia escolhido em calendário, com navegação limitada ao mês atual e ao mês de `dataMax`.
+- [x] Dias fora da janela desabilitados; hoje e dia escolhido destacados.
+- [x] Horários carregados depois da escolha do dia, abaixo do calendário.
+- [x] Painel do dropdown abre dentro do cartão abaixo de 576 px.
+- [x] Fluxo completo validado em 1366 px e 360 px, com agendamento real no local e cancelamento em seguida.
+
 ## Fase 3 — Meus agendamentos e cancelar
 
 - [x] `acao=listar` (próximos + últimos 90 dias).
