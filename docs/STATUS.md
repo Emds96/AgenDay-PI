@@ -129,7 +129,7 @@
 - **Fluxo:** `agendado/confirmado` → **Chegou** = `em_atendimento` → ao passar do fim vira `concluido` automaticamente na próxima leitura; **Faltou** = `faltou`; **Concluir** encerra manualmente; **Cancelar** mantém o fluxo existente. Passou o início + tolerância sem marcação, o cartão fica destacado com "Confirmar presença" (não fecha sozinho).
 - **Segurança:** CSRF no endpoint; `id_estabelecimento` da sessão; transições inválidas recusadas; agendamento de outra conta devolve "não encontrado".
 - **Validação local (21/11/2026, PHP 8.4 + MariaDB 11.8):** enum e default 30 conferidos no MySQL; atendimento passado ficou com `sugere_faltou=true`; `em_atendimento` vencido virou `concluido` na leitura; Chegou/Concluir/Faltou conferidos por API e pelo menu da agenda; transição inválida, POST sem CSRF e registro de outra conta recusados; `php -l`, `node --check` e `responsividade-check` (210) aprovados; dados de teste removidos.
-- **Pendências:** aplicar a migração no InfinityFree antes de publicar; validar no navegador do responsável; reagendamento com vínculo e lembretes (lotes seguintes).
+- **Pendências:** migração aplicada em produção em 21/11/2026 (ver DEPLOY-20261121); seguir com reagendamento com vínculo e lembretes (lotes seguintes) e QA em celular.
 
 ---
 

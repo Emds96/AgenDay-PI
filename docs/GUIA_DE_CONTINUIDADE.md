@@ -10,6 +10,7 @@
 - Repositório de trabalho: `Emds96/AgenDay-PI` (fork). Repositório original do Gabriel: `oliv-gabriel/AgenDay-PI`, **não alterar sem autorização específica**.
 - Branch de integração: `dev-feira-uninorte`; base de branches curtas para cada tarefa e destino de PRs. **`main` do fork está preservada** e possui workflow legado potencialmente perigoso; não usar para desenvolvimento corrente nem promover sem revisão/autorização.
 - Site independente: https://agenday-sistema.infinityfree.io/ — hospedado no InfinityFree. **Não confundir** com o site do Gabriel, https://agenday.infinityfree.me/.
+- Portal público do cliente (publicado em 21/11/2026): https://agenday-agendamentos.infinityfree.io/?e=slug — mesma hospedagem, pasta `htdocs` própria; o envio de código pelo WhatsApp depende do WAHA no PC do responsável ([WHATSAPP_WAHA_GUIA.md](WHATSAPP_WAHA_GUIA.md), atalho **AgenDay - Iniciar WhatsApp** e `scripts/iniciar-feira.ps1`).
 - Prazo de conclusão **24/11/2026**, conforme relato do responsável sobre orientação do professor; feira indicada para **27/11/2026**, data ainda sujeita a confirmação.
 - Priorizar fluxo que realmente funciona, proteção dos dados, regressão e demonstração no celular; não considerar interface pronta como funcionalidade validada.
 
