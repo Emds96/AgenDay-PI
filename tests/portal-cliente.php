@@ -199,6 +199,18 @@ verificar(!simular_origem('https://outro.test', null, 'studio.test'), 'origem es
 verificar(!simular_origem(null, null, 'studio.test'), 'sem origem recusado');
 verificar(!simular_origem('http://studio.test.evil.test', null, 'studio.test'), 'host parecido recusado');
 
+/* --------------------------------------------------- regra de acesso do cliente */
+$acesso = agenday_portal_acesso_decidir(true, true, '');
+verificar($acesso['acao'] === 'direto' && $acesso['motivo'] === 'cliente_existente', 'acesso: cliente cadastrado entra sem código');
+$acesso = agenday_portal_acesso_decidir(true, true, 'Ana Souza');
+verificar($acesso['acao'] === 'direto', 'acesso: cliente cadastrado entra mesmo com nome informado');
+$acesso = agenday_portal_acesso_decidir(false, false, '');
+verificar($acesso['acao'] === 'direto' && $acesso['motivo'] === 'contingencia', 'acesso: contingência libera primeiro acesso sem código');
+$acesso = agenday_portal_acesso_decidir(false, true, '   ');
+verificar($acesso['acao'] === 'pedir_nome' && $acesso['motivo'] === 'primeiro_acesso', 'acesso: primeiro acesso pede o nome');
+$acesso = agenday_portal_acesso_decidir(false, true, 'Ana Souza');
+verificar($acesso['acao'] === 'enviar_codigo' && $acesso['motivo'] === 'cadastro', 'acesso: cadastro envia o código');
+
 $r = simular_host($hostAdmin, '/cliente.php');
 verificar(!$r['cliente'], 'admin: cliente.php também abre (plano B)');
 

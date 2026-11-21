@@ -1,5 +1,16 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-03 — Código no WhatsApp só no cadastro (21/11/2026)
+
+- **Decisão do responsável (21/11/2026):** o código de 6 dígitos confirma o número **no primeiro acesso**; cliente já cadastrado entra digitando apenas o celular. Antes, o código era pedido sempre que não havia sessão válida.
+- **Código:** nova função `agenday_portal_acesso_decidir()` em `lib/portal-cliente.php` centraliza a regra (cliente existente → direto; primeiro acesso → pede nome e envia código; `exigir_codigo_whatsapp` desligado → direto até no primeiro acesso). `api/cliente-acesso.php` passou a usá-la e devolve `cliente_existente` na resposta. `js/cliente.js` mostra "Bem-vindo de volta!" para quem já tem cadastro; texto de `cliente.php` e versão do JS (`cl02`) atualizados.
+- **Testes:** `tests/portal-cliente.php` subiu de 69 para **74 verificações**, cobrindo as quatro combinações da regra. `php -l` limpo nos quatro arquivos alterados.
+- **Validação real no local (PHP 8.4 + MariaDB 11.8.9 + WAHA/GOWS):** cliente já cadastrado (`9294331267`, Studio) entrou **só com o celular**, com "Bem-vindo de volta!" e **sem** nova mensagem (contador de `mensagem_whatsapp` ficou em 3). Em um estabelecimento temporário, o mesmo número foi tratado como primeiro acesso: pediu o nome, enviou o código no WhatsApp, aceitou o código e, ao sair e entrar de novo, entrou direto. Estabelecimento temporário revertido e dados de teste apagados.
+- **Risco assumido e documentado:** quem souber o celular de um cliente pode abrir a sessão dele e ver/cancelar agendamentos. Registrado em `docs/PORTAL_CLIENTE_PLANO.md` §6.3, com o ponto único de mudança caso seja preciso exigir código em todo login.
+- **Estado real:** implementado e testado no PC local; **ainda não commitado, não publicado**. A regra vale para o deploy do portal.
+
+---
+
 ## PORTAL-02 — Guia do WhatsApp e PR #64 integrado (21/11/2026)
 
 - **PR #64** (`feat/portal-cliente` → `dev-feira-uninorte`) integrado em `1e670cd`. CI verde nos dois workflows: `PHP syntax check` e `Validacao e publicacao controlada` (run `44936376746`), que agora executa também `tests/portal-cliente.php` (69 verificações). Nada foi publicado: `AGENDAY_DEPLOY_ENABLED`/`AGENDAY_DEPLOY_MODE` continuam `false`/`disabled`, e o job `publicar` ficou `skipped`.
@@ -12,7 +23,7 @@
 
 ## PORTAL-01 — Portal público do cliente (21/11/2026; implementado e testado no local, **não publicado**)
 
-- **Escopo autorizado:** plano aprovado em 21/11 (`docs/PORTAL_CLIENTE_PLANO.md`) — segundo domínio para o cliente, login por celular com código no WhatsApp, agendar, remarcar e cancelar. Branch `feat/portal-cliente` a partir de `849af46`.
+- **Escopo autorizado:** plano aprovado em 21/11 (`docs/PORTAL_CLIENTE_PLANO.md`) — segundo domínio para o cliente, login por celular com código no WhatsApp, agendar, remarcar e cancelar. Branch `feat/portal-cliente` a partir de `849af46`. (A regra do código foi ajustada em **PORTAL-03**: só no cadastro.)
 - **Banco (aditivo, reexecutável):** `sql/migracao-portal-cliente.sql` acrescenta `estabelecimento.slug`, `dominio` e `exigir_codigo_whatsapp`; `clientes.telefone_digits` (com backfill pela mesma regra do PHP); `agendamentos.token_publico`; e cria `verificacao_acesso`, `sessao_cliente`, `mensagem_whatsapp` e `whatsapp_config`. Aplicada **somente no banco local**, duas execuções, sem erro; 29/29 clientes normalizados. **Ainda não aplicada no InfinityFree.**
 - **Bibliotecas:** `lib/portal-cliente.php` (slug, telefone, cliente, token, sessão por cookie `AGENDAY_CLIENTE`, CSRF, origem, prazo de cancelamento, JSON); `lib/guarda-host.php`; `lib/whatsapp.php` (configuração, fila com backoff, envio WAHA, cinco templates, gatilho pós-resposta).
 - **Endpoints:** `api/cliente-acesso.php` (`estado`, `entrar`, `verificar`, `sair`), `api/cliente-dados.php`, `api/cliente-horarios.php` (reusa `lib/disponibilidade.php`), `api/cliente-agendamentos.php` (`criar`, `listar`, `cancelar`, `remarcar`).

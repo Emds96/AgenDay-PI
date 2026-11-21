@@ -4,9 +4,9 @@
  *
  * Ações:
  *   GET  ?acao=estado     → sessão atual, estabelecimento e exigência de código
- *   POST ?acao=entrar     → valida o telefone e envia o código (ou entra direto
- *                           quando a contingência está ligada)
- *   POST ?acao=verificar  → confere o código, cria/reaproveita o cliente e abre sessão
+ *   POST ?acao=entrar     → cliente já cadastrado entra só com o celular; primeiro
+ *                           acesso pede o nome e envia o código no WhatsApp
+ *   POST ?acao=verificar  → confere o código do cadastro e abre a sessão
  *   POST ?acao=sair       → encerra a sessão
  *
  * Não usa sessão do PHP: a sessão do cliente é um cookie próprio + registro
@@ -102,9 +102,11 @@ if ($acao === 'entrar') {
         }
     }
 
-    // Primeiro acesso: pede o nome antes de enviar qualquer código.
+    // Cliente já cadastrado entra só com o celular; o código fica no cadastro.
     $clienteExistente = agenday_portal_cliente_por_telefone($conexao, $empresa, $telefone);
-    if ($clienteExistente === null && $nome === '') {
+    $decisao = agenday_portal_acesso_decidir($clienteExistente !== null, $exigirCodigo, $nome);
+
+    if ($decisao['acao'] === 'pedir_nome') {
         agenday_portal_json([
             'ok' => false,
             'precisa_nome' => true,
@@ -112,16 +114,21 @@ if ($acao === 'entrar') {
         ], 422);
     }
 
-    // Contingência: sem código, entra direto (só com a chave desligada).
-    if (!$exigirCodigo) {
-        $registro = agenday_portal_cliente_garantir($conexao, $empresa, $nome, $telefone);
+    // Acesso direto: cliente conhecido (ou contingência com a chave desligada).
+    if ($decisao['acao'] === 'direto') {
+        $registro = $clienteExistente ?? agenday_portal_cliente_garantir($conexao, $empresa, $nome, $telefone);
         agenday_portal_sessao_criar($conexao, $empresa, (int) $registro['id_cliente']);
         $sessao = agenday_portal_sessao_ler($conexao, $empresa);
         agenday_portal_json([
             'ok' => true,
             'sem_codigo' => true,
+            'cliente_existente' => $clienteExistente !== null,
             'csrf' => $sessao !== null ? agenday_portal_csrf_token($sessao) : '',
             'cliente' => ['nome' => (string) $registro['nome_cliente']],
+            'estabelecimento' => [
+                'nome' => agenday_portal_nome_estabelecimento($estabelecimento),
+                'slug' => (string) ($estabelecimento['slug'] ?? ''),
+            ],
         ]);
     }
 

@@ -28,10 +28,12 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] Código de 6 dígitos, hash SHA-256 com salt, validade de 10 minutos, uso único.
 - [x] Limites: 3/10 min por telefone, 10/dia por telefone, 20/hora por IP.
 - [x] Sessão no banco + cookie `AGENDAY_CLIENTE` (30 dias, HttpOnly, SameSite=Lax).
-- [x] Cliente criado no primeiro acesso (nome + telefone), sem duplicar por telefone.
-- [x] `cliente.php` com as etapas de telefone e código.
+- [x] Cliente criado no primeiro acesso (nome + telefone + código), sem duplicar por telefone.
+- [x] Cliente já cadastrado entra só com o celular, sem código (regra de 21/11/2026).
+- [x] `cliente.php` com as etapas de telefone e código (código só no cadastro).
 - [x] Código enviado pelo caminho imediato (WAHA); falha de envio apaga a verificação.
-- [x] Contingência: `exigir_codigo_whatsapp` desligado entra só com o celular.
+- [x] Contingência: `exigir_codigo_whatsapp` desligado entra só com o celular, inclusive no primeiro acesso.
+- [x] Testes de `agenday_portal_acesso_decidir` cobrindo as quatro combinações.
 
 ## Fase 2 — Agendar
 

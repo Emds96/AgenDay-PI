@@ -12,7 +12,7 @@ Checklist vivo: [`PORTAL_CLIENTE_CHECKLIST.md`](PORTAL_CLIENTE_CHECKLIST.md).
 
 Dar ao cliente final um endereço próprio (`agenday-agendamentos.infinityfree.io`) onde ele:
 
-1. entra com o **número de celular** confirmado por código no WhatsApp;
+1. entra com o **número de celular**; no **primeiro acesso** confirma o número com um código no WhatsApp;
 2. **agenda** escolhendo serviço, profissional, data e hora;
 3. vê **seus agendamentos**;
 4. **remarca** ou **cancela** sozinho;
@@ -27,7 +27,7 @@ O estabelecimento continua usando o sistema atual em `agenday-sistema.infinityfr
 | Arquitetura | Mesmo app em duas pastas, um banco, um deploy (plano A) | 21/11/2026 |
 | Domínio do cliente | `agenday-agendamentos.infinityfree.io` (criado, pasta própria) | 21/11/2026 |
 | Identificação do estabelecimento | `slug` público no link (`?e=studio`) | 21/11/2026 |
-| Acesso do cliente | Login por telefone + código no WhatsApp, sessão de 30 dias | 21/11/2026 |
+| Acesso do cliente | Login por telefone; código no WhatsApp só no cadastro; sessão de 30 dias | 21/11/2026 |
 | Código no acesso | Obrigatório, com contingência documentada | 21/11/2026 |
 | WhatsApp | WAHA (não oficial) rodando no PC do responsável + túnel HTTPS | 21/11/2026 |
 | Banco | Migração aditiva aplicada manualmente no phpMyAdmin antes do deploy | 21/11/2026 |
@@ -221,15 +221,16 @@ Usa o e-mail (e não o ID) para funcionar igual no banco local e no de produçã
 ### 6.1 Fluxo
 
 1. Cliente abre o link, escolhe o serviço e o horário (pode explorar antes de entrar).
-2. Ao confirmar, informa **telefone**; se for o primeiro acesso, também o **nome**.
-3. Recebe **6 dígitos** no WhatsApp; o código vale 10 minutos e 5 tentativas.
-4. Ao acertar, a sessão é criada (30 dias) e o agendamento é gravado.
+2. Ao confirmar, informa o **telefone**. Se **já tem cadastro** no estabelecimento, entra na hora — sem código.
+3. No **primeiro acesso**, informa também o **nome** e recebe **6 dígitos** no WhatsApp (10 minutos, 5 tentativas).
+4. Ao acertar o código, o cadastro é criado e a sessão é aberta (30 dias); o agendamento é gravado.
 
-Alternativa mais direta: entrar primeiro (telefone → código) e depois agendar. A interface oferece as duas ordens; o código só é pedido uma vez por sessão.
+O código é, portanto, uma confirmação **de cadastro**, não um segundo fator em todo login. Quem já é cliente digita só o celular. A interface oferece as duas ordens (entrar primeiro ou agendar primeiro).
 
 ### 6.2 Regras
 
 - Telefone normalizado para dígitos (DDD + número, 10 ou 11 dígitos).
+- **Regra de acesso** (`agenday_portal_acesso_decidir`): cliente já cadastrado → entra direto; primeiro acesso → pede o nome e envia o código; `exigir_codigo_whatsapp` desligado (contingência) → entra direto até no primeiro acesso.
 - Código guardado como hash com `salt`; nunca em texto.
 - Limites: 3 códigos por 10 minutos por telefone, 10 por dia por telefone, 20 por hora por IP.
 - Sessão: cookie `AGENDAY_CLIENTE`, 64 caracteres hexadecimais, `HttpOnly`, `Secure`, `SameSite=Lax`, 30 dias.
@@ -238,7 +239,9 @@ Alternativa mais direta: entrar primeiro (telefone → código) e depois agendar
 
 ### 6.3 Por que não senha
 
-O telefone é a identidade e o WhatsApp é o segundo fator. Sem senha para esquecer, sem recuperação de senha, e o número fica comprovado — que é exatamente o que o responsável pediu.
+O telefone é a identidade. O WhatsApp confirma o número **no cadastro**; depois disso o cliente entra só com o celular — como o responsável pediu em 21/11/2026. Sem senha para esquecer e sem recuperação de senha.
+
+**Risco assumido:** quem souber o celular de um cliente consegue abrir a sessão dele e ver ou cancelar os agendamentos. A sessão é revogável (`sessao_cliente`) e a regra está isolada em `agenday_portal_acesso_decidir()`; se for preciso exigir código em todo login, a mudança é em um único ponto.
 
 ## 7. Agendamento, remarcação e cancelamento
 
@@ -306,7 +309,7 @@ Se o WhatsApp estiver fora durante a apresentação:
 
 1. **Sessão de 30 dias** criada no dia anterior continua válida — o cliente que já entrou segue agendando.
 2. **Link de cancelamento** funciona sem login.
-3. **Chave `exigir_codigo_whatsapp`** pode ser desligada em Configurações. Com ela desligada, o acesso por telefone não pede código — usar **somente** em contingência e religar depois.
+3. **Chave `exigir_codigo_whatsapp`** pode ser desligada em Configurações. Com ela desligada, o acesso por telefone não pede código **nem no primeiro acesso** — usar **somente** em contingência e religar depois. Com ela ligada (padrão), o código é pedido apenas no cadastro.
 
 ### 8.6 Instalação (o que falta)
 
