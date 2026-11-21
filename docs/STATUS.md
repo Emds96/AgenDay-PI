@@ -1,6 +1,20 @@
 # STATUS — AgenDay 2.0
 
-## ATT-01 — Comparecimento, faltou e fechamento do dia (21/11/2026; implementado no local, não publicado)
+## DEPLOY-20261121 — Publicação do SHA 47fb029 e conta de demonstração (21/11/2026)
+
+- **Autorização:** responsável autorizou publicar tudo o que estava no local e criar a conta de demonstração no site oficial.
+- **Backup antes da publicação:** `C:\Users\EDER\Documents\AgenDay-Backups\2026-11-20_222428_b9ce5ee5` (`BACKUP OK`).
+- **SQL no phpMyAdmin (antes do código):** `sql/migracao-status-comparecimento.sql` — enum com `em_atendimento` e `faltou`, tolerância padrão 30 e atualização de 10 → 30. Conferido por `SHOW COLUMNS`.
+- **Código:** run `44856321866` no SHA `47fb029`; três jobs com sucesso. Flags ligadas apenas durante a execução e desligadas ao final (`false` / `disabled`).
+- **Validação por FTPS:** `agendar.php`, `criar-agendamento.php`, `lib/comparecimento.php`, `api/comparecimento.php`, `api/horarios.php`, `lib/disponibilidade.php`, `js/calendario.js`, `js/agendar.js` e `css/agendar.css` presentes; `arquivos/` e `conexao.php` preservados.
+- **Conta de demonstração:** `studio@demonstracao.com` (estabelecimento #22), senha definida pelo responsável no chat. Dados fictícios: **Studio Bella Vita**, 5 serviços, 4 funcionárias, 15 clientes, horário seg–sáb com almoço, 2 bloqueios e **173 agendamentos** (16/10 a 11/12): 100 concluídos, 12 faltas, 12 cancelados, 29 agendados e 20 confirmados.
+- **Como a demo foi criada:** semeador PHP temporário com token aleatório, enviado por FTPS, executado uma vez e **removido em seguida** (conferido: nenhum `_agenday_seed_` restante). Nenhum script executável ficou na hospedagem.
+- **Validação no site publicado:** login da demo funcionando; agenda abrindo em 20/11 com 4 atendimentos e 90 registros em novembro; `agendar.php` listando os serviços da demo e 12 horários livres em 24/11.
+- **Observação:** a senha da conta demo foi informada ao responsável no chat; a conta é de demonstração, sem dados reais.
+
+---
+
+## ATT-01 — Comparecimento, faltou e fechamento do dia (21/11/2026; implementado no local e publicado em 21/11 — SHA `47fb029`)
 
 - **Escopo autorizado:** lote 1 do PEND-02 — registrar chegada, falta e encerrar o atendimento sem depender de cron.
 - **Banco:** `sql/migracao-status-comparecimento.sql` acrescenta `em_atendimento` e `faltou` ao enum de status e eleva a tolerância padrão para **30 minutos** (contas ainda em 10 são atualizadas; quem configurou outro valor é preservado). `sql/BD_v2.sql` atualizado. Migração aplicada no banco local.
