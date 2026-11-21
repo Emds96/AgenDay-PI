@@ -147,6 +147,51 @@ Acompanhe a execução e comprove **`validar=success`, `publicar=success` e uplo
 
 Registre evidência do `run_id`, `headSha`, três jobs, resultado e confirmação `false/disabled`. Se qualquer comando falhar, **não afirmar que a trava foi restaurada** até confirmar em nova consulta.
 
+## Mudança de banco em produção (SQL) — fora do workflow
+
+O workflow publica **apenas arquivos**. **Nenhuma migração roda automaticamente** e não existe *migration runner* no projeto: toda alteração de estrutura ou de dados em produção é **manual, autorizada e registrada**.
+
+**Regra de ordem:** o SQL vem **antes** do código que depende dele. Se a migração falhar, **não publicar** o código — versão nova com enum/coluna antiga gera erro em produção.
+
+**Pré-requisitos:** autorização do responsável para o SQL e o destino exatos; backup recente e verificado ([BACKUP_E_RECUPERACAO.md](BACKUP_E_RECUPERACAO.md)); arquivo de migração versionado em `sql/`; confirmação de que o banco aberto é o **independente do AgenDay** (`if0_43415733_agenday`), nunca o do Gabriel.
+
+### A. Migração de estrutura (phpMyAdmin)
+
+1. Confirmar `BACKUP OK` e encerrar qualquer publicação em andamento.
+2. Abrir o painel do InfinityFree → **MySQL Databases** → **phpMyAdmin** do banco do AgenDay.
+3. Aba **SQL**: colar o conteúdo **completo** do arquivo `sql/<migracao>.sql` e executar.
+4. Conferir o efeito com consultas de leitura, por exemplo:
+
+```sql
+SHOW COLUMNS FROM agendamentos LIKE 'status';
+SHOW COLUMNS FROM estabelecimento LIKE 'tolerancia_atraso_minutos';
+```
+
+5. Só depois disso publicar o código (seções acima) e registrar em `docs/STATUS.md` qual arquivo foi aplicado, quando e com qual evidência.
+
+**Exemplo real (21/11/2026):** `sql/migracao-status-comparecimento.sql` — acrescentou `em_atendimento` e `faltou` ao enum de status, elevou a tolerância padrão para 30 e atualizou contas ainda em 10. Conferido por `SHOW COLUMNS` antes de publicar o SHA `47fb029`.
+
+### B. Gerar ou corrigir dados (script temporário)
+
+Quando a mudança não é só de estrutura — por exemplo, criar a **conta de demonstração** com 173 agendamentos — o padrão validado é um **semeador PHP temporário**, porque o plano gratuito não aceita conexão MySQL externa:
+
+1. Escrever o script para usar `require conexao.php`, **token aleatório** na URL e `hash_equals`; sem token, responder `403` e não fazer nada.
+2. Restringir o escopo ao `id_estabelecimento` correto (nunca `DELETE`/`UPDATE` amplo) e usar `password_hash` para senhas.
+3. Enviar por FTPS com nome aleatório `_agenday_seed_<hex>.php`.
+4. Abrir a URL **uma vez** no navegador e conferir a saída (contagens, id criado).
+5. **Remover o arquivo por FTPS** e confirmar que não sobrou nenhum `_agenday_seed_` (`nlst`).
+6. Registrar no `STATUS.md` o que foi criado, com contagens e a confirmação de remoção.
+
+**Foi assim que a conta demo entrou em produção em 21/11/2026** (estabelecimento `#22`, 173 agendamentos, semeador removido, zero temporários restantes). O script não fica no repositório nem na hospedagem. Para o **banco local**, existe equivalente em `C:\Users\EDER\AgenDay-Local\ferramentas\semear-demo-local.php` (recusa rodar fora de `127.0.0.1`).
+
+### C. Nunca fazer
+
+- Importar `sql/BD_v2.sql` sobre banco existente — ele cria ambiente novo.
+- Rodar SQL em produção sem backup recente ou sem autorização.
+- Deixar script executável, dump ou `.sql` na hospedagem.
+- Alterar dados de contas reais para "testar" — usar contas de QA/demonstração.
+- Publicar código que depende de coluna nova **antes** da migração.
+
 ## Validação pós-deploy e contingência
 
 - Acessar https://agenday-sistema.infinityfree.io/ em navegador com JavaScript habilitado (InfinityFree pode exibir desafio anti-bot em clientes HTTP simples). Conferir rotas e assets e **identificar efetivamente a versão publicada**; a versão PHP completa não expõe necessariamente SHA de build.
