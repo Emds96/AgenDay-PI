@@ -1,5 +1,21 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-06 — Link de cancelamento no celular e aviso de remarcação (21/11/2026)
+
+- **Pedido do responsável (21/11/2026):** o cancelamento pelo painel e a remarcação funcionam, mas o link de cancelamento enviado no WhatsApp "não funciona"; também pediu mensagem no WhatsApp confirmando a remarcação. Tudo **somente no local**, sem publicar.
+- **Diagnóstico com evidência:** o link e o token estavam corretos — o endereço enviado (`cliente-cancelar.php?t=<64 hex>`) abriu a página de cancelamento em produção com um token real, e a mensagem de remarcação **já existia e já era enviada** (registros do WAHA em 21/11 às 20:04 e 23:44 UTC). Dois defeitos reais foram encontrados:
+  1. **O botão "Confirmar cancelamento" falhava em parte dos navegadores móveis.** A página não tem sessão e dependia só de `Origin`/`Referer`, com `Referrer-Policy: no-referrer`; reproduzido no local: POST com `Origin` → `200 Agendamento cancelado`, POST sem `Origin` → `403 Pedido não reconhecido`.
+  2. **Mensagens geradas no PC apontavam para produção com um token que só existia no banco local** (o estabelecimento local 29 tem `dominio=agenday-agendamentos.infinityfree.io`). Exemplo real: a mensagem das 21:22 UTC levava o token `2db1930e…`, presente apenas em `agenday_local`; clicar nela abre produção e mostra "agendamento não encontrado".
+- **Correção do link (`cliente-cancelar.php`, `lib/portal-cliente.php`):** o formulário ganhou o campo oculto `assinatura` (`sha256` do token, `agenday_portal_assinatura_cancelamento()`), conferido com `hash_equals`. O `Origin` passou a ser exigido **apenas quando o navegador o envia**; sem cabeçalho, a assinatura prova que a página foi carregada. POST cego de outro site continua bloqueado (sem o token não há assinatura válida). O link "Voltar sem cancelar" preserva `?e=slug`.
+- **Links no local (`lib/portal-cliente.php`):** `agenday_portal_host_local()` reconhece `localhost`, `127.0.0.1`, IPv6 local, faixas privadas e `*.local`; nesses casos `agenday_portal_base_url()` e `agenday_portal_link_cancelamento()` usam o host atual (`http://127.0.0.1:8080/...`). Fora do local, nada muda: continua o `dominio` do estabelecimento.
+- **Envio imediato (`lib/whatsapp.php`):** a entrega de uma mensagem foi extraída para `agenday_whatsapp_entregar()` e existe `agenday_whatsapp_enviar_agora()`, que envia a mensagem recém-enfileirada **sem esperar a trava de 1 minuto** da fila. Criação, remarcação e cancelamento usam essa via — sem cron na hospedagem, a confirmação não fica parada até a próxima página abrir. A reserva por mensagem (`pendente/erro` → `enviando`) continua evitando envio duplicado.
+- **Testes executados no local (21/11/2026):** `tests/portal-cliente.php` subiu de 84 para **93 verificações** (host local, links locais, assinatura estável e distinta por token); `agendamento-validacao` (19), `agendamento-cancelamento` (20), `configuracao-estabelecimento` (13), `alteracao-senha-validacao` (16) e `responsividade-check` (210) limpos; `php -l` limpo nos quatro arquivos alterados.
+- **Prova por HTTP local:** POST **sem** `Origin` e com assinatura correta → `200 Agendamento cancelado`; assinatura errada → `403`; `Origin` falso com assinatura correta → `403`. A mensagem de cancelamento gerada no teste saiu com `http://127.0.0.1:8080/cliente.php?e=studio` e status `enviado`. Agendamentos e mensagens de teste apagados do `agenday_local` no fim.
+- **Ainda pendente:** publicar (deploy exige autorização de SHA e destino) e clicar no link pelo **celular físico** em produção; a mensagem de remarcação já foi vista no aparelho do responsável.
+- **Estado real:** corrigido e testado **no PC local**; **não publicado**.
+
+---
+
 ## DEPLOY-01 — Migração e publicação do portal do cliente (21/11/2026)
 
 - **Autorização do responsável (21/11/2026):** fechar o lote, publicar, aplicar as migrações SQL pendentes em produção e deixar o sistema online.

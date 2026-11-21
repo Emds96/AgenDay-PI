@@ -223,6 +223,51 @@ function agenday_portal_host_normalizar(string $host): string
     return $host;
 }
 
+/**
+ * O sistema está respondendo em um host local (desenvolvimento)?
+ *
+ * Serve para montar links que funcionem onde o sistema está rodando. Sem isso,
+ * uma mensagem gerada no local aponta para o domínio de produção com um token
+ * que só existe no banco local — o link abre e diz "agendamento não encontrado".
+ */
+function agenday_portal_host_local(): bool
+{
+    $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+    if ($host === '') {
+        return false;
+    }
+    $host = preg_replace('/:\d+\z/', '', $host) ?? $host;
+    if ($host === 'localhost' || $host === '127.0.0.1' || $host === '::1' || $host === '[::1]') {
+        return true;
+    }
+    if (preg_match('/\A(10\.|127\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.)/', $host)) {
+        return true;
+    }
+    return (bool) preg_match('/\.local\z/', $host);
+}
+
+/** Host atual com porta, usado nos links locais (ex.: 127.0.0.1:8080). */
+function agenday_portal_host_atual_completo(): string
+{
+    $host = trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    if ($host === '' || !preg_match('/\A[A-Za-z0-9.\-\[\]:]{1,80}\z/', $host)) {
+        return '';
+    }
+    return $host;
+}
+
+/**
+ * Assinatura do formulário de cancelamento por link.
+ *
+ * A página não tem sessão: o token do link é a própria capacidade de cancelar.
+ * A assinatura impede um POST cego de outro site e não depende do cabeçalho
+ * Origin/Referer, que alguns navegadores móveis não enviam em formulários.
+ */
+function agenday_portal_assinatura_cancelamento(string $token): string
+{
+    return hash('sha256', 'agenday-cancelar-v1|' . $token);
+}
+
 /* ---------------------------------------------------------------------------
  * Estabelecimento
  * ------------------------------------------------------------------------- */
@@ -289,12 +334,20 @@ function agenday_portal_estabelecimento_resolver(mysqli $conexao, ?string $slugP
 
 /**
  * Base pública do estabelecimento para montar links (mensagens e QR).
- * Usa o domínio quando existe; senão devolve caminho relativo com ?e=slug.
+ *
+ * No local usa o host atual (para o link abrir o sistema que gerou a mensagem);
+ * fora dele usa o domínio do cliente e, sem domínio, um caminho relativo.
  */
 function agenday_portal_base_url(array $estabelecimento): string
 {
-    $dominio = isset($estabelecimento['dominio']) ? trim((string) $estabelecimento['dominio']) : '';
     $slug = isset($estabelecimento['slug']) ? (string) $estabelecimento['slug'] : '';
+    if (agenday_portal_host_local()) {
+        $host = agenday_portal_host_atual_completo();
+        if ($host !== '') {
+            return 'http://' . $host . '/cliente.php?e=' . rawurlencode($slug);
+        }
+    }
+    $dominio = isset($estabelecimento['dominio']) ? trim((string) $estabelecimento['dominio']) : '';
     if ($dominio !== '') {
         return 'https://' . agenday_portal_host_normalizar($dominio) . '/?e=' . rawurlencode($slug);
     }
@@ -671,8 +724,14 @@ function agenday_portal_link(array $estabelecimento): string
 /** Link de cancelamento sem login, enviado nas mensagens. */
 function agenday_portal_link_cancelamento(array $estabelecimento, string $token): string
 {
-    $dominio = trim((string) ($estabelecimento['dominio'] ?? ''));
     $caminho = 'cliente-cancelar.php?t=' . rawurlencode($token);
+    if (agenday_portal_host_local()) {
+        $host = agenday_portal_host_atual_completo();
+        if ($host !== '') {
+            return 'http://' . $host . '/' . $caminho;
+        }
+    }
+    $dominio = trim((string) ($estabelecimento['dominio'] ?? ''));
     if ($dominio !== '') {
         return 'https://' . agenday_portal_host_normalizar($dominio) . '/' . $caminho;
     }
