@@ -149,17 +149,21 @@ Salve e clique em **Testar conexão**. O retorno esperado é a sessão `WORKING`
 
 ## Rotina do dia da feira
 
-1. Ligar o PC e abrir o Docker Desktop (o contêiner volta sozinho).
-2. Abrir o PowerShell na pasta do WAHA e rodar `ngrok http 3000`.
-3. Se o endereço mudou, atualizar em **Configurações → WhatsApp** e salvar.
+1. Dar dois cliques no atalho **AgenDay - Iniciar WhatsApp** na Área de Trabalho (ou rodar `powershell -ExecutionPolicy Bypass -File scripts\iniciar-feira.ps1`). Ele limpa as variáveis de proxy, sobe o Docker Desktop se preciso, inicia o contêiner `agenday-waha`, confere se a sessão `default` está `WORKING` e abre o ngrok no domínio fixo. A chave do WAHA é lida do próprio contêiner e não aparece na tela.
+2. Ler o resumo: se aparecer `Sessao: WORKING` e `ngrok: https://...`, está pronto. Se o script avisar de pendência, ele diz o que fazer (normalmente escanear o QR em <http://localhost:3000/dashboard>).
+3. Se o endereço do ngrok mudou, atualizar em **Configurações → WhatsApp** e salvar.
 4. **Testar conexão** e enviar uma mensagem de teste para o próprio celular.
 5. Deixar o PC ligado, sem suspender, e o ngrok aberto.
+
+O script não contém senhas nem tokens e não altera banco, código ou hospedagem. `-ComPhp` também sobe o PHP local em `127.0.0.1:8080`; `-SemPausa` serve para execução automática.
+
+Depois de reiniciar o computador, o Docker Desktop e o contêiner voltam sozinhos (`restart unless-stopped`) e o pareamento é preservado em `Documents\AgenDay-Tools\waha\sessions`; o que **não** volta sozinho é o ngrok — é justamente o que o script resolve.
 
 ## Problemas comuns
 
 | Sintoma | Causa provável | O que fazer |
 | --- | --- | --- |
-| "Não foi possível falar com o WhatsApp" | ngrok parado ou endereço antigo | rodar `ngrok http 3000`, atualizar o endereço e salvar |
+| "Não foi possível falar com o WhatsApp" | ngrok parado ou endereço antigo | rodar o atalho **AgenDay - Iniciar WhatsApp**, conferir o endereço e salvar |
 | Erro 401 | chave da API diferente do `.env` | copiar de novo a `WAHA_API_KEY` |
 | Sessão `STOPPED` / `SCAN_QR` | pareamento perdido | iniciar a sessão e escanear o QR outra vez |
 | Mensagem fica "pendente" | WAHA fora no momento do envio | abrir a agenda ou usar "Enviar pendentes agora" |

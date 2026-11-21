@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## OPS-01 — Script e atalho de início do WhatsApp (21/11/2026)
+
+- **Pedido do responsável:** um script para o caso de reiniciar o computador, com atalho na Área de Trabalho, e autorização para apagar o cliente de teste "Eder QA" do banco local.
+- **`scripts/iniciar-feira.ps1`:** limpa `http_proxy`/`https_proxy` (erro que já atrapalhou o ngrok), sobe o Docker Desktop se o motor não responder, inicia o contêiner `agenday-waha` quando parado, espera a API em `127.0.0.1:3000`, lê a `WAHA_API_KEY` do próprio contêiner (nunca imprime), confere a sessão `default` e tenta iniciá-la se estiver `STOPPED`, abre o ngrok no domínio fixo `additionally-nondeluded-elane.ngrok-free.dev` e confirma o túnel pelo painel local (`4040`). Termina com resumo e código de saída 1 se algo faltar. `-ComPhp` sobe também o PHP local em `127.0.0.1:8080`; `-SemPausa` dispensa o Enter final.
+- **Atalho:** `AgenDay - Iniciar WhatsApp.lnk` na Área de Trabalho, apontando para `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ...\scripts\iniciar-feira.ps1`, com diretório de trabalho na raiz do projeto.
+- **Testes executados no local (21/11/2026):** com tudo já no ar, o script devolveu `Docker: ok`, `Sessao: WORKING` e o túnel ativo (saída 0). Com o processo do ngrok encerrado de propósito, o script reabriu o túnel no domínio fixo e o endpoint público `https://additionally-nondeluded-elane.ngrok-free.dev/api/sessions/default` respondeu `WORKING`.
+- **O que volta sozinho após reiniciar:** Docker Desktop (`AutoStart=True`) e o contêiner (`restart unless-stopped`), com o pareamento preservado em `Documents\AgenDay-Tools\waha\sessions`. O ngrok é o único que não volta sozinho — é o que o script resolve.
+- **Limpeza local autorizada:** apagados o agendamento de teste 553 (cancelado), 3 mensagens da fila ligadas a ele, 2 sessões e o cliente "Eder QA" (id 73, `92994331267`) do banco `agenday_local`, em transação. Conferido depois: zero linhas remanescentes e a conta `EMDS` (id 77, `92981351207`) intacta. **Não afeta o envio de mensagens:** o remetente é a conta pareada na sessão do WAHA (`559294331267`), não uma linha do banco; `whatsapp_config` guarda apenas `ativo`, `base_url`, `api_key` e `sessao`.
+- **Documentação:** `docs/WHATSAPP_WAHA_GUIA.md` — rotina do dia da feira reescrita em torno do atalho e do script, com a explicação do que volta sozinho após reiniciar.
+- **Estado real:** ferramenta local, testada e integrada; não altera código publicado, banco de produção nem deploy.
+
+---
+
 ## PORTAL-05 — Serviço e profissional em menu, dia no calendário (21/11/2026)
 
 - **Pedido do responsável:** na tela do cliente, serviço e profissional devem ser escolhidos em **menu dropdown**, mantendo a identidade visual dos controles atuais, e o dia deve ser escolhido em **calendário**, com os horários aparecendo abaixo.
