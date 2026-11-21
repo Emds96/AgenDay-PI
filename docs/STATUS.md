@@ -43,7 +43,7 @@
 
 ---
 
-## AGD-01 — Tela de agendamento com horários livres (21/11/2026; branch `feat/agendar`, não publicada)
+## AGD-01 — Tela de agendamento com horários livres (21/11/2026; publicada em 21/11 — SHA `47fb029`)
 
 - **Escopo autorizado:** implementar no local, sem publicar, a tela de agendamento desenhada e validada no protótipo — **um atendimento avulso**, com disponibilidade real vinda do servidor.
 - **Arquivos novos:** `agendar.php` (página), `css/agendar.css`, `js/agendar.js`, `lib/disponibilidade.php` (cálculo dos horários), `api/horarios.php` (JSON), `api/clientes-busca.php` (busca por nome/telefone), `criar-agendamento.php` (gravação) e `criar-cliente-rapido.php` (cliente sem sair da tela).
