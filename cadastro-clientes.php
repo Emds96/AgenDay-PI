@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/verifica_login.php';
 require_once __DIR__ . '/lib/cadastro-reenvio.php';
+require_once __DIR__ . '/lib/portal-cliente.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     http_response_code(405);
@@ -30,6 +31,8 @@ $email = trim($email);
 $contato = trim($contato);
 $letrasNome = strlen($nome) <= 480 && preg_match('//u', $nome) ? preg_match_all('/./us', $nome) : 0;
 $digitos = preg_replace('/[^0-9]/', '', $contato);
+// Identidade do portal: DDD + número. Null quando o telefone não se encaixa.
+$telefoneDigits = agenday_portal_telefone_normalizar($contato);
 
 if ($nome === '' || $letrasNome === 0 || $letrasNome > 120) {
     agenday_erro_cliente('O nome é obrigatório (máximo de 120 caracteres).');
@@ -108,10 +111,10 @@ try {
     $emailBanco = $email === '' ? null : $email;
     $stmt = $conexao->prepare(
         'INSERT INTO clientes
-         (id_estabelecimento, nome_cliente, email_cliente, contato_cliente, arquivo_cliente)
-         VALUES (?, ?, ?, ?, ?)'
+         (id_estabelecimento, nome_cliente, email_cliente, contato_cliente, telefone_digits, arquivo_cliente)
+         VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->bind_param('issss', $idEstabelecimento, $nome, $emailBanco, $contato, $caminhoPublico);
+    $stmt->bind_param('isssss', $idEstabelecimento, $nome, $emailBanco, $contato, $telefoneDigits, $caminhoPublico);
     $stmt->execute();
     $stmt->close();
 

@@ -30,10 +30,19 @@ function agenday_agenda_validar_id_cancelamento($valor): int
  */
 function agenday_agenda_cancelar(mysqli $conexao, int $idAgendamento): array
 {
+    return agenday_agenda_cancelar_para($conexao, agenday_agenda_estabelecimento(), $idAgendamento);
+}
+
+/**
+ * Mesma operação com estabelecimento explícito (portal do cliente, sem sessão).
+ *
+ * @return array{ja_cancelado:bool,data_inicio:string}
+ */
+function agenday_agenda_cancelar_para(mysqli $conexao, int $empresa, int $idAgendamento): array
+{
     if ($idAgendamento < 1 || $idAgendamento > 4294967295) {
         throw new InvalidArgumentException('Identificador de agendamento inválido.');
     }
-    $empresa = agenday_agenda_estabelecimento();
 
     // Consulta inicial sem lock; a linha será relida sob bloqueio na transação.
     $stmt = $conexao->prepare(

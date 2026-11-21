@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/sessao.php';
+require_once __DIR__ . '/lib/portal-cliente.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, private, max-age=0');
@@ -35,6 +36,8 @@ if (mb_strlen($nome) < 2 || mb_strlen($nome) > 120) {
 if ($telefone !== '' && (strlen($telefone) < 8 || strlen($telefone) > 15)) {
     agenday_cliente_rapido_erro('O telefone deve ter de 8 a 15 dígitos, ou ficar vazio.');
 }
+// Identidade do portal: DDD + número (10 ou 11 dígitos). Null se não se encaixa.
+$telefoneDigits = agenday_portal_telefone_normalizar($telefone);
 
 try {
     require_once __DIR__ . '/conexao.php';
@@ -42,11 +45,19 @@ try {
 
     // Telefone repetido reaproveita o cadastro existente.
     if ($telefone !== '') {
-        $consulta = $conexao->prepare(
-            'SELECT id_cliente, nome_cliente FROM clientes
-             WHERE id_estabelecimento = ? AND contato_cliente = ? LIMIT 1'
-        );
-        $consulta->bind_param('is', $idEstabelecimento, $telefone);
+        if ($telefoneDigits !== null) {
+            $consulta = $conexao->prepare(
+                'SELECT id_cliente, nome_cliente FROM clientes
+                 WHERE id_estabelecimento = ? AND telefone_digits = ? LIMIT 1'
+            );
+            $consulta->bind_param('is', $idEstabelecimento, $telefoneDigits);
+        } else {
+            $consulta = $conexao->prepare(
+                'SELECT id_cliente, nome_cliente FROM clientes
+                 WHERE id_estabelecimento = ? AND contato_cliente = ? LIMIT 1'
+            );
+            $consulta->bind_param('is', $idEstabelecimento, $telefone);
+        }
         $consulta->execute();
         $existente = $consulta->get_result()->fetch_assoc();
         $consulta->close();
@@ -64,11 +75,11 @@ try {
     }
 
     $insercao = $conexao->prepare(
-        'INSERT INTO clientes (id_estabelecimento, nome_cliente, contato_cliente)
-         VALUES (?, ?, ?)'
+        'INSERT INTO clientes (id_estabelecimento, nome_cliente, contato_cliente, telefone_digits)
+         VALUES (?, ?, ?, ?)'
     );
     // contato_cliente é NOT NULL no banco: vazio vira string vazia.
-    $insercao->bind_param('iss', $idEstabelecimento, $nome, $telefone);
+    $insercao->bind_param('isss', $idEstabelecimento, $nome, $telefone, $telefoneDigits);
     $insercao->execute();
     $idNovo = (int) $conexao->insert_id;
     $insercao->close();

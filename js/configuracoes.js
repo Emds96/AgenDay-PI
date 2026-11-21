@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mapa = {
                     'aba-estabelecimento': 'estabelecimento',
                     'aba-horarios': 'funcionamento',
+                    'aba-whatsapp': 'whatsapp',
                     'aba-minha-conta': 'conta'
                 };
                 url.searchParams.set('aba', mapa[tab.id] || 'estabelecimento');
@@ -111,6 +112,36 @@ document.addEventListener('DOMContentLoaded', () => {
         bloqueioInicio.addEventListener('input', sincronizarBloqueio);
         bloqueioFim.addEventListener('input', sincronizarBloqueio);
         sincronizarBloqueio();
+    }
+
+    // Aba WhatsApp: copiar o link público do portal.
+    const botaoCopiar = document.getElementById('copiar-portal-link');
+    if (botaoCopiar) {
+        const textoOriginal = botaoCopiar.textContent;
+        const avisar = texto => {
+            botaoCopiar.textContent = texto;
+            window.setTimeout(() => { botaoCopiar.textContent = textoOriginal; }, 2000);
+        };
+        botaoCopiar.addEventListener('click', () => {
+            const link = botaoCopiar.dataset.link || '';
+            if (!link) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(link)
+                    .then(() => avisar('Copiado!'))
+                    .catch(() => avisar('Copie manualmente'));
+                return;
+            }
+            const campo = document.getElementById('portal-link');
+            if (campo) {
+                campo.select();
+                try {
+                    document.execCommand('copy');
+                    avisar('Copiado!');
+                } catch (_) {
+                    avisar('Copie manualmente');
+                }
+            }
+        });
     }
 
     const campoFoto = document.getElementById('fotoConta');

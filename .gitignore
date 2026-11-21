@@ -10,3 +10,4 @@ backups/
 *.partial
 .opencode/
 _prototipo/
+deploy-package/

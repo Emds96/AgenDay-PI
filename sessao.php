@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+// No domínio do cliente só o portal responde; rotas administrativas são
+// redirecionadas. Roda antes de session_start() e é inerte em outros hosts.
+require_once __DIR__ . '/lib/guarda-host.php';
+agenday_guarda_host_aplicar();
+
 // Inicialização centralizada para login, cadastro e páginas protegidas.
 if (session_status() !== PHP_SESSION_ACTIVE) {
     ini_set('session.use_strict_mode', '1');
