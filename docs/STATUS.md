@@ -1,5 +1,15 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-02 — Guia do WhatsApp e PR #64 integrado (21/11/2026)
+
+- **PR #64** (`feat/portal-cliente` → `dev-feira-uninorte`) integrado em `1e670cd`. CI verde nos dois workflows: `PHP syntax check` e `Validacao e publicacao controlada` (run `44936376746`), que agora executa também `tests/portal-cliente.php` (69 verificações). Nada foi publicado: `AGENDAY_DEPLOY_ENABLED`/`AGENDAY_DEPLOY_MODE` continuam `false`/`disabled`, e o job `publicar` ficou `skipped`.
+- **Novo documento:** `docs/WHATSAPP_WAHA_GUIA.md` — instalação do Docker Desktop (winget + reinício), geração das credenciais do WAHA, pareamento por QR, túnel ngrok, preenchimento da aba WhatsApp, teste real, rotina do dia da feira, falhas comuns e plano B sem WhatsApp.
+- **Código:** `lib/whatsapp.php` passou a enviar o cabeçalho `ngrok-skip-browser-warning` no envio e no teste de conexão, para o túnel gratuito não devolver a página de aviso em vez do JSON.
+- **Correção de isolamento no mesmo lote:** `agenday_portal_sessao_ler()` passou a receber o estabelecimento e a filtrar por ele; testado com dois estabelecimentos no banco local (sessão de `studio` não vale em `teste-b`, e a escrita nesse domínio devolve 401).
+- **Estado real:** implementado e testado no PC local; **não publicado** e **sem WhatsApp real** até o Docker/WAHA/ngrok serem instalados no PC.
+
+---
+
 ## PORTAL-01 — Portal público do cliente (21/11/2026; implementado e testado no local, **não publicado**)
 
 - **Escopo autorizado:** plano aprovado em 21/11 (`docs/PORTAL_CLIENTE_PLANO.md`) — segundo domínio para o cliente, login por celular com código no WhatsApp, agendar, remarcar e cancelar. Branch `feat/portal-cliente` a partir de `849af46`.
@@ -13,7 +23,7 @@
 - **Guarda de host:** `sessao.php` aplica a guarda antes de `session_start()`. Testado por `curl` com `Host` falso: `agenda.php`, `index.php`, `login.php`, `api/horarios.php` e `config.php` devolvem 302 para `/cliente.php`; `cliente.php`, `cliente-cancelar.php` e `api/cliente-*.php` respondem normalmente.
 - **Validação local (21/11/2026, PHP 8.4.28 + MariaDB 11.8.9):** login com código enviado a um **WAHA simulado local**; código errado contabilizou tentativa; código certo abriu sessão; reuso recusado; criar, listar, remarcar, cancelar e cancelar por link funcionaram; conflito de horário recusado (409); POST sem origem recusado (403); página de cancelamento inativa mostra "Nada a cancelar"; fila ficou em `erro` com o serviço fora e foi reenviada sozinha ao abrir o portal, sem atrasar a página (8 ms). `php -l` limpo, `tests/portal-cliente.php` (69), `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `responsividade-check` (210) aprovados. Dados de teste removidos; conta demo voltou a 173 agendamentos e 15 clientes.
 - **Publicação:** `scripts/publicar_ftp.py` passou a enviar o mesmo pacote para `htdocs` e para `agenday-agendamentos.infinityfree.io/htdocs` (cliente primeiro; a configuração privada do Brevo só na pasta principal). O teste de FTPS somente leitura do workflow confere as duas pastas.
-- **Pendências:** PR para `dev-feira-uninorte` e CI; validação visual do responsável; instalar Docker/WAHA e parear o número; publicar o túnel ngrok; aplicar a migração em produção; deploy único com as duas pastas; teste real de mensagem.
+- **Pendências:** instalar Docker/WAHA e parear o número (`docs/WHATSAPP_WAHA_GUIA.md`); publicar o túnel ngrok; validação visual do responsável; aplicar a migração em produção; deploy único com as duas pastas; teste real de mensagem.
 - **Riscos registrados:** sem cron, a fila depende de visita ao portal/agenda ou do botão manual; com o WAHA fora, a primeira tentativa espera até 8 s por mensagem, mas fora do tempo de resposta da página; o link `cliente.php` no domínio principal é o plano B caso o domínio novo apresente problema.
 
 ---

@@ -232,6 +232,8 @@ function agenday_whatsapp_enviar(array $config, string $digitos, string $texto):
             'accept: application/json',
             'content-type: application/json',
             'X-Api-Key: ' . (string) $config['api_key'],
+            // Evita a página de aviso do ngrok gratuito em túneis HTTP.
+            'ngrok-skip-browser-warning: true',
         ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 4,
@@ -273,7 +275,11 @@ function agenday_whatsapp_testar(array $config): array
         return ['ok' => false, 'estado' => '', 'erro' => 'Não foi possível iniciar o teste.'];
     }
     curl_setopt_array($curl, [
-        CURLOPT_HTTPHEADER => ['accept: application/json', 'X-Api-Key: ' . (string) $config['api_key']],
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'X-Api-Key: ' . (string) $config['api_key'],
+            'ngrok-skip-browser-warning: true',
+        ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 4,
         CURLOPT_TIMEOUT => 8,

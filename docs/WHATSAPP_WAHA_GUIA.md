@@ -1,0 +1,182 @@
+# WhatsApp do AgenDay (WAHA + ngrok) — guia operacional
+
+Atualizado em 21/11/2026. Este guia é para o **PC que fica ligado durante a feira**, não para a hospedagem.
+
+O AgenDay não envia WhatsApp direto: ele coloca a mensagem numa fila (`mensagem_whatsapp`) e chama, por HTTPS de saída, um servidor **WAHA** que roda no seu PC. O WAHA é um WhatsApp Web automatizado, pareado ao número de um celular por QR code. Como a hospedagem não consegue enxergar o seu PC, o WAHA precisa de um endereço público: é o **ngrok** que cria esse endereço.
+
+```
+Navegador do cliente
+   → agenday-agendamentos.infinityfree.io (PHP/MySQL)
+      → fila no banco
+         → HTTPS de saída → https://xxxx.ngrok-free.app (túnel)
+            → WAHA no PC (localhost:3000) → WhatsApp do celular pareado
+```
+
+Consequências que precisam ser aceitas:
+
+- O PC precisa estar **ligado, com Docker Desktop aberto e o ngrok rodando** durante todo o uso.
+- Se o PC reiniciar, o endereço do ngrok gratuito **muda** e precisa ser atualizado na aba WhatsApp (2 minutos).
+- O número pareado é o remetente. Quem escaneia o QR precisa estar disponível no momento do pareamento.
+- WAHA é um projeto não oficial: existe risco de o WhatsApp bloquear o número. **Não usar o número pessoal principal.**
+- Sem WhatsApp, o portal continua funcionando com a contingência (login só pelo celular), descrita no fim.
+
+## Pré-requisitos
+
+| Item | Situação em 21/11/2026 |
+| --- | --- |
+| Docker Desktop | **não instalado** — precisa instalar e reiniciar o PC |
+| WSL2 | `wsl.exe` presente; a instalação do Docker Desktop ativa o resto |
+| ngrok | **não instalado** — pacote `Ngrok.Ngrok` disponível no winget |
+| Conta ngrok + authtoken | já existe (o token **não** vai para o chat nem para o Git) |
+| Celular do número remetente | combinado com o responsável pelo número |
+
+## Passo 1 — Instalar o Docker Desktop (exige administrador e reinício)
+
+Em um PowerShell **como administrador**:
+
+```powershell
+winget install --id Docker.DockerDesktop -e --accept-package-agreements --accept-source-agreements
+```
+
+Depois **reinicie o PC**. Ao voltar, abra o **Docker Desktop**, aceite o contrato e, quando pedir, permita a integração com o WSL2. Não é necessário criar conta: escolha "Skip" / "Continue without signing in".
+
+Confirme em um PowerShell novo:
+
+```powershell
+docker --version
+docker run --rm hello-world
+```
+
+Se `hello-world` imprimir a mensagem de sucesso, o Docker está pronto.
+
+## Passo 2 — Criar a pasta do WAHA e as credenciais
+
+A pasta fica **fora do repositório** (o `.env` e as sessões nunca podem entrar no Git):
+
+```powershell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\Documents\AgenDay-Tools\waha" | Out-Null
+Set-Location "$env:USERPROFILE\Documents\AgenDay-Tools\waha"
+docker run --rm -v "${PWD}:/app/env" devlikeapro/waha init-waha /app/env
+Get-Content .env
+```
+
+O comando gera um `.env` com `WAHA_API_KEY`, `WAHA_DASHBOARD_USERNAME` e `WAHA_DASHBOARD_PASSWORD`. Guarde a **API key** (a mesma que vai em Configurações no AgenDay) e a senha do painel.
+
+## Passo 3 — Subir o WAHA
+
+Ainda na mesma pasta:
+
+```powershell
+docker run -d --name agenday-waha --restart unless-stopped `
+  --env-file "${PWD}\.env" `
+  -v "${PWD}\sessions:/app/.sessions" `
+  -p 3000:3000 `
+  devlikeapro/waha
+```
+
+- `--restart unless-stopped`: volta sozinho quando o PC liga (desde que o Docker Desktop inicie junto).
+- O volume `sessions` guarda o pareamento: sem ele, o QR teria que ser escaneado de novo a cada reinício.
+- Se já existir um contêiner com esse nome: `docker rm -f agenday-waha` e rode o comando de novo.
+
+Verificação:
+
+```powershell
+docker ps --filter name=agenday-waha
+curl.exe -s -H "X-Api-Key: SUA_CHAVE" http://127.0.0.1:3000/api/sessions/default
+```
+
+Deve responder um JSON com `"status": "STOPPED"` (ou `SCAN_QR`/`WORKING`).
+
+## Passo 4 — Parear o número (QR)
+
+1. Abra <http://localhost:3000/dashboard>.
+2. Entre com o usuário e a senha do `.env`.
+3. Cole a **API key** quando o painel pedir para conectar ao servidor.
+4. Inicie a sessão **`default`** (nome que o AgenDay usa).
+5. Quando o status virar `SCAN_QR`, clique no ícone da câmera para ver o QR.
+6. No celular do número remetente: **WhatsApp → Configurações → Aparelhos conectados → Conectar aparelho** e escaneie.
+7. O status precisa chegar a **`WORKING`**. Se aparecer "Click to reload QR", pare a sessão e inicie de novo.
+
+## Passo 5 — Publicar o endereço com o ngrok
+
+Instale (uma vez):
+
+```powershell
+winget install --id Ngrok.Ngrok -e --accept-package-agreements --accept-source-agreements
+```
+
+Registre o token da sua conta (uma vez, no seu PC; não cole em conversa nem em arquivo do repositório):
+
+```powershell
+ngrok config add-authtoken SEU_TOKEN
+```
+
+Abra o túnel (deixe esta janela aberta enquanto o sistema estiver em uso):
+
+```powershell
+ngrok http 3000
+```
+
+Copie o endereço `https://...ngrok-free.app` que aparece em "Forwarding". Teste de fora do PC:
+
+```powershell
+curl.exe -s -H "X-Api-Key: SUA_CHAVE" https://SEU-ENDERECO.ngrok-free.app/api/sessions/default
+```
+
+Se responder o JSON da sessão, a hospedagem também conseguirá falar com o WAHA.
+
+## Passo 6 — Configurar no AgenDay
+
+No domínio administrativo (`agenday-sistema.infinityfree.io`), entre com a conta do estabelecimento e abra **Configurações → WhatsApp**:
+
+| Campo | Valor |
+| --- | --- |
+| Ativar envio pelo WhatsApp | ligado |
+| Endereço do WAHA | `https://SEU-ENDERECO.ngrok-free.app` (**sem** barra no fim) |
+| Sessão | `default` |
+| Chave da API | a `WAHA_API_KEY` do `.env` |
+| Exigir código por WhatsApp | ligado |
+
+Salve e clique em **Testar conexão**. O retorno esperado é a sessão `WORKING`. Se houver mensagens na fila, use **Enviar pendentes agora**.
+
+## Passo 7 — Teste real (obrigatório antes da feira)
+
+1. Abra `https://agenday-agendamentos.infinityfree.io/?e=studio` em um celular com outro número.
+2. Informe o celular, receba o código no WhatsApp e entre.
+3. Agende um horário livre e confira a mensagem de confirmação.
+4. Use o link de cancelamento da mensagem e confira o aviso de cancelamento.
+5. No painel do WAHA, confira que a sessão continua `WORKING`.
+
+## Rotina do dia da feira
+
+1. Ligar o PC e abrir o Docker Desktop (o contêiner volta sozinho).
+2. Abrir o PowerShell na pasta do WAHA e rodar `ngrok http 3000`.
+3. Se o endereço mudou, atualizar em **Configurações → WhatsApp** e salvar.
+4. **Testar conexão** e enviar uma mensagem de teste para o próprio celular.
+5. Deixar o PC ligado, sem suspender, e o ngrok aberto.
+
+## Problemas comuns
+
+| Sintoma | Causa provável | O que fazer |
+| --- | --- | --- |
+| "Não foi possível falar com o WhatsApp" | ngrok parado ou endereço antigo | rodar `ngrok http 3000`, atualizar o endereço e salvar |
+| Erro 401 | chave da API diferente do `.env` | copiar de novo a `WAHA_API_KEY` |
+| Sessão `STOPPED` / `SCAN_QR` | pareamento perdido | iniciar a sessão e escanear o QR outra vez |
+| Mensagem fica "pendente" | WAHA fora no momento do envio | abrir a agenda ou usar "Enviar pendentes agora" |
+| Erro de certificado | endereço `http://` ou IP | usar sempre o `https://...ngrok-free.app` |
+| `docker: command not found` | Docker Desktop fechado | abrir o Docker Desktop e esperar o ícone ficar verde |
+
+A fila tenta de novo sozinha (até 5 tentativas, com espera crescente) e também é processada quando alguém abre a agenda ou o portal — não existe cron na hospedagem.
+
+## Plano B — feira sem WhatsApp
+
+Se o WhatsApp não puder ser usado, o portal funciona sem ele: em **Configurações → WhatsApp**, desligue **Exigir código por WhatsApp**. O cliente entra só com o celular, agenda, remarca e cancela normalmente; as mensagens ficam na fila sem atrapalhar.
+
+Isso serve para demonstração: sem o código, quem souber o número de outra pessoa entra na conta dela. Não deixar desligado fora do período da feira.
+
+## Segurança e limites
+
+- A chave da API e o `.env` ficam **somente** no PC, fora do repositório; nunca colar em documento, print ou chat.
+- O túnel expõe **apenas** a porta 3000 do WAHA, que exige `X-Api-Key`. Não criar túnel para outras portas do PC.
+- Não usar o número pessoal principal nem o número da coordenação.
+- WAHA Core gratuito: uma sessão e mensagens de texto — é o suficiente para código, confirmação, lembrete, remarcação e cancelamento.
