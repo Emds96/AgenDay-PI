@@ -7,7 +7,8 @@
 - **Testes:** `tests/portal-cliente.php` subiu de 69 para **74 verificações**, cobrindo as quatro combinações da regra. `php -l` limpo nos quatro arquivos alterados.
 - **Validação real no local (PHP 8.4 + MariaDB 11.8.9 + WAHA/GOWS):** cliente já cadastrado (`9294331267`, Studio) entrou **só com o celular**, com "Bem-vindo de volta!" e **sem** nova mensagem (contador de `mensagem_whatsapp` ficou em 3). Em um estabelecimento temporário, o mesmo número foi tratado como primeiro acesso: pediu o nome, enviou o código no WhatsApp, aceitou o código e, ao sair e entrar de novo, entrou direto. Estabelecimento temporário revertido e dados de teste apagados.
 - **Risco assumido e documentado:** quem souber o celular de um cliente pode abrir a sessão dele e ver/cancelar agendamentos. Registrado em `docs/PORTAL_CLIENTE_PLANO.md` §6.3, com o ponto único de mudança caso seja preciso exigir código em todo login.
-- **Estado real:** implementado e testado no PC local; **ainda não commitado, não publicado**. A regra vale para o deploy do portal.
+- **Integração:** PR #66 (`feat/login-codigo-so-cadastro` → `dev-feira-uninorte`) integrado em `01a7fa3`; CI verde nos dois workflows (runs `44946287856` e `44946287878`), com `publicar` e o teste FTPS `skipped`.
+- **Estado real:** implementado, testado no PC local e integrado na `dev-feira-uninorte`; **não publicado** — entra no próximo deploy do portal.
 
 ---
 
