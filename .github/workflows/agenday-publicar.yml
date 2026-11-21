@@ -31,6 +31,7 @@ jobs:
           set -euo pipefail
           php tests/agendamento-validacao.php
           php tests/agendamento-cancelamento.php
+          php tests/portal-cliente.php
           php tests/google-identidade-validacao.php
           php tests/recuperacao-senha-test.php
           php tests/configuracao-estabelecimento.php
