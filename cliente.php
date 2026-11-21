@@ -132,7 +132,8 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
         <h2 class="cliente-card-titulo">Entre com seu celular</h2>
         <p class="cliente-texto">
             <?php if ($exigirCodigo): ?>
-                Enviamos um código de 6 números no WhatsApp para confirmar que o número é seu.
+                No primeiro acesso, confirmamos seu celular com um código de 6 números no WhatsApp.
+                Se você já é cliente, basta informar o celular.
             <?php else: ?>
                 Informe seu celular para ver e gerenciar seus agendamentos.
             <?php endif; ?>
@@ -273,6 +274,6 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-<script defer src="js/cliente.js?v=20261121-cl01"></script>
+<script defer src="js/cliente.js?v=20261121-cl02"></script>
 </body>
 </html>

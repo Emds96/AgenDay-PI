@@ -787,7 +787,9 @@
                         atualizarSessao(resposta.cliente && resposta.cliente.nome);
                         return carregarDados().then(function () {
                             mostrar('etapa-agendar');
-                            alerta('Você entrou com seu celular.', 'success');
+                            alerta(resposta.cliente_existente
+                                ? 'Bem-vindo de volta!'
+                                : 'Você entrou com seu celular.', 'success');
                         });
                     }
                     var mascarado = $('[data-telefone-mascarado]');

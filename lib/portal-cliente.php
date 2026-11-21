@@ -339,6 +339,30 @@ function agenday_portal_cliente_garantir(
     return ['id_cliente' => $id, 'nome_cliente' => $nome, 'novo' => true];
 }
 
+/**
+ * Decide o caminho do acesso por telefone.
+ *
+ * Regra do portal: o código no WhatsApp confirma o número **no cadastro**
+ * (primeiro acesso). Quem já tem cadastro no estabelecimento entra só com o
+ * celular. A chave `exigir_codigo_whatsapp` desligada é contingência: libera
+ * até o primeiro acesso sem código.
+ *
+ * Retorna ['acao' => 'direto'|'pedir_nome'|'enviar_codigo', 'motivo' => string].
+ */
+function agenday_portal_acesso_decidir(bool $clienteExiste, bool $exigirCodigo, string $nome): array
+{
+    if ($clienteExiste) {
+        return ['acao' => 'direto', 'motivo' => 'cliente_existente'];
+    }
+    if (!$exigirCodigo) {
+        return ['acao' => 'direto', 'motivo' => 'contingencia'];
+    }
+    if (trim($nome) === '') {
+        return ['acao' => 'pedir_nome', 'motivo' => 'primeiro_acesso'];
+    }
+    return ['acao' => 'enviar_codigo', 'motivo' => 'cadastro'];
+}
+
 /* ---------------------------------------------------------------------------
  * Sessão do cliente (cookie próprio + registro no banco)
  * ------------------------------------------------------------------------- */
