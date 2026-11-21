@@ -83,7 +83,7 @@ $minutosDuracao = static function (string $duracao): int {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/agendar.css?v=20261121-ag02">
+    <link rel="stylesheet" href="css/agendar.css?v=20261121-ag03">
 </head>
 <body class="agenday-app" data-csrf="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"
       data-hoje="<?= htmlspecialchars($hoje, ENT_QUOTES, 'UTF-8') ?>">
@@ -236,6 +236,6 @@ $minutosDuracao = static function (string $duracao): int {
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
 <script src="js/menu-lateral.js"></script>
-<script src="js/agendar.js?v=20261121-ag02"></script>
+<script src="js/agendar.js?v=20261121-ag03"></script>
 </body>
 </html>

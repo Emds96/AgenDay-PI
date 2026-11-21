@@ -20,35 +20,52 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
 }
 
 $termo = isset($_GET['q']) && is_string($_GET['q']) ? trim($_GET['q']) : '';
-if (mb_strlen($termo) < 2 || mb_strlen($termo) > 60) {
-    echo json_encode(['ok' => true, 'clientes' => []]);
-    exit;
+if (mb_strlen($termo) > 60) {
+    $termo = mb_substr($termo, 0, 60);
 }
 
-try {
-    require_once __DIR__ . '/../conexao.php';
-    $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
-    $busca = '%' . $termo . '%';
+/** @return array<int,array{id:int,nome:string,contato:string}> */
+function agenday_clientes_buscar(mysqli $conexao, int $idEstabelecimento, string $padrao): array
+{
     $consulta = $conexao->prepare(
         'SELECT id_cliente, nome_cliente, contato_cliente
          FROM clientes
          WHERE id_estabelecimento = ?
            AND (nome_cliente LIKE ? OR contato_cliente LIKE ?)
          ORDER BY nome_cliente
-         LIMIT 8'
+         LIMIT 20'
     );
-    $consulta->bind_param('iss', $idEstabelecimento, $busca, $busca);
+    $consulta->bind_param('iss', $idEstabelecimento, $padrao, $padrao);
     $consulta->execute();
     $resultado = $consulta->get_result();
-    $clientes = [];
+    $lista = [];
     while ($linha = $resultado->fetch_assoc()) {
-        $clientes[] = [
+        $lista[] = [
             'id' => (int) $linha['id_cliente'],
             'nome' => (string) $linha['nome_cliente'],
             'contato' => (string) ($linha['contato_cliente'] ?? ''),
         ];
     }
     $consulta->close();
+    return $lista;
+}
+
+try {
+    require_once __DIR__ . '/../conexao.php';
+    $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
+
+    if ($termo === '') {
+        // Ao clicar no campo: primeiros cadastrados.
+        $clientes = agenday_clientes_buscar($conexao, $idEstabelecimento, '%');
+    } else {
+        // Prioriza quem começa com o texto (Ar → Ariel, Arnaldo, Arlando).
+        $clientes = agenday_clientes_buscar($conexao, $idEstabelecimento, $termo . '%');
+        if ($clientes === []) {
+            // Sem começo correspondente: procura em qualquer parte do nome/telefone.
+            $clientes = agenday_clientes_buscar($conexao, $idEstabelecimento, '%' . $termo . '%');
+        }
+    }
+
     echo json_encode(['ok' => true, 'clientes' => $clientes], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
     error_log('AgenDay: erro na busca de clientes (' . get_class($e) . ').');

@@ -263,60 +263,85 @@ document.addEventListener('DOMContentLoaded', () => {
         atualizarResumo();
     }
 
-    // Cliente: busca
+    // Cliente: ao focar, lista os cadastrados; ao digitar, filtra a cada letra.
     let temporizador = null;
+    let controladorClientes = null;
+
+    function mostrarSugestoes(lista) {
+        el.sugestoes.innerHTML = '';
+        if (!lista.length) {
+            const li = document.createElement('li');
+            li.className = 'sugestoes-vazio';
+            li.textContent = 'Nenhum cliente encontrado.';
+            el.sugestoes.appendChild(li);
+            el.sugestoes.hidden = false;
+            return;
+        }
+        lista.forEach(cliente => {
+            const li = document.createElement('li');
+            const botao = document.createElement('button');
+            botao.type = 'button';
+            botao.innerHTML = '<strong>' + cliente.nome + '</strong>'
+                + (cliente.contato ? ' <small>· ' + cliente.contato + '</small>' : '');
+            botao.addEventListener('click', () => {
+                estado.clienteId = String(cliente.id);
+                estado.clienteNome = cliente.nome;
+                el.busca.value = cliente.nome;
+                el.clienteEscolhido.textContent = 'Cliente: ' + cliente.nome;
+                el.sugestoes.hidden = true;
+                atualizarResumo();
+            });
+            li.appendChild(botao);
+            el.sugestoes.appendChild(li);
+        });
+        el.sugestoes.hidden = false;
+    }
+
+    async function buscarClientes(termo) {
+        if (controladorClientes) controladorClientes.abort();
+        controladorClientes = new AbortController();
+        try {
+            const resposta = await fetch('api/clientes-busca.php?q=' + encodeURIComponent(termo), {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' },
+                signal: controladorClientes.signal
+            });
+            const json = await resposta.json();
+            if (!json.ok) {
+                el.sugestoes.hidden = true;
+                return;
+            }
+            mostrarSugestoes(json.clientes || []);
+        } catch (erro) {
+            if (erro.name === 'AbortError') return;
+            el.sugestoes.hidden = true;
+        }
+    }
+
+    el.busca.addEventListener('focus', () => {
+        // Ao abrir o campo sem ter escolhido ninguém, mostra a lista completa.
+        if (!estado.clienteId) {
+            buscarClientes(el.busca.value.trim());
+        }
+    });
+
     el.busca.addEventListener('input', () => {
-        const termo = el.busca.value.trim();
         estado.clienteId = '';
         estado.clienteNome = '';
         el.clienteEscolhido.textContent = 'Nenhum cliente escolhido.';
         atualizarResumo();
 
         clearTimeout(temporizador);
-        if (termo.length < 2) {
-            el.sugestoes.hidden = true;
-            el.sugestoes.innerHTML = '';
-            return;
-        }
-        temporizador = setTimeout(async () => {
-            try {
-                const resposta = await fetch('api/clientes-busca.php?q=' + encodeURIComponent(termo), {
-                    credentials: 'same-origin',
-                    headers: { Accept: 'application/json' }
-                });
-                const json = await resposta.json();
-                el.sugestoes.innerHTML = '';
-                if (!json.ok || !json.clientes || !json.clientes.length) {
-                    el.sugestoes.hidden = true;
-                    return;
-                }
-                json.clientes.forEach(cliente => {
-                    const li = document.createElement('li');
-                    const botao = document.createElement('button');
-                    botao.type = 'button';
-                    botao.innerHTML = '<strong>' + cliente.nome + '</strong>'
-                        + (cliente.contato ? ' <small>· ' + cliente.contato + '</small>' : '');
-                    botao.addEventListener('click', () => {
-                        estado.clienteId = String(cliente.id);
-                        estado.clienteNome = cliente.nome;
-                        el.busca.value = cliente.nome;
-                        el.clienteEscolhido.textContent = 'Cliente: ' + cliente.nome;
-                        el.sugestoes.hidden = true;
-                        atualizarResumo();
-                    });
-                    li.appendChild(botao);
-                    el.sugestoes.appendChild(li);
-                });
-                el.sugestoes.hidden = false;
-            } catch (_) {
-                el.sugestoes.hidden = true;
-            }
-        }, 250);
+        // 1 letra já filtra (A → nomes com A; Ar → Ariel, Arnaldo…).
+        temporizador = setTimeout(() => buscarClientes(el.busca.value.trim()), 200);
     });
 
     // Cliente novo
     el.abrirNovo.addEventListener('click', () => {
         el.novoCliente.hidden = false;
+        if (!estado.clienteId && el.busca.value.trim() !== '') {
+            el.novoNome.value = el.busca.value.trim();
+        }
         el.novoNome.focus();
     });
     el.cancelarNovo.addEventListener('click', () => {
