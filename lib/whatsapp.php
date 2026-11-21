@@ -510,58 +510,111 @@ function agenday_whatsapp_processar_fila(mysqli $conexao, int $limite = AGENDAY_
     $enviadas = 0;
     $falhas = 0;
     foreach ($pendentes as $mensagem) {
-        $id = (int) $mensagem['id_mensagem'];
-
-        // Reserva a mensagem para não enviar duas vezes em pedidos simultâneos.
-        $marca = $conexao->prepare(
-            'UPDATE mensagem_whatsapp SET status = \'enviando\'
-              WHERE id_mensagem = ? AND status IN (\'pendente\', \'erro\')'
-        );
-        $marca->bind_param('i', $id);
-        $marca->execute();
-        $reservada = $marca->affected_rows > 0;
-        $marca->close();
-        if (!$reservada) {
-            continue;
-        }
-
-        $resultado = agenday_whatsapp_enviar(
-            $config,
-            (string) $mensagem['telefone'],
-            (string) $mensagem['corpo']
-        );
-
-        if ($resultado['ok']) {
-            $confirma = $conexao->prepare(
-                'UPDATE mensagem_whatsapp
-                    SET status = \'enviado\', enviado_em = NOW(), erro = NULL
-                  WHERE id_mensagem = ?'
-            );
-            $confirma->bind_param('i', $id);
-            $confirma->execute();
-            $confirma->close();
+        $estado = agenday_whatsapp_entregar($conexao, $config, $mensagem);
+        if ($estado === 'enviada') {
             $enviadas++;
-            continue;
+        } elseif ($estado === 'falha') {
+            $falhas++;
         }
-
-        $tentativas = (int) $mensagem['tentativas'] + 1;
-        $espera = min(3600, (int) (60 * (2 ** ($tentativas - 1))));
-        $erro = mb_substr($resultado['erro'], 0, 250);
-        $falha = $conexao->prepare(
-            'UPDATE mensagem_whatsapp
-                SET status = \'erro\',
-                    tentativas = ?,
-                    erro = ?,
-                    agendado_para = DATE_ADD(NOW(), INTERVAL ? SECOND)
-              WHERE id_mensagem = ?'
-        );
-        $falha->bind_param('iisi', $tentativas, $erro, $espera, $id);
-        $falha->execute();
-        $falha->close();
-        $falhas++;
     }
 
     return ['ok' => true, 'motivo' => '', 'enviadas' => $enviadas, 'falhas' => $falhas];
+}
+
+/**
+ * Reserva e entrega uma mensagem da fila.
+ *
+ * A reserva (`pendente`/`erro` -> `enviando`) impede envio duplicado quando
+ * duas requisições pegam a mesma mensagem. Devolve 'enviada', 'falha' ou
+ * 'ocupada' (outra requisição já reservou).
+ */
+function agenday_whatsapp_entregar(mysqli $conexao, array $config, array $mensagem): string
+{
+    $id = (int) $mensagem['id_mensagem'];
+
+    $marca = $conexao->prepare(
+        'UPDATE mensagem_whatsapp SET status = \'enviando\'
+          WHERE id_mensagem = ? AND status IN (\'pendente\', \'erro\')'
+    );
+    $marca->bind_param('i', $id);
+    $marca->execute();
+    $reservada = $marca->affected_rows > 0;
+    $marca->close();
+    if (!$reservada) {
+        return 'ocupada';
+    }
+
+    $resultado = agenday_whatsapp_enviar(
+        $config,
+        (string) $mensagem['telefone'],
+        (string) $mensagem['corpo']
+    );
+
+    if ($resultado['ok']) {
+        $confirma = $conexao->prepare(
+            'UPDATE mensagem_whatsapp
+                SET status = \'enviado\', enviado_em = NOW(), erro = NULL
+              WHERE id_mensagem = ?'
+        );
+        $confirma->bind_param('i', $id);
+        $confirma->execute();
+        $confirma->close();
+        return 'enviada';
+    }
+
+    $tentativas = (int) $mensagem['tentativas'] + 1;
+    $espera = min(3600, (int) (60 * (2 ** ($tentativas - 1))));
+    $erro = mb_substr($resultado['erro'], 0, 250);
+    $falha = $conexao->prepare(
+        'UPDATE mensagem_whatsapp
+            SET status = \'erro\',
+                tentativas = ?,
+                erro = ?,
+                agendado_para = DATE_ADD(NOW(), INTERVAL ? SECOND)
+          WHERE id_mensagem = ?'
+    );
+    $falha->bind_param('iisi', $tentativas, $erro, $espera, $id);
+    $falha->execute();
+    $falha->close();
+    return 'falha';
+}
+
+/**
+ * Entrega agora uma mensagem recém-enfileirada, sem esperar a janela de 1 minuto.
+ *
+ * Criação, remarcação e cancelamento avisam o cliente na hora: sem cron na
+ * hospedagem, a trava de 1 minuto da fila poderia deixar a confirmação parada
+ * até a próxima página abrir. A reserva por mensagem continua valendo.
+ *
+ * @return array{ok:bool,motivo:string}
+ */
+function agenday_whatsapp_enviar_agora(mysqli $conexao, int $idMensagem): array
+{
+    if ($idMensagem <= 0) {
+        return ['ok' => false, 'motivo' => 'sem_mensagem'];
+    }
+    $config = agenday_whatsapp_config($conexao);
+    if (!agenday_whatsapp_pronto($config)) {
+        return ['ok' => false, 'motivo' => 'nao_configurado'];
+    }
+
+    $stmt = $conexao->prepare(
+        'SELECT id_mensagem, telefone, corpo, tentativas
+           FROM mensagem_whatsapp
+          WHERE id_mensagem = ? AND status IN (\'pendente\', \'erro\')
+            AND tentativas < ' . AGENDAY_WHATSAPP_MAX_TENTATIVAS . '
+          LIMIT 1'
+    );
+    $stmt->bind_param('i', $idMensagem);
+    $stmt->execute();
+    $mensagem = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if (!$mensagem) {
+        return ['ok' => false, 'motivo' => 'nao_encontrada'];
+    }
+
+    $estado = agenday_whatsapp_entregar($conexao, $config, $mensagem);
+    return ['ok' => $estado === 'enviada', 'motivo' => $estado];
 }
 
 /** Quantas mensagens estão pendentes/em erro (para a tela de configurações). */

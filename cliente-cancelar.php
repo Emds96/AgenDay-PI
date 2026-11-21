@@ -109,6 +109,7 @@ if (!$agendamento) {
 
 $empresa = (int) $agendamento['id_estabelecimento'];
 $nomeEstabelecimento = trim((string) $agendamento['nome_estabelecimento']) ?: 'Estabelecimento';
+$slugPortal = trim((string) ($agendamento['slug'] ?? ''));
 $inicio = (string) $agendamento['data_inicio'];
 $fuso = agenday_portal_fuso();
 $dataObjeto = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $inicio, $fuso);
@@ -136,7 +137,18 @@ $janela = agenday_portal_pode_cancelar((int) $agendamento['horas_cancelamento'],
  * Confirmação (POST)
  * ------------------------------------------------------------------------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
-    if (!agenday_portal_origem_valida()) {
+    /*
+     * Sem sessão nesta página, a proteção do POST é a assinatura derivada do
+     * token, que o navegador reenvia no campo oculto. O cabeçalho Origin é
+     * conferido só quando o navegador o envia: alguns navegadores móveis não
+     * mandam Origin nem Referer (a página usa Referrer-Policy: no-referrer),
+     * e exigir o cabeçalho fazia o botão falhar com "Pedido não reconhecido".
+     */
+    $assinatura = $_POST['assinatura'] ?? '';
+    $assinaturaOk = is_string($assinatura) && $assinatura !== ''
+        && hash_equals(agenday_portal_assinatura_cancelamento($token), $assinatura);
+    $origemEnviada = ($_SERVER['HTTP_ORIGIN'] ?? '') !== '' || ($_SERVER['HTTP_REFERER'] ?? '') !== '';
+    if (!$assinaturaOk || ($origemEnviada && !agenday_portal_origem_valida())) {
         agenday_cancelar_pagina(
             'Pedido não reconhecido',
             'Recarregue esta página e tente novamente.',
@@ -186,7 +198,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 'data_inicio' => $inicio,
                 'link_agendar' => agenday_portal_base_url($agendamento),
             ]);
-            agenday_whatsapp_enfileirar(
+            $idMensagem = agenday_whatsapp_enfileirar(
                 $conexao,
                 $empresa,
                 (int) $agendamento['id_agendamento'],
@@ -195,7 +207,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 $texto
             );
             try {
-                agenday_whatsapp_processar_fila($conexao, 2);
+                // Envia na hora: sem cron, esperar a próxima página poderia deixar a mensagem parada.
+                agenday_whatsapp_enviar_agora($conexao, $idMensagem);
             } catch (Throwable $e) {
                 error_log('AgenDay cancelamento: fila do WhatsApp falhou (' . get_class($e) . ').');
             }
@@ -254,13 +267,14 @@ if (!$janela['pode']) {
                 Ao cancelar, o horário é liberado para outra pessoa e não pode ser recuperado.
             </p>
             <form method="post" action="cliente-cancelar.php?t=<?= $esc($token) ?>">
+                <input type="hidden" name="assinatura" value="<?= $esc(agenday_portal_assinatura_cancelamento($token)) ?>">
                 <button type="submit" class="btn btn-danger cliente-botao-largo">
                     <i class="bi bi-x-circle" aria-hidden="true"></i>
                     Confirmar cancelamento
                 </button>
             </form>
             <div class="cliente-acoes-secundarias">
-                <a class="btn btn-link" href="cliente.php">Voltar sem cancelar</a>
+                <a class="btn btn-link" href="cliente.php<?= $esc($slugPortal !== '' ? '?e=' . rawurlencode($slugPortal) : '') ?>">Voltar sem cancelar</a>
             </div>
         </section>
     </main>

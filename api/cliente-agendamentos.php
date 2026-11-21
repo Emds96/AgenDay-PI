@@ -180,9 +180,9 @@ if ($acao === 'criar') {
         'data_inicio' => $inicio->format('Y-m-d H:i:s'),
         'link_cancelar' => agenday_portal_link_cancelamento($estabelecimento, $tokenPublico),
     ]);
-    agenday_whatsapp_enfileirar($conexao, $empresa, $idAgendamento, $telefone, 'confirmacao', $texto);
+    $idMensagem = agenday_whatsapp_enfileirar($conexao, $empresa, $idAgendamento, $telefone, 'confirmacao', $texto);
     try {
-        agenday_whatsapp_processar_fila($conexao, 2);
+        agenday_whatsapp_enviar_agora($conexao, $idMensagem);
     } catch (Throwable $e) {
         error_log('AgenDay portal: fila do WhatsApp falhou (' . get_class($e) . ').');
     }
@@ -291,9 +291,9 @@ if ($acao === 'cancelar') {
         'data_inicio' => (string) $linha['data_inicio'],
         'link_agendar' => agenday_portal_link($estabelecimento),
     ]);
-    agenday_whatsapp_enfileirar($conexao, $empresa, $id, $telefone, 'cancelamento', $texto);
+    $idMensagemCancelamento = agenday_whatsapp_enfileirar($conexao, $empresa, $id, $telefone, 'cancelamento', $texto);
     try {
-        agenday_whatsapp_processar_fila($conexao, 2);
+        agenday_whatsapp_enviar_agora($conexao, $idMensagemCancelamento);
     } catch (Throwable $e) {
         error_log('AgenDay portal: fila do WhatsApp falhou (' . get_class($e) . ').');
     }
@@ -385,9 +385,9 @@ if ($acao === 'remarcar') {
         'data_inicio' => $inicio->format('Y-m-d H:i:s'),
         'link_cancelar' => agenday_portal_link_cancelamento($estabelecimento, $token),
     ]);
-    agenday_whatsapp_enfileirar($conexao, $empresa, $id, $telefone, 'remarcacao', $texto);
+    $idMensagemRemarcacao = agenday_whatsapp_enfileirar($conexao, $empresa, $id, $telefone, 'remarcacao', $texto);
     try {
-        agenday_whatsapp_processar_fila($conexao, 2);
+        agenday_whatsapp_enviar_agora($conexao, $idMensagemRemarcacao);
     } catch (Throwable $e) {
         error_log('AgenDay portal: fila do WhatsApp falhou (' . get_class($e) . ').');
     }

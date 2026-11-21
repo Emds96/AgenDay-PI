@@ -188,6 +188,36 @@ verificar(
 verificar(agenday_portal_base_url(['slug' => 'studio', 'dominio' => '']) === '?e=studio', 'link relativo sem dominio');
 verificar(agenday_whatsapp_chat_id('92981111001') === '5592981111001@c.us', 'chatId do WhatsApp');
 
+/* ------------------------------------------------------ links no host local */
+$hostAntesDosLinks = $_SERVER['HTTP_HOST'] ?? null;
+$_SERVER['HTTP_HOST'] = '127.0.0.1:8080';
+verificar(agenday_portal_host_local(), '127.0.0.1 é host local');
+verificar(
+    agenday_portal_link_cancelamento($estabLink, str_repeat('a', 64))
+        === 'http://127.0.0.1:8080/cliente-cancelar.php?t=' . str_repeat('a', 64),
+    'no local o link de cancelamento aponta para o host atual'
+);
+verificar(
+    agenday_portal_base_url($estabLink) === 'http://127.0.0.1:8080/cliente.php?e=studio',
+    'no local a base do portal aponta para o host atual'
+);
+$_SERVER['HTTP_HOST'] = '192.168.0.15:8080';
+verificar(agenday_portal_host_local(), 'IP privado é host local');
+$_SERVER['HTTP_HOST'] = 'agenday-sistema.infinityfree.io';
+verificar(!agenday_portal_host_local(), 'dominio publico nao é local');
+if ($hostAntesDosLinks === null) {
+    unset($_SERVER['HTTP_HOST']);
+} else {
+    $_SERVER['HTTP_HOST'] = $hostAntesDosLinks;
+}
+
+/* ------------------------------------------- assinatura do link de cancelamento */
+$assinaturaA = agenday_portal_assinatura_cancelamento(str_repeat('a', 64));
+verificar(strlen($assinaturaA) === 64, 'assinatura do cancelamento tem 64 caracteres');
+verificar($assinaturaA === agenday_portal_assinatura_cancelamento(str_repeat('a', 64)), 'assinatura do cancelamento é estável');
+verificar($assinaturaA !== agenday_portal_assinatura_cancelamento(str_repeat('b', 64)), 'assinatura muda quando o token muda');
+verificar(function_exists('agenday_whatsapp_enviar_agora'), 'envio imediato da fila disponível');
+
 $futuro = (new DateTimeImmutable('+3 days', agenday_portal_fuso()))->format('Y-m-d H:i:s');
 $passado = (new DateTimeImmutable('-3 days', agenday_portal_fuso()))->format('Y-m-d H:i:s');
 verificar(agenday_portal_pode_cancelar(24, $futuro)['pode'], 'cancelamento dentro do prazo');
