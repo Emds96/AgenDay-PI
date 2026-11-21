@@ -100,9 +100,17 @@ ALTER TABLE clientes
 UPDATE clientes
 SET telefone_digits = REGEXP_REPLACE(contato_cliente, '[^0-9]', '')
 WHERE contato_cliente IS NOT NULL;
+
+-- Celular antigo (DDD + 8 dígitos) passa para o padrão atual, com o 9.
+UPDATE clientes
+SET telefone_digits = CONCAT(SUBSTRING(telefone_digits, 1, 2), '9', SUBSTRING(telefone_digits, 3))
+WHERE CHAR_LENGTH(telefone_digits) = 10
+  AND SUBSTRING(telefone_digits, 3, 1) IN ('6', '7', '8', '9');
 ```
 
 Motivo: o portal procura o cliente pelo telefone. Hoje o campo é digitado livremente (`(92) 99999-9999`, `92999999999`). Sem normalizar, a mesma pessoa viraria dois cadastros.
+
+Padrão adotado: **DDD + 9 + 8 dígitos** para celular (ex.: `92 99433-1267`), que é o formato atual no Brasil. Fixos continuam com 10 dígitos (começam em 2, 3, 4 ou 5). Cadastros antigos gravados sem o 9 continuam sendo encontrados: a busca testa as duas formas do número (`agenday_portal_telefone_variantes`).
 
 ### 5.3 Token público do agendamento
 
@@ -225,11 +233,12 @@ Usa o e-mail (e não o ID) para funcionar igual no banco local e no de produçã
 3. No **primeiro acesso**, informa também o **nome** e recebe **6 dígitos** no WhatsApp (10 minutos, 5 tentativas).
 4. Ao acertar o código, o cadastro é criado e a sessão é aberta (30 dias); o agendamento é gravado.
 
-O código é, portanto, uma confirmação **de cadastro**, não um segundo fator em todo login. Quem já é cliente digita só o celular. A interface oferece as duas ordens (entrar primeiro ou agendar primeiro).
+O código é, portanto, uma confirmação **de cadastro**, não um segundo fator em todo login. Quem já é cliente digita só o celular. A interface oferece as duas ordens (entrar primeiro ou agendar primeiro) e, desde 21/11/2026, separa o acesso em duas abas: **Entrar** (só o celular) e **Cadastro** (celular + nome). Um celular sem cadastro digitado em Entrar leva a tela para Cadastro, já com o número preenchido.
 
 ### 6.2 Regras
 
-- Telefone normalizado para dígitos (DDD + número, 10 ou 11 dígitos).
+- Telefone normalizado para dígitos, no padrão atual do celular: **DDD + 9 + 8 dígitos**. Quem digita o formato antigo (DDD + 8 dígitos começando em 6, 7, 8 ou 9) recebe o 9 na frente; fixos (começam em 2, 3, 4 ou 5) continuam com 10 dígitos.
+- A busca do cliente testa as duas formas do celular (com e sem o 9), para encontrar cadastros antigos sem duplicar.
 - **Regra de acesso** (`agenday_portal_acesso_decidir`): cliente já cadastrado → entra direto; primeiro acesso → pede o nome e envia o código; `exigir_codigo_whatsapp` desligado (contingência) → entra direto até no primeiro acesso.
 - Código guardado como hash com `salt`; nunca em texto.
 - Limites: 3 códigos por 10 minutos por telefone, 10 por dia por telefone, 20 por hora por IP.
@@ -277,7 +286,8 @@ O telefone é a identidade. O WhatsApp confirma o número **no cadastro**; depoi
 
 - WAHA roda no PC do responsável, dentro do Docker, e conecta ao WhatsApp como **aparelho vinculado** (igual ao WhatsApp Web).
 - Um túnel (ngrok) publica o WAHA em um endereço HTTPS fixo.
-- O site chama `POST {base_url}/api/sendText` com a chave no cabeçalho e timeout de 5 segundos.
+- O site chama `POST {base_url}/api/sendText` com a chave no cabeçalho e timeout de 10 segundos.
+- Antes de enviar, o sistema consulta `check-exists` para descobrir o JID real do número (`pn`). Isso cobre celulares que o WhatsApp ainda guarda no formato antigo, sem o 9 — o motor GOWS recusa esse formato com "no LID found". Se a consulta falhar, o envio segue no formato padrão e o erro real é registrado.
 
 ### 8.2 Dois caminhos de envio
 

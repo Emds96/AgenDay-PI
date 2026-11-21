@@ -122,6 +122,58 @@ function agenday_whatsapp_chat_id(string $digitos): string
     return '55' . $digitos . '@c.us';
 }
 
+/**
+ * Descobre o chatId exato que o WhatsApp usa para o número.
+ *
+ * Alguns celulares ficam no WhatsApp no formato antigo (DDD + 8 dígitos) e o
+ * motor GOWS recusa o envio para a versão com o 9 ("no LID found"). O
+ * check-exists devolve o JID real em `pn`, que é o formato aceito. Em qualquer
+ * falha da consulta, cai no formato padrão e o envio decide.
+ */
+function agenday_whatsapp_resolver_chat(array $config, string $digitos): string
+{
+    $padrao = agenday_whatsapp_chat_id($digitos);
+    if (!function_exists('curl_init')) {
+        return $padrao;
+    }
+
+    $url = (string) $config['base_url'] . '/api/contacts/check-exists?phone='
+        . rawurlencode('55' . $digitos) . '&session=' . rawurlencode((string) $config['sessao']);
+    $curl = curl_init($url);
+    if ($curl === false) {
+        return $padrao;
+    }
+    curl_setopt_array($curl, [
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'X-Api-Key: ' . (string) $config['api_key'],
+            'ngrok-skip-browser-warning: true',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 4,
+        CURLOPT_TIMEOUT => 6,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_FOLLOWLOCATION => false,
+    ]);
+    $resposta = curl_exec($curl);
+    $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+
+    if ($resposta === false || $status < 200 || $status >= 300) {
+        return $padrao;
+    }
+    $dados = json_decode((string) $resposta, true);
+    if (!is_array($dados) || empty($dados['numberExists'])) {
+        return $padrao;
+    }
+    $pn = $dados['pn'] ?? '';
+    if (is_string($pn) && preg_match('/\A\d{10,15}@c\.us\z/', $pn)) {
+        return $pn;
+    }
+    return $padrao;
+}
+
 /** Formata data/hora do banco (Y-m-d H:i:s) para exibição em mensagem. */
 function agenday_whatsapp_data_hora(string $dataHora): array
 {
@@ -214,7 +266,7 @@ function agenday_whatsapp_enviar(array $config, string $digitos, string $texto):
 
     $payload = json_encode([
         'session' => (string) $config['sessao'],
-        'chatId' => agenday_whatsapp_chat_id($digitos),
+        'chatId' => agenday_whatsapp_resolver_chat($config, $digitos),
         'text' => $texto,
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     if (!is_string($payload)) {
@@ -237,7 +289,7 @@ function agenday_whatsapp_enviar(array $config, string $digitos, string $texto):
         ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 4,
-        CURLOPT_TIMEOUT => 8,
+        CURLOPT_TIMEOUT => 10,
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_SSL_VERIFYHOST => 2,
         CURLOPT_FOLLOWLOCATION => false,
@@ -247,13 +299,28 @@ function agenday_whatsapp_enviar(array $config, string $digitos, string $texto):
     curl_close($curl);
 
     if ($resposta === false) {
-        return ['ok' => false, 'erro' => 'Sem resposta do serviço de WhatsApp.', 'status' => $status];
+        return ['ok' => false, 'erro' => 'Sem resposta do serviço de WhatsApp.', 'status' => $status, 'sem_whatsapp' => false];
     }
     if ($status < 200 || $status >= 300) {
-        // Nunca registrar o corpo: pode conter dados do número/conversa.
-        return ['ok' => false, 'erro' => 'Serviço de WhatsApp respondeu HTTP ' . $status . '.', 'status' => $status];
+        // O corpo só é lido para distinguir "número sem WhatsApp" de falha do
+        // serviço; nunca é registrado em log nem devolvido ao navegador.
+        $detalhe = '';
+        $json = json_decode((string) $resposta, true);
+        if (is_array($json)) {
+            $detalhe = (string) ($json['exception']['message'] ?? ($json['message'] ?? ''));
+        }
+        $semWhatsapp = $detalhe !== ''
+            && (stripos($detalhe, 'not on WhatsApp') !== false || stripos($detalhe, 'no LID found') !== false);
+        return [
+            'ok' => false,
+            'erro' => $semWhatsapp
+                ? 'Este número não tem WhatsApp. Confira o número e tente de novo.'
+                : 'Serviço de WhatsApp respondeu HTTP ' . $status . '.',
+            'status' => $status,
+            'sem_whatsapp' => $semWhatsapp,
+        ];
     }
-    return ['ok' => true, 'erro' => '', 'status' => $status];
+    return ['ok' => true, 'erro' => '', 'status' => $status, 'sem_whatsapp' => false];
 }
 
 /**

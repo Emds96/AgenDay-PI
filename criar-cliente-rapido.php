@@ -46,21 +46,19 @@ try {
     // Telefone repetido reaproveita o cadastro existente.
     if ($telefone !== '') {
         if ($telefoneDigits !== null) {
-            $consulta = $conexao->prepare(
-                'SELECT id_cliente, nome_cliente FROM clientes
-                 WHERE id_estabelecimento = ? AND telefone_digits = ? LIMIT 1'
-            );
-            $consulta->bind_param('is', $idEstabelecimento, $telefoneDigits);
+            // Compara as duas formas do celular (com e sem o 9) para não
+            // duplicar cadastros antigos.
+            $existente = agenday_portal_cliente_por_telefone($conexao, $idEstabelecimento, $telefoneDigits);
         } else {
             $consulta = $conexao->prepare(
-                'SELECT id_cliente, nome_cliente FROM clientes
+                'SELECT id_cliente, nome_cliente, telefone_digits FROM clientes
                  WHERE id_estabelecimento = ? AND contato_cliente = ? LIMIT 1'
             );
             $consulta->bind_param('is', $idEstabelecimento, $telefone);
+            $consulta->execute();
+            $existente = $consulta->get_result()->fetch_assoc();
+            $consulta->close();
         }
-        $consulta->execute();
-        $existente = $consulta->get_result()->fetch_assoc();
-        $consulta->close();
         if ($existente) {
             echo json_encode([
                 'ok' => true,

@@ -96,11 +96,15 @@ function agenday_portal_slug_sugerir(string $nome): string
  * ------------------------------------------------------------------------- */
 
 /**
- * Normaliza telefone brasileiro para DDD + número (10 ou 11 dígitos).
+ * Normaliza telefone brasileiro para DDD + número.
  *
  * Aceita "(92) 98111-1001", "92981111001", "+55 92 98111-1001" e
  * "5592981111001". Remove o prefixo 55 quando sobra DDD + número.
  * Retorna null quando não dá para formar um número nacional plausível.
+ *
+ * O padrão atual do celular no Brasil é DDD + 9 + 8 dígitos. Quem digita o
+ * formato antigo (DDD + 8 dígitos começando em 6, 7, 8 ou 9) recebe o 9 na
+ * frente. Fixos (começam em 2, 3, 4 ou 5) continuam com 10 dígitos.
  *
  * Esta é a MESMA regra aplicada na migração SQL (coluna telefone_digits).
  */
@@ -122,6 +126,10 @@ function agenday_portal_telefone_normalizar($valor): ?string
     if ($digitos[0] === '0' || (int) $digitos === 0) {
         return null;
     }
+    // Celular antigo (10 dígitos) passa para o padrão atual com o 9.
+    if (strlen($digitos) === 10 && strpos('6789', $digitos[2]) !== false) {
+        $digitos = substr($digitos, 0, 2) . '9' . substr($digitos, 2);
+    }
     return $digitos;
 }
 
@@ -141,6 +149,32 @@ function agenday_portal_telefone_formatar(string $digitos): string
 function agenday_portal_telefone_whatsapp(string $digitos): string
 {
     return '55' . $digitos;
+}
+
+/**
+ * Formas equivalentes do mesmo celular brasileiro.
+ *
+ * O WhatsApp guarda alguns celulares no formato antigo (DDD + 8 dígitos) e
+ * outros no atual (DDD + 9 + 8 dígitos). Como o cliente pode digitar qualquer
+ * uma das duas, a busca por cadastro testa as duas para não duplicar.
+ *
+ * @return string[]
+ */
+function agenday_portal_telefone_variantes(string $digitos): array
+{
+    if (strlen($digitos) !== 10 && strlen($digitos) !== 11) {
+        return [$digitos];
+    }
+    $ddd = substr($digitos, 0, 2);
+    $assinante = substr($digitos, 2);
+    $variantes = [$digitos];
+
+    if (strlen($digitos) === 11 && $assinante[0] === '9') {
+        $variantes[] = $ddd . substr($assinante, 1);
+    } elseif (strlen($digitos) === 10 && strpos('6789', $assinante[0]) !== false) {
+        $variantes[] = $ddd . '9' . $assinante;
+    }
+    return array_values(array_unique($variantes));
 }
 
 /** Versão parcialmente oculta, para mensagens de tela: "(92) 9****-1001". */
@@ -274,14 +308,18 @@ function agenday_portal_base_url(array $estabelecimento): string
 /** Procura o cliente do estabelecimento pelo telefone normalizado. */
 function agenday_portal_cliente_por_telefone(mysqli $conexao, int $idEstabelecimento, string $digitos): ?array
 {
+    $variantes = agenday_portal_telefone_variantes($digitos);
+    $marcadores = implode(', ', array_fill(0, count($variantes), '?'));
     $stmt = $conexao->prepare(
         'SELECT id_cliente, nome_cliente, telefone_digits
            FROM clientes
-          WHERE id_estabelecimento = ? AND telefone_digits = ?
+          WHERE id_estabelecimento = ? AND telefone_digits IN (' . $marcadores . ')
           ORDER BY id_cliente
           LIMIT 1'
     );
-    $stmt->bind_param('is', $idEstabelecimento, $digitos);
+    $tipos = 'i' . str_repeat('s', count($variantes));
+    $parametros = array_merge([$idEstabelecimento], $variantes);
+    $stmt->bind_param($tipos, ...$parametros);
     $stmt->execute();
     $linha = $stmt->get_result()->fetch_assoc();
     $stmt->close();

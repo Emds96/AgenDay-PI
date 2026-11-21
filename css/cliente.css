@@ -296,6 +296,26 @@
   color: #fff;
 }
 
+/* Alternância entre entrar e primeiro acesso */
+.agenday-portal .cliente-acesso-alternar {
+  margin: .9rem 0 0;
+  font-size: .9rem;
+  color: var(--ad-text-muted);
+  text-align: center;
+}
+
+.agenday-portal .cliente-acesso-alternar .btn-link {
+  padding: 0;
+  font-size: inherit;
+  font-weight: 600;
+  vertical-align: baseline;
+  background: transparent;
+  border: 0;
+  color: var(--ad-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Resumo e listas */
 .agenday-portal .cliente-resumo {
   display: grid;
