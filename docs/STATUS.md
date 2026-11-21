@@ -1,5 +1,29 @@
 # STATUS — AgenDay 2.0
 
+## AGD-01 — Tela de agendamento com horários livres (21/11/2026; branch `feat/agendar`, não publicada)
+
+- **Escopo autorizado:** implementar no local, sem publicar, a tela de agendamento desenhada e validada no protótipo — **um atendimento avulso**, com disponibilidade real vinda do servidor.
+- **Arquivos novos:** `agendar.php` (página), `css/agendar.css`, `js/agendar.js`, `lib/disponibilidade.php` (cálculo dos horários), `api/horarios.php` (JSON), `api/clientes-busca.php` (busca por nome/telefone), `criar-agendamento.php` (gravação) e `criar-cliente-rapido.php` (cliente sem sair da tela).
+- **Funcionamento:** o usuário escolhe serviço, profissional (ou "qualquer um"), dia e horário; a cada mudança a tela consulta a API e redesenha os horários. Ao salvar, o servidor revalida tudo e grava com lock por funcionário. Cliente novo pede **nome + telefone** e reaproveita o cadastro quando o telefone já existe.
+- **Regras aplicadas na disponibilidade:** horário de funcionamento por dia, almoço, bloqueios do estabelecimento e do profissional, agendamentos ativos (cancelado não ocupa), duração do serviço, intervalo configurado, antecedência mínima e janela máxima. Horários que já passaram não aparecem.
+- **Segurança:** `id_estabelecimento` sempre da sessão; CSRF na página, no agendamento e no cliente rápido; serviço/cliente/funcionário validados contra a conta; POST sem CSRF recusado; GET no endpoint de gravação responde 405.
+- **Interface:** desktop em duas colunas (decisões à esquerda, horários à direita); celular em uma coluna com grade de 4 horários; resumo fixo com o que será gravado; botão **Hoje** só aparece quando o dia aberto é hoje; dia fechado, bloqueio e data passada têm mensagem própria.
+- **Validação local (21/11/2026, PHP 8.4 + MariaDB 11.8 local):** `php -l` e `node --check` aprovados; API conferida em dia aberto (16 horários), domingo fechado, data passada, profissional sem vínculo e serviço de outra conta; criação real pelo navegador gravou `#14` e foi removida depois; repetir o mesmo horário foi recusado; POST sem CSRF recusado; cliente de outra conta recusado; cliente novo criado e reaproveitado pelo telefone; desktop e 390/360 px sem overflow. `responsividade-check` (205), agenda (19), cancelamento (20), configuração (13) e reenvio (11) aprovados.
+- **Não implementado neste lote:** pacote de sessões, retorno recorrente, mini mapa, modo híbrido (PEND-01) e remoção do formulário antigo de `agenda.php` (ainda funcional, mas sem as regras novas).
+- **Pendências:** validar a tela no navegador do responsável; decidir quando o formulário antigo sai; publicar só depois da validação.
+
+---
+
+## PEND-01 — Modo híbrido: sessão única x pacote de sessões (decisão de 20/11/2026; a implementar)
+
+- **Pedido do responsável:** o sistema precisa servir **os dois tipos de estabelecimento**: quem agenda **um atendimento avulso** (barbearia, salão) e quem trabalha com **pacote de sessões** (clínica de estética, odontologia). A escolha deve ser **confirmada no cadastro** e **alterável em Configurações**, com a opção de **ativar/desativar**; desativado, os controles de sessão **não aparecem**.
+- **Decisão registrada:** o recurso de sessões fica para um **lote posterior**; o agendamento avulso é a base e não pode depender dele.
+- **Efeito no desenho:** a mesma página de agendamento ganha o campo **Sessões** apenas quando o estabelecimento tiver o modo habilitado. Desligado, a página volta ao fluxo simples (1 cliente, 1 serviço, 1 horário).
+- **Onde entra:** cadastro (escolha inicial, com padrão **sessão única**) e Configurações → Estabelecimento (ativar/desativar). Precisa de coluna própria no banco, o que exige migração e autorização separada.
+- **Pendências:** definir o nome do campo, o padrão para contas existentes, o texto da tela e se a mudança de modo afeta agendamentos já criados. **Não implementar sem autorização.**
+
+---
+
 ## DEPLOY-20261120-B — Publicação do SHA 0be0606 (20/11/2026)
 
 - **Autorização:** responsável autorizou publicar o SHA `0be06062eee9f8920d06eceba49e6e40d4db1542`, seguindo a regra de **1 deploy por dia** e publicação ao concluir a funcionalidade.

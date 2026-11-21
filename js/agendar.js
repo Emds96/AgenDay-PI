@@ -1,0 +1,427 @@
+'use strict';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dados = JSON.parse(document.getElementById('dados-agendar').textContent || '{}');
+    const pares = Array.isArray(dados.pares) ? dados.pares : [];
+    const csrf = document.body.dataset.csrf || '';
+    const hoje = document.body.dataset.hoje || '';
+
+    const el = {
+        form: document.getElementById('formAgendar'),
+        busca: document.getElementById('buscaCliente'),
+        sugestoes: document.getElementById('sugestoesClientes'),
+        clienteEscolhido: document.getElementById('clienteEscolhido'),
+        clienteId: document.getElementById('campoClienteId'),
+        servico: document.getElementById('servico'),
+        servicoAjuda: document.getElementById('servicoAjuda'),
+        profissional: document.getElementById('profissional'),
+        profAjuda: document.getElementById('profAjuda'),
+        data: document.getElementById('data'),
+        campoData: document.getElementById('campoData'),
+        campoHora: document.getElementById('campoHora'),
+        campoFuncionario: document.getElementById('campoFuncionario'),
+        diaTitulo: document.getElementById('diaTitulo'),
+        diaResumo: document.getElementById('diaResumo'),
+        lista: document.getElementById('listaHorarios'),
+        anterior: document.getElementById('diaAnterior'),
+        seguinte: document.getElementById('diaSeguinte'),
+        botaoHoje: document.getElementById('botaoHoje'),
+        resumoTitulo: document.getElementById('resumoTitulo'),
+        resumoDetalhe: document.getElementById('resumoDetalhe'),
+        confirmar: document.getElementById('confirmar'),
+        novoCliente: document.getElementById('novoCliente'),
+        abrirNovo: document.getElementById('abrirNovoCliente'),
+        cancelarNovo: document.getElementById('cancelarNovoCliente'),
+        salvarNovo: document.getElementById('salvarNovoCliente'),
+        novoNome: document.getElementById('novoNome'),
+        novoTel: document.getElementById('novoTel'),
+        avisoNovo: document.getElementById('avisoNovoCliente')
+    };
+
+    const estado = {
+        clienteId: '',
+        clienteNome: '',
+        servicoId: '',
+        servicoNome: '',
+        duracao: 0,
+        preco: 0,
+        profissional: '',
+        hora: '',
+        slots: [],
+        enviando: false
+    };
+
+    const dois = n => String(n).padStart(2, '0');
+    const fimHora = (hora, minutos) => {
+        const [h, m] = hora.split(':').map(Number);
+        const total = h * 60 + m + minutos;
+        return dois(Math.floor(total / 60)) + ':' + dois(total % 60);
+    };
+
+    const dataLonga = iso => {
+        const d = new Date(iso + 'T12:00:00');
+        const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+            'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        return dias[d.getDay()] + ', ' + d.getDate() + ' de ' + meses[d.getMonth()];
+    };
+
+    function atualizarResumo() {
+        const partes = [];
+        if (estado.hora) {
+            partes.push(estado.hora + '–' + fimHora(estado.hora, estado.duracao));
+            partes.push(estado.profissional
+                ? el.profissional.options[el.profissional.selectedIndex].textContent.trim()
+                : 'qualquer profissional');
+        }
+        if (estado.clienteNome) partes.push(estado.clienteNome);
+
+        if (partes.length) {
+            el.resumoDetalhe.textContent = partes.join(' · ');
+        } else {
+            el.resumoDetalhe.textContent = estado.servicoNome
+                ? estado.servicoNome + ' · ' + estado.duracao + ' min'
+                : 'Nenhum serviço escolhido';
+        }
+
+        const pronto = Boolean(estado.clienteId && estado.hora && estado.servicoId);
+        el.resumoTitulo.textContent = pronto ? 'Pronto para agendar'
+            : (estado.hora ? 'Escolha o cliente' : 'Escolha cliente e horário');
+        el.confirmar.disabled = !pronto;
+        el.confirmar.textContent = estado.hora ? 'Agendar ' + estado.hora : 'Agendar horário';
+
+        el.clienteId.value = estado.clienteId;
+        el.campoHora.value = estado.hora;
+        el.campoData.value = el.data.value;
+        el.campoFuncionario.value = estado.profissional;
+    }
+
+    function mostrarAviso(texto) {
+        el.lista.innerHTML = '';
+        const aviso = document.createElement('p');
+        aviso.className = 'aviso-horarios';
+        aviso.textContent = texto;
+        el.lista.appendChild(aviso);
+    }
+
+    function renderizarSlots() {
+        el.lista.innerHTML = '';
+        if (!estado.servicoId) {
+            mostrarAviso('Escolha um serviço para ver os horários.');
+            el.diaResumo.textContent = 'Escolha um serviço para ver os horários.';
+            return;
+        }
+        if (estado.slots.length === 0) {
+            mostrarAviso('Nenhum horário encontrado para este dia.');
+            return;
+        }
+
+        // Horários que já passaram (ou dentro da antecedência mínima) não aparecem.
+        const disponiveis = estado.slots.filter(s => !s.passado);
+        const manha = disponiveis.filter(s => Number(s.hora.slice(0, 2)) < 12);
+        const tarde = disponiveis.filter(s => Number(s.hora.slice(0, 2)) >= 12);
+
+        const criarGrupo = (titulo, lista) => {
+            if (!lista.length) return;
+            const secao = document.createElement('section');
+            secao.className = 'periodo';
+            const h = document.createElement('h3');
+            h.className = 'periodo-titulo';
+            h.textContent = titulo;
+            const grade = document.createElement('div');
+            grade.className = 'grade-horarios';
+
+            lista.forEach(slot => {
+                const botao = document.createElement('button');
+                botao.type = 'button';
+                botao.className = 'hora ' + (slot.livre ? 'hora-livre' : 'hora-ocupada');
+                botao.dataset.hora = slot.hora;
+                botao.setAttribute('aria-pressed', estado.hora === slot.hora ? 'true' : 'false');
+                const nota = slot.livre
+                    ? (slot.profissionais.length === 1 ? '1 livre' : slot.profissionais.length + ' livres')
+                    : 'cheio';
+                botao.innerHTML = '<span class="hora-tempo">' + slot.hora + '</span>'
+                    + '<span class="hora-nota">' + nota + '</span>';
+                botao.setAttribute('aria-label', 'Horário ' + slot.hora + ', ' + (slot.livre ? nota : 'sem vaga'));
+                if (slot.livre) {
+                    botao.addEventListener('click', () => {
+                        estado.hora = slot.hora;
+                        renderizarSlots();
+                        atualizarResumo();
+                    });
+                } else {
+                    botao.disabled = true;
+                }
+                grade.appendChild(botao);
+            });
+
+            secao.appendChild(h);
+            secao.appendChild(grade);
+            el.lista.appendChild(secao);
+        };
+
+        criarGrupo('Manhã', manha);
+        criarGrupo('Tarde', tarde);
+        if (!manha.length && !tarde.length) {
+            mostrarAviso(estado.slots.length
+                ? 'Não há mais horários livres hoje. Escolha outro dia.'
+                : 'Nenhum horário de atendimento neste dia.');
+        }
+    }
+
+    let controlador = null;
+    async function carregarHorarios() {
+        el.campoData.value = el.data.value;
+        el.botaoHoje.hidden = el.data.value !== hoje;
+        el.diaTitulo.textContent = dataLonga(el.data.value);
+
+        if (!estado.servicoId) {
+            estado.slots = [];
+            renderizarSlots();
+            return;
+        }
+
+        el.diaResumo.textContent = 'Carregando horários…';
+        if (controlador) controlador.abort();
+        controlador = new AbortController();
+
+        const params = new URLSearchParams({
+            data: el.data.value,
+            servico: estado.servicoId,
+            funcionario: estado.profissional
+        });
+
+        try {
+            const resposta = await fetch('api/horarios.php?' + params.toString(), {
+                credentials: 'same-origin',
+                signal: controlador.signal,
+                headers: { Accept: 'application/json' }
+            });
+            const json = await resposta.json();
+            if (!json.ok) {
+                estado.slots = [];
+                mostrarAviso(json.erro || 'Não foi possível carregar os horários.');
+                el.diaResumo.textContent = json.erro || 'Sem horários.';
+                return;
+            }
+            estado.slots = json.slots || [];
+            if (json.fechado || json.motivo) {
+                mostrarAviso(json.motivo || 'O estabelecimento não atende neste dia.');
+                el.diaResumo.textContent = json.motivo || 'Fechado';
+                return;
+            }
+            const livres = estado.slots.filter(s => s.livre && !s.passado).length;
+            const totalProf = json.profissionais ? json.profissionais.length : 0;
+            el.diaResumo.textContent = livres + (livres === 1 ? ' horário livre' : ' horários livres')
+                + (totalProf === 1 ? ' · 1 profissional' : ' · ' + totalProf + ' profissionais');
+            // Descarta hora que deixou de existir.
+            if (estado.hora && !estado.slots.some(s => s.hora === estado.hora && s.livre)) {
+                estado.hora = '';
+            }
+            renderizarSlots();
+        } catch (erro) {
+            if (erro.name === 'AbortError') return;
+            estado.slots = [];
+            mostrarAviso('Não foi possível carregar os horários. Tente novamente.');
+            el.diaResumo.textContent = 'Erro ao carregar.';
+        }
+    }
+
+    function aplicarServico() {
+        const opcao = el.servico.options[el.servico.selectedIndex];
+        estado.servicoId = el.servico.value;
+        estado.servicoNome = estado.servicoId ? opcao.textContent.split('·')[0].trim() : '';
+        estado.duracao = Number(opcao.dataset.duracao || 0);
+        estado.preco = Number(opcao.dataset.preco || 0);
+        estado.hora = '';
+
+        // Profissionais que realizam este serviço.
+        const permitidos = pares
+            .filter(p => String(p.id_servicos) === String(estado.servicoId))
+            .filter((p, i, arr) => arr.findIndex(x => x.id_funcionario === p.id_funcionario) === i);
+
+        const atual = estado.profissional;
+        el.profissional.innerHTML = '<option value="">Qualquer um (o sistema escolhe)</option>';
+        permitidos.forEach(p => {
+            const o = document.createElement('option');
+            o.value = String(p.id_funcionario);
+            o.textContent = p.nome_funcionario;
+            el.profissional.appendChild(o);
+        });
+        estado.profissional = permitidos.some(p => String(p.id_funcionario) === atual) ? atual : '';
+        el.profissional.value = estado.profissional;
+        el.profissional.disabled = !estado.servicoId || permitidos.length === 0;
+
+        el.servicoAjuda.textContent = estado.servicoId
+            ? 'Duração de ' + estado.duracao + ' minutos, definida no cadastro do serviço.'
+            : 'Duração definida no cadastro do serviço.';
+        el.profAjuda.textContent = estado.profissional
+            ? 'Somente ' + el.profissional.options[el.profissional.selectedIndex].textContent.trim() + ' será considerada(o).'
+            : 'O sistema escolhe um profissional livre no horário.';
+
+        carregarHorarios();
+        atualizarResumo();
+    }
+
+    // Cliente: busca
+    let temporizador = null;
+    el.busca.addEventListener('input', () => {
+        const termo = el.busca.value.trim();
+        estado.clienteId = '';
+        estado.clienteNome = '';
+        el.clienteEscolhido.textContent = 'Nenhum cliente escolhido.';
+        atualizarResumo();
+
+        clearTimeout(temporizador);
+        if (termo.length < 2) {
+            el.sugestoes.hidden = true;
+            el.sugestoes.innerHTML = '';
+            return;
+        }
+        temporizador = setTimeout(async () => {
+            try {
+                const resposta = await fetch('api/clientes-busca.php?q=' + encodeURIComponent(termo), {
+                    credentials: 'same-origin',
+                    headers: { Accept: 'application/json' }
+                });
+                const json = await resposta.json();
+                el.sugestoes.innerHTML = '';
+                if (!json.ok || !json.clientes || !json.clientes.length) {
+                    el.sugestoes.hidden = true;
+                    return;
+                }
+                json.clientes.forEach(cliente => {
+                    const li = document.createElement('li');
+                    const botao = document.createElement('button');
+                    botao.type = 'button';
+                    botao.innerHTML = '<strong>' + cliente.nome + '</strong>'
+                        + (cliente.contato ? ' <small>· ' + cliente.contato + '</small>' : '');
+                    botao.addEventListener('click', () => {
+                        estado.clienteId = String(cliente.id);
+                        estado.clienteNome = cliente.nome;
+                        el.busca.value = cliente.nome;
+                        el.clienteEscolhido.textContent = 'Cliente: ' + cliente.nome;
+                        el.sugestoes.hidden = true;
+                        atualizarResumo();
+                    });
+                    li.appendChild(botao);
+                    el.sugestoes.appendChild(li);
+                });
+                el.sugestoes.hidden = false;
+            } catch (_) {
+                el.sugestoes.hidden = true;
+            }
+        }, 250);
+    });
+
+    // Cliente novo
+    el.abrirNovo.addEventListener('click', () => {
+        el.novoCliente.hidden = false;
+        el.novoNome.focus();
+    });
+    el.cancelarNovo.addEventListener('click', () => {
+        el.novoCliente.hidden = true;
+        el.avisoNovo.textContent = '';
+    });
+    el.salvarNovo.addEventListener('click', async () => {
+        const nome = el.novoNome.value.trim();
+        if (nome.length < 2) {
+            el.avisoNovo.textContent = 'Informe o nome do cliente.';
+            el.novoNome.focus();
+            return;
+        }
+        el.salvarNovo.disabled = true;
+        el.avisoNovo.textContent = 'Salvando…';
+        try {
+            const corpo = new URLSearchParams({
+                csrf_token: csrf,
+                nome: nome,
+                telefone: el.novoTel.value.trim()
+            });
+            const resposta = await fetch('criar-cliente-rapido.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+                body: corpo.toString()
+            });
+            const json = await resposta.json();
+            if (!json.ok) {
+                el.avisoNovo.textContent = json.erro || 'Não foi possível salvar.';
+                return;
+            }
+            estado.clienteId = String(json.cliente.id);
+            estado.clienteNome = json.cliente.nome;
+            el.busca.value = json.cliente.nome;
+            el.clienteEscolhido.textContent = 'Cliente: ' + json.cliente.nome
+                + (json.reaproveitado ? ' (cadastro existente)' : '');
+            el.novoCliente.hidden = true;
+            el.novoNome.value = '';
+            el.novoTel.value = '';
+            el.avisoNovo.textContent = '';
+            atualizarResumo();
+        } catch (_) {
+            el.avisoNovo.textContent = 'Não foi possível salvar agora.';
+        } finally {
+            el.salvarNovo.disabled = false;
+        }
+    });
+
+    el.servico.addEventListener('change', aplicarServico);
+    el.profissional.addEventListener('change', () => {
+        estado.profissional = el.profissional.value;
+        estado.hora = '';
+        el.profAjuda.textContent = estado.profissional
+            ? 'Somente ' + el.profissional.options[el.profissional.selectedIndex].textContent.trim() + ' será considerada(o).'
+            : 'O sistema escolhe um profissional livre no horário.';
+        carregarHorarios();
+        atualizarResumo();
+    });
+
+    el.data.addEventListener('change', () => {
+        estado.hora = '';
+        carregarHorarios();
+        atualizarResumo();
+    });
+    el.anterior.addEventListener('click', () => {
+        const d = new Date(el.data.value + 'T12:00:00');
+        d.setDate(d.getDate() - 1);
+        el.data.value = d.toISOString().slice(0, 10);
+        estado.hora = '';
+        carregarHorarios();
+        atualizarResumo();
+    });
+    el.seguinte.addEventListener('click', () => {
+        const d = new Date(el.data.value + 'T12:00:00');
+        d.setDate(d.getDate() + 1);
+        el.data.value = d.toISOString().slice(0, 10);
+        estado.hora = '';
+        carregarHorarios();
+        atualizarResumo();
+    });
+    el.botaoHoje.addEventListener('click', () => {
+        el.data.value = hoje;
+        estado.hora = '';
+        carregarHorarios();
+        atualizarResumo();
+    });
+
+    el.form.addEventListener('submit', evento => {
+        if (estado.enviando || el.confirmar.disabled) {
+            evento.preventDefault();
+            return;
+        }
+        estado.enviando = true;
+        el.confirmar.disabled = true;
+        el.confirmar.textContent = 'Salvando…';
+    });
+
+    // Inicialização
+    if (el.servico.value) {
+        aplicarServico();
+    } else {
+        el.botaoHoje.hidden = el.data.value !== hoje;
+        el.diaTitulo.textContent = dataLonga(el.data.value);
+        mostrarAviso('Escolha um serviço para ver os horários.');
+        atualizarResumo();
+    }
+});

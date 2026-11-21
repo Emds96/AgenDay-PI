@@ -1,0 +1,364 @@
+/* Página de agendamento (avulso) — usa os tokens do design system. */
+
+.agendar-pagina {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 26px 24px 130px;
+}
+
+.agendar-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.agendar-titulo {
+    margin: 0 0 4px;
+    font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+    letter-spacing: -.03em;
+    font-weight: 800;
+}
+
+.agendar-subtitulo {
+    margin: 0;
+    color: var(--ad-text-muted);
+    font-size: .95rem;
+}
+
+.agendar-grade {
+    display: grid;
+    grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.agendar-painel {
+    background: var(--ad-surface);
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-lg);
+    box-shadow: var(--ad-shadow);
+}
+
+.agendar-form { padding: 22px; }
+.agendar-horarios { padding: 22px; }
+
+.agendar-form .campo { margin-bottom: 20px; }
+
+.agendar-form label,
+.agendar-form .rotulo {
+    display: block;
+    margin-bottom: 8px;
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.obrigatorio { color: var(--ad-danger); }
+
+.busca {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 0 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface);
+}
+
+.busca:focus-within {
+    border-color: var(--ad-primary);
+    box-shadow: 0 0 0 3px rgba(24, 84, 77, .12);
+}
+
+.busca i { color: var(--ad-text-muted); }
+
+.busca input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: .95rem;
+}
+
+.sugestoes {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface);
+    box-shadow: var(--ad-shadow);
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.sugestoes li + li { border-top: 1px solid var(--ad-border); }
+
+.sugestoes button {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sugestoes button:hover { background: var(--ad-primary-soft); }
+
+.sugestoes small { color: var(--ad-text-muted); }
+
+.link-acao {
+    margin-top: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ad-primary);
+    font-weight: 700;
+    font-size: .85rem;
+    cursor: pointer;
+}
+
+.link-acao:hover { text-decoration: underline; }
+
+.novo-cliente {
+    margin-top: 10px;
+    padding: 14px;
+    border: 1px dashed var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface-muted);
+}
+
+.novo-cliente input {
+    width: 100%;
+    min-height: 42px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+}
+
+.novo-cliente .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.agendar-form select,
+.agendar-form textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface);
+    font-size: .93rem;
+}
+
+.agendar-form textarea { resize: vertical; }
+
+.agendar-form select:focus-visible,
+.agendar-form textarea:focus-visible {
+    outline: 3px solid var(--ad-focus);
+    outline-offset: 2px;
+}
+
+.campo-ajuda {
+    margin: 6px 0 0;
+    font-size: .78rem;
+    line-height: 1.35;
+    color: var(--ad-text-muted);
+}
+
+/* Horários */
+.horarios-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.dia-titulo { margin: 0; font-size: 1.15rem; letter-spacing: -.02em; font-weight: 800; }
+.dia-resumo { margin: 2px 0 0; font-size: .85rem; color: var(--ad-text-muted); }
+
+.dia-controles {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.dia-controles input {
+    min-height: 40px;
+    padding: 6px 8px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface);
+    font-size: .88rem;
+}
+
+.seta, .hoje {
+    min-height: 40px;
+    min-width: 40px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface);
+    color: var(--ad-primary);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.seta { font-size: 1.15rem; line-height: 1; }
+.hoje { padding: 0 12px; font-size: .82rem; }
+.seta:hover, .hoje:hover { border-color: var(--ad-primary); }
+
+.legenda { display: flex; gap: 14px; font-size: .76rem; color: var(--ad-text-muted); margin-bottom: 4px; }
+.legenda span { display: inline-flex; align-items: center; gap: 5px; }
+.ponto { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.ponto-livre { background: #1CC1AE; }
+.ponto-ocupado { background: #C3D2CF; }
+
+.periodo { margin-top: 18px; }
+
+.periodo-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--ad-text-muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.periodo-titulo::after { content: ""; flex: 1; height: 1px; background: var(--ad-border); }
+
+.grade-horarios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 8px;
+}
+
+.hora {
+    position: relative;
+    min-height: 52px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+}
+
+.hora-livre:hover { border-color: var(--ad-primary); background: var(--ad-primary-soft); }
+
+.hora-tempo { font-weight: 700; font-size: .95rem; }
+.hora-nota { font-size: .7rem; color: var(--ad-text-muted); }
+
+.hora[aria-pressed="true"] {
+    border-color: var(--ad-primary);
+    background: var(--ad-primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(24, 84, 77, .25);
+}
+
+.hora[aria-pressed="true"] .hora-nota { color: rgba(255,255,255,.85); }
+
+.hora-ocupada {
+    background: repeating-linear-gradient(-45deg, #F1F6F4, #F1F6F4 6px, #E8F0ED 6px, #E8F0EE 12px);
+    color: #8AA09C;
+    cursor: not-allowed;
+    border-color: #DCE7E4;
+}
+
+.hora-ocupada .hora-tempo { text-decoration: line-through; font-weight: 600; }
+
+.aviso-horarios {
+    margin: 18px 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-surface-muted);
+    color: var(--ad-text-muted);
+    font-size: .88rem;
+}
+
+/* Resumo fixo */
+.agendar-resumo {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--ad-surface);
+    border-top: 1px solid var(--ad-border);
+    box-shadow: 0 -8px 24px rgba(24, 84, 77, .08);
+    padding: 14px 24px;
+    z-index: 20;
+}
+
+.resumo-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.resumo-texto { min-width: 0; }
+
+.resumo-linha1 {
+    font-weight: 800;
+    letter-spacing: -.01em;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resumo-linha2 {
+    font-size: .82rem;
+    color: var(--ad-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resumo-acoes { margin-left: auto; display: flex; gap: 10px; }
+
+.agendar-resumo .btn { min-height: 46px; padding: 0 20px; font-weight: 700; }
+
+@media (max-width: 900px) {
+    .agendar-grade { grid-template-columns: 1fr; }
+    .agendar-form { order: 1; }
+    .agendar-horarios { order: 2; }
+}
+
+@media (max-width: 575.98px) {
+    .agendar-pagina { padding: 18px 14px 150px; }
+    .agendar-topo { flex-direction: column; gap: 10px; }
+    .agendar-form, .agendar-horarios { padding: 16px; border-radius: var(--ad-radius-md); }
+    .horarios-topo { flex-direction: column; align-items: stretch; gap: 10px; }
+    .dia-controles { justify-content: space-between; flex-wrap: wrap; row-gap: 6px; }
+    .dia-controles input { flex: 1 1 110px; min-width: 110px; }
+    .grade-horarios { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .hora { min-height: 54px; }
+    .agendar-resumo { padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
+    .resumo-inner { gap: 10px; }
+    .resumo-texto { flex: 1; }
+    .resumo-acoes { margin-left: 0; flex: 0 0 auto; }
+    .resumo-acoes .btn-outline-secondary { display: none; }
+    .resumo-acoes .btn { min-height: 48px; padding: 0 16px; }
+    .resumo-linha1 { font-size: .92rem; }
+    .resumo-linha2 { font-size: .74rem; }
+}
+
+/* O projeto estiliza links; botões precisam perder o sublinhado. */
+.agendar-pagina a.btn,
+.agendar-resumo a.btn {
+    text-decoration: none;
+}

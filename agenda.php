@@ -74,7 +74,10 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
                 <div class="card-body p-3 p-md-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                         <h1 id="novo-agendamento-titulo" class="h4 mb-0">Novo agendamento</h1>
-                        <span class="badge text-bg-primary">Agendamentos</span>
+                        <a class="btn btn-sm btn-primary" href="agendar.php">
+                            <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>
+                            Tela com horários livres
+                        </a>
                     </div>
                     <p class="text-muted mb-3">Escolha cliente, serviço, funcionário, data e horário para registrar um atendimento.</p>
                     <?php if (!empty($_SESSION['sucesso_agendamento'])): ?>
