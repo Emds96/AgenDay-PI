@@ -60,7 +60,7 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 
 ## Fase 5 — WhatsApp
 
-- [ ] Instalar Docker Desktop + WSL2 (com reinício autorizado).
+- [ ] Instalar Docker Desktop + WSL2 (com reinício autorizado) — guia: `docs/WHATSAPP_WAHA_GUIA.md`.
 - [ ] Subir o WAHA e parear o número (QR escaneado pelo responsável do número).
 - [ ] Publicar o endereço HTTPS do túnel (ngrok) e testar de fora.
 - [x] Aba "WhatsApp" em Configurações (URL, chave, sessão, ativo, exigir código, link do portal).
@@ -86,8 +86,8 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] Fluxo completo por HTTP local: entrar com código, criar, listar, remarcar, cancelar, cancelar por link.
 - [x] Envio real contra um WAHA simulado local (confirmação, retry após falha e cancelamento).
 - [x] `docs/STATUS.md` atualizado.
-- [ ] PR aberto para `dev-feira-uninorte` com resumo e riscos.
-- [ ] CI verde.
+- [x] PR #64 aberto, revisado e integrado em `dev-feira-uninorte` (`1e670cd`).
+- [x] CI verde: `PHP syntax check` e `Validacao e publicacao controlada` (run `44936376746`), com o teste do portal no workflow.
 - [ ] Validação visual pelo responsável no navegador (celular e desktop).
 
 ## Fase 8 — Deploy e feira
