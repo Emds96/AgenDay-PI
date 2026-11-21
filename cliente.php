@@ -54,7 +54,7 @@ if ($estabelecimento === null) {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl03">
+    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl14">
 </head>
 <body class="agenday-auth agenday-portal">
     <main class="container cliente-main">
@@ -89,7 +89,7 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl03">
+    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl14">
 </head>
 <body class="agenday-auth agenday-portal"
       data-slug="<?= $esc($slug) ?>"
@@ -234,22 +234,56 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
 
         <div id="painel-agendar" role="tabpanel" aria-labelledby="aba-agendar">
             <section class="cliente-card" id="bloco-servico">
-                <h2 class="cliente-card-titulo">1. Escolha o serviço</h2>
-                <div id="lista-servicos" class="cliente-servicos" aria-live="polite">
-                    <p class="cliente-vazio">Carregando serviços…</p>
+                <h2 class="cliente-card-titulo" id="rotulo-servico">1. Escolha o serviço</h2>
+                <div class="cliente-dropdown" id="dropdown-servico">
+                    <button type="button" class="cliente-dropdown-gatilho" id="gatilho-servico"
+                            aria-expanded="false">
+                        <span class="cliente-dropdown-conteudo" id="conteudo-servico">
+                            <span class="cliente-dropdown-placeholder">Selecione o serviço</span>
+                        </span>
+                        <i class="bi bi-chevron-down cliente-dropdown-seta" aria-hidden="true"></i>
+                    </button>
+                    <div class="cliente-dropdown-painel" id="opcoes-servico" role="group"
+                         aria-labelledby="rotulo-servico" hidden>
+                        <p class="cliente-vazio">Carregando serviços…</p>
+                    </div>
                 </div>
             </section>
 
             <section class="cliente-card" id="bloco-profissional" hidden>
-                <h2 class="cliente-card-titulo">2. Escolha o profissional</h2>
-                <div id="lista-profissionais" class="cliente-profissionais"></div>
+                <h2 class="cliente-card-titulo" id="rotulo-profissional">2. Escolha o profissional</h2>
+                <div class="cliente-dropdown" id="dropdown-profissional">
+                    <button type="button" class="cliente-dropdown-gatilho" id="gatilho-profissional"
+                            aria-expanded="false">
+                        <span class="cliente-dropdown-conteudo" id="conteudo-profissional">
+                            <span class="cliente-dropdown-placeholder">Selecione o profissional</span>
+                        </span>
+                        <i class="bi bi-chevron-down cliente-dropdown-seta" aria-hidden="true"></i>
+                    </button>
+                    <div class="cliente-dropdown-painel" id="opcoes-profissional" role="group"
+                         aria-labelledby="rotulo-profissional" hidden></div>
+                </div>
             </section>
 
             <section class="cliente-card" id="bloco-data" hidden>
-                <h2 class="cliente-card-titulo">3. Escolha o dia</h2>
-                <div class="cliente-campo">
-                    <label for="campo-data">Data do atendimento</label>
-                    <input type="date" class="form-control" id="campo-data" required>
+                <h2 class="cliente-card-titulo" id="rotulo-data">3. Escolha o dia</h2>
+                <div class="cliente-calendario" id="calendario">
+                    <div class="cliente-calendario-topo">
+                        <button type="button" class="cliente-calendario-nav" data-calendario="anterior"
+                                aria-label="Mês anterior">
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                        </button>
+                        <p class="cliente-calendario-mes" id="calendario-mes" aria-live="polite"></p>
+                        <button type="button" class="cliente-calendario-nav" data-calendario="proximo"
+                                aria-label="Próximo mês">
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="cliente-calendario-semana" aria-hidden="true">
+                        <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+                    </div>
+                    <div class="cliente-calendario-grade" id="calendario-grade" role="group"
+                         aria-labelledby="rotulo-data calendario-mes"></div>
                     <p class="form-text" id="dica-data"></p>
                 </div>
             </section>
@@ -310,6 +344,6 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-<script defer src="js/cliente.js?v=20261121-cl03"></script>
+<script defer src="js/cliente.js?v=20261121-cl14"></script>
 </body>
 </html>

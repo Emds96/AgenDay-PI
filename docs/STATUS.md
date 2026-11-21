@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-05 — Serviço e profissional em menu, dia no calendário (21/11/2026)
+
+- **Pedido do responsável:** na tela do cliente, serviço e profissional devem ser escolhidos em **menu dropdown**, mantendo a identidade visual dos controles atuais, e o dia deve ser escolhido em **calendário**, com os horários aparecendo abaixo.
+- **Tela (`cliente.php`):** os blocos 1 e 2 trocaram as listas de botões por um gatilho (`.cliente-dropdown-gatilho`) com valor escolhido e seta, e um painel de opções (`role="group"`, `aria-labelledby` do título da etapa, `hidden` quando fechado). A escolha marcada usa `aria-current` e ícone de check; não foi usado `role="listbox"`, para não prometer um padrão de teclado que não existe. O bloco 3 trocou o `<input type="date">` por um calendário com cabeçalho de mês, navegação anterior/próximo e grade de dias.
+- **Comportamento (`js/cliente.js`):** `abrirDropdown`/`fecharDropdown` mantêm `aria-expanded`, fecham ao clicar fora, ao escolher e no `Tab`; o teclado funciona com setas, `Home`, `End` e `Esc` (devolvendo o foco ao gatilho). Depois de escolher serviço ou profissional, o foco vai para a próxima etapa. `renderCalendario` limita a navegação ao mês atual e ao mês de `dataMax` (janela de `regras.janela_dias`), desabilita dias fora da janela e marca hoje e o dia escolhido. `moverFocoCalendario` anda com as setas e troca de mês quando o foco sai da grade. `escolherData` carrega os horários e leva o foco ao dia selecionado.
+- **Estilo (`css/cliente.css`):** o `<body>` do portal também carrega `.agenday-auth`, cuja regra genérica pinta todo botão de turquesa. Os controles novos receberam overrides com o prefixo `.agenday-auth.agenday-portal`, o que também devolveu aos horários o aspecto de cartão claro (antes apareciam preenchidos). Abaixo de 576 px o painel do dropdown passa a abrir dentro do cartão (`position: static`), sem flutuar sobre o conteúdo. Os cartões ganharam `scroll-margin-top` para não ficarem sob o cabeçalho fixo.
+- **Validação visual e funcional no local (21/11/2026):** fluxo completo em **1366 px** e em **360 px** — abrir serviço, escolher "Corte Feminino", escolher "Qualquer profissional", escolher 24/11 no calendário, escolher 14:00, confirmar; o agendamento foi gravado (profissional atribuída: Ana Beatriz) e depois cancelado pela aba "Meus agendamentos". Sem rolagem horizontal em 360 px (`scrollWidth` = 360).
+- **Testes:** `php -l cliente.php`, `node --check js/cliente.js`, `tests/portal-cliente.php` (84), `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `node tests/responsividade-check.js` (210), todos limpos.
+- **Estado real:** implementado e testado no PC local; **não publicado** — entra no deploy de 22/11.
+
+---
+
 ## PORTAL-04 — Acesso em duas abas e celular com o 9 (21/11/2026)
 
 - **Pedido do responsável:** a tela do cliente deve lembrar o login do sistema, com uma aba para **entrar** (só o celular) e outra para **cadastro** (celular + nome). O celular deve seguir o padrão atual do Brasil, com o 9 na frente (ex.: `92 99433-1267`).
