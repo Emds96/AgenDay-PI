@@ -32,7 +32,38 @@ if (!is_string($inicio) || !is_string($fim)) {
 try {
     // O arquivo privado conexao.php existe apenas na hospedagem do proprietário.
     require_once __DIR__ . '/../conexao.php';
+    require_once __DIR__ . '/../lib/comparecimento.php';
+
+    $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
+
+    // Fechamento preguiçoso: em_atendimento que já passou do fim vira concluido.
+    agenday_comparecimento_fechar($conexao, $idEstabelecimento);
+
     $agendamentos = agenday_agenda_listar($conexao, $inicio, $fim);
+
+    // Tolerância de chegada para sugerir "faltou".
+    $tolerancia = 30;
+    $consulta = $conexao->prepare(
+        'SELECT tolerancia_atraso_minutos FROM estabelecimento WHERE id_estabelecimento = ? LIMIT 1'
+    );
+    $consulta->bind_param('i', $idEstabelecimento);
+    $consulta->execute();
+    $consulta->bind_result($toleranciaBanco);
+    if ($consulta->fetch() && $toleranciaBanco !== null) {
+        $tolerancia = (int) $toleranciaBanco;
+    }
+    $consulta->close();
+
+    $agora = agenday_comparecimento_agora();
+    foreach ($agendamentos as $indice => $registro) {
+        $agendamentos[$indice]['sugere_faltou'] = agenday_comparecimento_sugere_falta(
+            (string) $registro['status'],
+            (string) $registro['data_inicio'],
+            $tolerancia,
+            $agora
+        );
+    }
+
     echo json_encode(
         ['ok' => true, 'agendamentos' => $agendamentos],
         JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE

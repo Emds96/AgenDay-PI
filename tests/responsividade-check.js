@@ -262,6 +262,25 @@ verificar(bloqueioEnvio.includes("form.addEventListener('submit'")
     && bloqueioEnvio.includes("'Salvando...'"),
     'FIX-01: bloqueio de duplo clique ausente');
 
+/* ATT-01: comparecimento, faltou e fechamento do dia. */
+const comparecimento = ler('lib/comparecimento.php');
+const calendarioJs = ler('js/calendario.js');
+verificar(comparecimento.includes('function agenday_comparecimento_fechar(')
+    && comparecimento.includes('function agenday_comparecimento_marcar(')
+    && comparecimento.includes('function agenday_comparecimento_sugere_falta('),
+    'ATT-01: funções de comparecimento ausentes');
+verificar(comparecimento.includes("'chegou'") && comparecimento.includes("'faltou'")
+    && comparecimento.includes("'concluir'") && comparecimento.includes("'em_atendimento'"),
+    'ATT-01: ações ou status novos incompletos');
+verificar(ler('api/comparecimento.php').includes('agenday_valida_csrf()')
+    && ler('api/comparecimento.php').includes("$_SESSION['id_estabelecimento']"),
+    'ATT-01: endpoint sem CSRF ou sem isolamento');
+verificar(calendarioJs.includes('em_atendimento') && calendarioJs.includes('faltou')
+    && calendarioJs.includes('sugere_faltou') && calendarioJs.includes('dropdown-item'),
+    'ATT-01: agenda sem os novos status ou sem as ações');
+verificar(!/form-novo-agendamento input\[name="csrf_token"\]/.test(calendarioJs),
+    'ATT-01: calendário ainda depende do formulário antigo para o CSRF');
+
 /* AGD-01: tela de agendamento com horários livres. */
 const agendar = ler('agendar.php');
 const agendarJs = ler('js/agendar.js');

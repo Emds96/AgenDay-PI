@@ -186,6 +186,39 @@
     opacity: .85;
 }
 
+.agenda-atendimento-faltou {
+    border-left-color: #b42332;
+    background: #fdf6f7;
+}
+
+.agenda-atendimento-em-curso {
+    border-left-color: #1cc1ae;
+}
+
+.agenda-atendimento-pendente {
+    border-left-color: #b45309;
+    background: #fffaf0;
+}
+
+.agenda-pendencia {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fde8c8;
+    color: #8a4b00;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.agenda-acoes {
+    margin-top: 10px;
+}
+
+.agenda-acoes .dropdown-menu {
+    min-width: 190px;
+}
+
 .agenda-atendimento-topo {
     display: flex;
     justify-content: space-between;
@@ -233,7 +266,9 @@
 
 .agenda-situacao-agendado { background: #e2efff; color: #174a80; }
 .agenda-situacao-confirmado { background: #e0f4e9; color: #14603a; }
+.agenda-situacao-em_atendimento { background: #d9f6f1; color: #0f5a50; }
 .agenda-situacao-concluido { background: #e9e9ff; color: #43428a; }
+.agenda-situacao-faltou { background: #fbe3e6; color: #8f1d28; }
 .agenda-situacao-cancelado { background: #eceff2; color: #5a6572; }
 
 @media (max-width: 575px) {
