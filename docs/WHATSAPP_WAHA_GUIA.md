@@ -139,7 +139,7 @@ No domínio administrativo (`agenday-sistema.infinityfree.io`), entre com a cont
 
 Salve e clique em **Testar conexão**. O retorno esperado é a sessão `WORKING`. Se houver mensagens na fila, use **Enviar pendentes agora**.
 
-> **Produção (21/11/2026):** o código do portal já está publicado no InfinityFree, mas esta aba em produção ainda está vazia (`ativo=0`). Sem preenchê-la e testar, o código de acesso não sai para os clientes em produção. É o único passo pendente antes do teste real.
+> **Produção (21/11/2026):** o código do portal já está publicado no InfinityFree e esta aba **já foi preenchida e testada** pelo responsável (`ativo=1`, domínio fixo do ngrok, sessão `default`). O primeiro agendamento real pelo portal foi confirmado com mensagem recebida. Ao trocar de computador ou reinstalar o WAHA, refaça este passo com a nova chave.
 
 ## Passo 7 — Teste real (obrigatório antes da feira)
 
