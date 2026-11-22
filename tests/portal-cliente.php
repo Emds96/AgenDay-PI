@@ -334,6 +334,28 @@ if ($hostAntesDosLinks === null) {
     $_SERVER['HTTP_HOST'] = $hostAntesDosLinks;
 }
 
+/* ------------------- dominio compartilhado do portal nunca "dono" da raiz */
+verificar(
+    agenday_portal_dominio_eh_publico('agenday-agendamentos.infinityfree.io'),
+    'dominio publico do portal nao identifica estabelecimento'
+);
+verificar(
+    agenday_portal_dominio_eh_publico('www.agenday-agendamentos.infinityfree.io'),
+    'dominio publico com www tambem e reconhecido'
+);
+verificar(
+    agenday_portal_dominio_eh_publico('AGENDAY-AGENDAMENTOS.infinityfree.io:443'),
+    'dominio publico com maiusculas e porta e reconhecido'
+);
+verificar(
+    !agenday_portal_dominio_eh_publico('meusalao.com.br'),
+    'dominio proprio continua valido'
+);
+verificar(
+    !agenday_portal_dominio_eh_publico(''),
+    'host vazio nao e dominio publico'
+);
+
 /* ------------------------------------------- assinatura do link de cancelamento */
 $assinaturaA = agenday_portal_assinatura_cancelamento(str_repeat('a', 64));
 verificar(strlen($assinaturaA) === 64, 'assinatura do cancelamento tem 64 caracteres');

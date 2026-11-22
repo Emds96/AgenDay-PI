@@ -1,5 +1,23 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-RAIZ-01 — Domínio compartilhado não abre mais a agenda de um salão (22/11/2026)
+
+- **Problema relatado:** abrir só `https://agenday-agendamentos.infinityfree.io/` (sem `?e=`) abria a agenda do Studio Bella Vita. Não deveria.
+- **Causa:** a coluna `estabelecimento.dominio` é para **domínio próprio** (ex.: `studiobellavita.com.br`), mas o Studio tinha nela o **domínio compartilhado do portal**. Sem `?e=`, a resolução caía na busca por domínio e encontrava o Studio.
+- **Correção (somente código, PR #89):** `agenday_portal_estabelecimento_por_dominio()` passou a ignorar os endereços compartilhados do portal (`agenday_portal_dominio_eh_publico()`, derivada de `agenday_portal_hosts_publicos()`). Nesses endereços o estabelecimento é identificado **só pelo slug**.
+- **Efeito observado no PC local (PHP embutido + banco local, sem alterar dados):**
+  | Endereço | Antes | Depois |
+  | --- | --- | --- |
+  | `/cliente.php` (sem slug, Host público) | 200 — abria o Studio | **404** — "Agendamento indisponível" |
+  | `/cliente.php?e=studio` | 200 | 200 |
+  | `/cliente.php?e=nao-existe` | 404 | 404 |
+- **Sem SQL:** o dado errado do Studio continua no banco local e em produção, mas deixou de ter efeito. A limpeza de `dominio` (deixar vazio) é opcional e não foi feita.
+- **Mensagem da tela 404:** mantida como está, por decisão do responsável ("deixa do jeito que ta pra eu ver na pratica primeiro").
+- **Testes:** `tests/portal-cliente.php` **145 → 150** verificações (domínio público com e sem `www.`, com maiúsculas/porta, domínio próprio e host vazio). `php -l` limpo em `lib/portal-cliente.php` e `tests/portal-cliente.php`.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## MENSAGENS-02 — Confirmação e lembrete ajustados; telefone obrigatório pendente (22/11/2026)
 
 - **Contexto:** revisão das cinco mensagens do WhatsApp com o responsável. Código de acesso, remarcação e cancelamento foram aprovados sem mudança. A confirmação e o lembrete foram fechados e implementados; o telefone obrigatório e a taxa de cancelamento seguem como decisões futuras.
