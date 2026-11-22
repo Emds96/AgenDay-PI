@@ -1,9 +1,9 @@
 # STATUS — AgenDay 2.0
 
-## MENSAGENS-02 — Texto da confirmação fechado; lembrete e taxa em aberto (22/11/2026)
+## MENSAGENS-02 — Confirmação implementada; lembrete e taxa em aberto (22/11/2026)
 
-- **Contexto:** revisão das cinco mensagens do WhatsApp com o responsável. Código de acesso, remarcação e cancelamento foram aprovados sem mudança. A confirmação foi fechada; o lembrete e a ideia de taxa de cancelamento seguem em decisão.
-- **Confirmação — texto aprovado (ainda não implementado):**
+- **Contexto:** revisão das cinco mensagens do WhatsApp com o responsável. Código de acesso, remarcação e cancelamento foram aprovados sem mudança. A confirmação foi fechada e implementada; o lembrete e a ideia de taxa de cancelamento seguem em decisão.
+- **Confirmação — implementada no PC local (22/11/2026, PR #87):**
   ```
   Olá, Ana Souza!
 
@@ -17,11 +17,11 @@
 
   Enviado pela AgenDay em nome de Studio Bella Vita.
   ```
-  Regras: **um único link** (portal `?e=slug`), sem o link de token de cancelamento; o prazo é **fixo em 24 horas antes do horário marcado**, igual à regra que o sistema já aplica (`data_inicio − 24h`) para cancelar e remarcar. Nenhuma tela altera `horas_cancelamento`, então o texto pode dizer **24h** sem divergir da regra. O link do portal exige o celular (e o código, quando o estabelecimento exige) — não é remarcação em um clique.
+  Regras: **um único link** (portal `?e=slug`), sem o link de token de cancelamento; o prazo é **fixo em 24 horas antes do horário marcado** (`AGENDAY_WHATSAPP_PRAZO_AVISO_HORAS`), igual à regra que o sistema já aplica (`data_inicio − 24h`) para cancelar e remarcar. Nenhuma tela altera `horas_cancelamento`, então o texto pode dizer **24h** sem divergir da regra. O link do portal exige o celular (e o código, quando o estabelecimento exige) — não é remarcação em um clique. **Sem endereço público (slug), a mensagem mantém o link de token de cancelamento**, para o cliente não ficar sem caminho.
 - **Esclarecimento (22/11/2026):** "dinâmico" nunca significou contagem regressiva por cliente; significava ler o número do cadastro. Como não existe tela para mudar esse número, a decisão passou a ser **24h fixo no texto**. Se um dia a configuração por estabelecimento existir, o texto volta a precisar do valor real.
 - **Lembrete — em aberto:** sem nenhum link. A primeira linha é "O prazo para remarcar ou cancelar já passou." (com prazo fixo de 24h, o lembrete sempre chega depois do fechamento da janela); a última linha ainda será escolhida entre: (A) "Se não puder comparecer, avise com antecedência."; (B) "Se não puder comparecer, avise o Studio Bella Vita."; (C) telefone do estabelecimento quando cadastrado, com A como alternativa.
 - **Taxa de cancelamento — ideia do responsável, adiada:** cobrar uma taxa quando o cliente cancela ou remarca em cima da hora. O sistema **não tem meio de cobrança** (sem gateway, sem cartão salvo), então a taxa não pode ser aplicada automaticamente. Sem SQL, o máximo é um **aviso textual** na mensagem; registrar cancelamento tardio no painel é possível derivando `data_inicio` × `atualizado_em`, mas remarcação tardia **não** é recuperável (o horário antigo é sobrescrito). Uma configuração por estabelecimento exigiria coluna nova — depois da feira.
-- **Estado real:** decisão registrada; **nada implementado além do LEMBRETE-01**; não publicado.
+- **Estado real:** confirmação implementada e testada **somente no PC local**; lembrete e taxa em aberto; **não publicado**.
 
 ---
 

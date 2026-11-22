@@ -238,7 +238,22 @@ $dadosConfirmacao = [
 ];
 $textoConfirmacao = agenday_whatsapp_texto('confirmacao', $dadosConfirmacao);
 verificar(str_contains($textoConfirmacao, 'Enviado pela AgenDay em nome de Studio Bella Vita.'), 'confirmação diz em nome de quem envia');
-verificar(str_contains($textoConfirmacao, 'Precisa cancelar?'), 'confirmação mantém o link de cancelamento');
+verificar(str_contains($textoConfirmacao, 'Precisa cancelar?'), 'confirmação sem portal cai no link de cancelamento');
+verificar(defined('AGENDAY_WHATSAPP_PRAZO_AVISO_HORAS') && AGENDAY_WHATSAPP_PRAZO_AVISO_HORAS === 24, 'prazo avisado é 24h');
+
+$textoConfirmacaoPortal = agenday_whatsapp_texto('confirmacao', $dadosConfirmacao + [
+    'link_portal' => 'https://exemplo.test/?e=studio',
+]);
+verificar(str_contains($textoConfirmacaoPortal, 'Remarcar ou cancelar: até 24h antes do horário marcado.'), 'confirmação avisa o prazo de 24h');
+verificar(str_contains($textoConfirmacaoPortal, 'Precisa remarcar ou cancelar? Acesse: https://exemplo.test/?e=studio'), 'confirmação usa um único link, o do portal');
+verificar(!str_contains($textoConfirmacaoPortal, 'cliente-cancelar.php'), 'confirmação não mistura o link de token quando há portal');
+
+$textoConfirmacaoSemLink = agenday_whatsapp_texto('confirmacao', [
+    'estabelecimento' => 'Studio Bella Vita',
+    'data_inicio' => '2026-12-01 10:00:00',
+]);
+verificar(!str_contains($textoConfirmacaoSemLink, 'Precisa'), 'confirmação sem link não inventa linha de link');
+verificar(str_contains($textoConfirmacaoSemLink, 'até 24h antes do horário marcado'), 'confirmação sem link mantém o prazo');
 verificar(str_contains(agenday_whatsapp_texto('remarcacao', $dadosConfirmacao), 'Agendamento remarcado'), 'remarcação tem título próprio');
 verificar(str_contains(agenday_whatsapp_texto('remarcacao', $dadosConfirmacao), $assinaturaEstab), 'remarcação também assina');
 

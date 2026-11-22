@@ -32,6 +32,14 @@ const AGENDAY_WHATSAPP_LOTE_PADRAO = 2;
  */
 const AGENDAY_WHATSAPP_REMETENTE = 'AgenDay';
 
+/**
+ * Prazo avisado na confirmação para remarcar ou cancelar.
+ *
+ * É o mesmo valor que o sistema aplica (`horas_cancelamento`, padrão 24) e
+ * nenhuma tela altera esse campo — por isso o texto pode dizer 24h fixo.
+ */
+const AGENDAY_WHATSAPP_PRAZO_AVISO_HORAS = 24;
+
 /* ---------------------------------------------------------------------------
  * Configuração
  * ------------------------------------------------------------------------- */
@@ -243,14 +251,35 @@ function agenday_whatsapp_texto(string $tipo, array $dados): string
             ]);
 
         case 'confirmacao':
+            $quando = agenday_whatsapp_data_hora((string) ($dados['data_inicio'] ?? ''));
+            $linhas = [
+                $saudacao,
+                '',
+                'Agendamento confirmado no ' . $estab . ':',
+                'Serviço: ' . trim((string) ($dados['servico'] ?? '')),
+                'Profissional: ' . trim((string) ($dados['profissional'] ?? '')),
+                'Data: ' . $quando['data'] . ' às ' . $quando['hora'],
+                '',
+                'Remarcar ou cancelar: até ' . AGENDAY_WHATSAPP_PRAZO_AVISO_HORAS
+                    . 'h antes do horário marcado.',
+            ];
+            $linkPortal = trim((string) ($dados['link_portal'] ?? ''));
+            $linkCancelar = trim((string) ($dados['link_cancelar'] ?? ''));
+            if ($linkPortal !== '') {
+                // Um link só: o portal, onde o cliente remarca ou cancela.
+                $linhas[] = 'Precisa remarcar ou cancelar? Acesse: ' . $linkPortal;
+            } elseif ($linkCancelar !== '') {
+                // Estabelecimento sem endereço público: o token ainda resolve o cancelamento.
+                $linhas[] = 'Precisa cancelar? ' . $linkCancelar;
+            }
+            $linhas[] = '';
+            $linhas[] = agenday_whatsapp_assinatura($estab);
+            return implode("\n", $linhas);
+
         case 'lembrete':
         case 'remarcacao':
             $quando = agenday_whatsapp_data_hora((string) ($dados['data_inicio'] ?? ''));
-            $titulo = match ($tipo) {
-                'remarcacao' => 'Agendamento remarcado',
-                'lembrete' => 'Lembrete do seu horário',
-                default => 'Agendamento confirmado',
-            };
+            $titulo = $tipo === 'remarcacao' ? 'Agendamento remarcado' : 'Lembrete do seu horário';
             $linhas = [
                 $saudacao,
                 '',
