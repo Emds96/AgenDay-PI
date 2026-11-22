@@ -25,7 +25,7 @@ $alertaFuncionamento = null;
 $reabrirModalSenha = false;
 $dadosCarregados = false;
 $funcionamentoDisponivel = false;
-$whatsappDisponivel = false;
+$portalDisponivel = false;
 $portalSlug = '';
 $portalDominio = '';
 $portalLink = '';
@@ -127,10 +127,10 @@ if (isset($conexao) && $conexao instanceof mysqli) {
         }
         $stmtPortal->close();
         $portalLink = agenday_portal_base_url(['slug' => $portalSlug, 'dominio' => $portalDominio]);
-        $whatsappDisponivel = true;
+        $portalDisponivel = true;
     } catch (Throwable $e) {
         error_log('AgenDay: portal do cliente indisponível (' . get_class($e) . ').');
-        $whatsappDisponivel = false;
+        $portalDisponivel = false;
     }
 }
 
@@ -139,6 +139,7 @@ $emailAtual = (string) $emailAtual;
 $contatoAtual = (string) ($contatoAtual ?? '');
 $nomeFormulario = $nomeAtual;
 $contatoFormulario = $contatoAtual;
+$slugFormulario = $portalSlug;
 
 if ($metodo === 'POST') {
     $acao = isset($_POST['acao']) && is_string($_POST['acao']) ? $_POST['acao'] : '';
@@ -177,19 +178,60 @@ if ($metodo === 'POST') {
         $erroValidacao = agenday_config_validar($nomeFormulario, $contatoFormulario);
         $exigirNovo = isset($_POST['exigir_codigo']) && $_POST['exigir_codigo'] === '1';
 
+        // Endereço do portal: em branco gera pelo nome (só na primeira vez);
+        // preenchido é normalizado e conferido contra os outros estabelecimentos.
+        $slugFormulario = isset($_POST['slug']) && is_string($_POST['slug'])
+            ? trim($_POST['slug']) : $portalSlug;
+        $slugNovo = $portalSlug;
+        $erroSlug = null;
+
+        if ($portalDisponivel) {
+            if ($slugFormulario === '') {
+                if ($portalSlug === '') {
+                    try {
+                        $slugNovo = agenday_portal_slug_disponivel($conexao, $nomeFormulario, $idEstabelecimento);
+                    } catch (Throwable $e) {
+                        error_log('AgenDay: falha ao gerar o endereço do portal.');
+                        $erroSlug = 'Não foi possível gerar o endereço do portal agora. Tente novamente.';
+                    }
+                }
+            } else {
+                [$slugNormalizado, $erroSlug] = agenday_portal_slug_analisar($slugFormulario);
+                $slugFormulario = $slugNormalizado;
+                if ($erroSlug === null) {
+                    try {
+                        if ($slugNormalizado !== $portalSlug
+                            && agenday_portal_slug_ocupado($conexao, $slugNormalizado, $idEstabelecimento)) {
+                            $erroSlug = 'Esse endereço já está em uso por outro estabelecimento. Escolha outro.';
+                        } else {
+                            $slugNovo = $slugNormalizado;
+                        }
+                    } catch (Throwable $e) {
+                        error_log('AgenDay: falha ao conferir o endereço do portal.');
+                        $erroSlug = 'Não foi possível conferir o endereço do portal agora. Tente novamente.';
+                    }
+                }
+            }
+        }
+
         if ($erroValidacao !== null) {
             $alertaEstabelecimento = ['tipo' => 'danger', 'texto' => $erroValidacao];
+        } elseif ($erroSlug !== null) {
+            $alertaEstabelecimento = ['tipo' => 'danger', 'texto' => $erroSlug];
         } else {
             try {
-                if ($whatsappDisponivel) {
+                if ($portalDisponivel) {
                     $atualizacao = $conexao->prepare(
                         'UPDATE estabelecimento
                          SET nome_estabelecimento = ?, contato_estabelecimento = ?,
-                             exigir_codigo_whatsapp = ?
+                             exigir_codigo_whatsapp = ?, slug = ?
                          WHERE id_estabelecimento = ?'
                     );
                     $exigirInt = $exigirNovo ? 1 : 0;
-                    $atualizacao->bind_param('ssii', $nomeFormulario, $contatoFormulario, $exigirInt, $idEstabelecimento);
+                    // NULL (e não string vazia) quando não há endereço: o índice
+                    // único aceita vários NULL, mas uma única string vazia.
+                    $slugParam = $slugNovo !== '' ? $slugNovo : null;
+                    $atualizacao->bind_param('ssisi', $nomeFormulario, $contatoFormulario, $exigirInt, $slugParam, $idEstabelecimento);
                 } else {
                     $atualizacao = $conexao->prepare(
                         'UPDATE estabelecimento
@@ -430,7 +472,7 @@ $nomesDias = agenday_dias_semana();
                                 <input class="form-check-input" type="checkbox" role="switch"
                                        id="exigir-codigo" name="exigir_codigo" value="1"
                                        <?= $exigirCodigo ? 'checked' : '' ?>
-                                       <?= !$dadosCarregados || !$whatsappDisponivel ? 'disabled' : '' ?>>
+                                       <?= !$dadosCarregados || !$portalDisponivel ? 'disabled' : '' ?>>
                                 <label class="form-check-label" for="exigir-codigo">
                                     Exigir código de 6 dígitos enviado pelo WhatsApp para entrar
                                 </label>
@@ -438,9 +480,27 @@ $nomesDias = agenday_dias_semana();
                             <div class="form-text">
                                 Com esta opção desligada, o cliente entra apenas informando o celular.
                                 Use somente como contingência se o envio de mensagens estiver fora do ar.
-                                <?php if (!$whatsappDisponivel): ?>
+                                <?php if (!$portalDisponivel): ?>
                                     A estrutura do portal ainda não existe neste banco.
                                 <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="slugEstabelecimento" class="form-label fw-semibold">Endereço do portal</label>
+                            <div class="input-group">
+                                <span class="input-group-text">?e=</span>
+                                <input id="slugEstabelecimento" name="slug" type="text"
+                                       class="form-control" maxlength="60" placeholder="barbearia-joao"
+                                       aria-describedby="slugAjuda"
+                                       autocapitalize="none" spellcheck="false"
+                                       value="<?= agenday_config_html($slugFormulario) ?>"
+                                       <?= !$dadosCarregados || !$portalDisponivel ? 'disabled' : '' ?>>
+                            </div>
+                            <div class="form-text" id="slugAjuda">
+                                É o final do link que o cliente usa. Aceita letras, números e hífen
+                                (3 a 60 caracteres); maiúsculas e acentos são convertidos.
+                                Deixe em branco para gerar automaticamente pelo nome.
+                                Ao trocar o endereço, o link antigo deixa de funcionar.
                             </div>
                         </div>
                         <div class="ag-settings-actions">
@@ -464,7 +524,10 @@ $nomesDias = agenday_dias_semana();
                                 <code>?e=<?= agenday_config_html($portalSlug) ?></code> também funciona.
                             </p>
                         <?php else: ?>
-                            <p class="form-text mb-0">O identificador público ainda não foi definido para esta conta.</p>
+                            <p class="form-text mb-0">
+                                Ainda não há endereço público. Preencha o campo
+                                <strong>Endereço do portal</strong> acima e salve.
+                            </p>
                         <?php endif; ?>
                         <p class="form-text mb-0">
                             A conexão do WhatsApp é única da plataforma (número da AgenDay). As mensagens

@@ -119,11 +119,11 @@ Nenhum procedimento de continuidade ou arquivo documental autoriza automaticamen
 
 O Gabriel mantém o projeto original e relatou trabalhar em agenda/dashboard; permitiu o fork, mas pediu preservação do padrão visual. **Não foi acordada integração automática de códigos/repositórios**. Antes de copiar soluções ou alterar o design, alinhar escopo e autoria com ele.
 
-Há dois papéis de usuário previstos:
-- **Estabelecimento:** conta administrativa existente; login, clientes, serviços, funcionários e agenda.
-- **Cliente final:** página pública para reservar diretamente pelo link do estabelecimento, **ainda não criada no nosso fork** (não confundir com `cad-cliente.php`, que é cadastro administrativo).
+Há dois papéis de usuário:
+- **Estabelecimento:** conta administrativa; login, clientes, serviços, funcionários, agenda e configurações.
+- **Cliente final:** portal público em `https://agenday-agendamentos.infinityfree.io/?e=slug`, **publicado em 21/11/2026**; login por celular com código no primeiro acesso, agendamento, remarcação e cancelamento. Não confundir com `cad-cliente.php`, que é cadastro administrativo.
 
-**Decisões em aberto:** formato do link público por estabelecimento (`/agendar/slug` é só exemplo); agendamento como convidado versus conta do consumidor; identidade/verificação, confirmação, anti-spam, cancelamento e UX; eventual reutilização do design da página pública do Gabriel. **Não implementar essas escolhas sem alinhamento.**
+**Decisões já tomadas:** o link público é `?e=slug` (não `/agendar/slug`), com o slug gerado automaticamente no cadastro (`barbearia-joao`, `barbearia-joao-2` se o nome repetir) e editável em Configurações → Estabelecimento desde o SLUG-01 (21/11/2026). **Ainda em aberto:** agendamento como convidado versus conta do consumidor, anti-spam e ajustes de UX. **Não implementar essas escolhas sem alinhamento.**
 
 ## 7. Como iniciar outra sessão
 

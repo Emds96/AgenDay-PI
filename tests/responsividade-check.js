@@ -107,6 +107,8 @@ verificar(whatsappPlataforma.includes('name="whatsapp_api_key"')
     'WA-01: configuração da plataforma sem confirmação da chave atual');
 verificar(config.includes('name="exigir_codigo"'),
     'WA-01: exigência de código saiu da tela sem ir para o estabelecimento');
+verificar(config.includes('name="slug"') && config.includes('id="slugEstabelecimento"'),
+    'SLUG-01: endereço do portal editável na tela do estabelecimento');
 verificar(config.includes('id="formFuncionamento"')
     && config.includes('name="dias[')
     && config.includes('name="regras[intervalo]"')

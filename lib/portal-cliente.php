@@ -13,6 +13,10 @@
  */
 declare(strict_types=1);
 
+// A lista de domínios públicos do portal fica em guarda-host.php. Incluir aqui
+// garante que os links absolutos funcionem também fora de sessao.php.
+require_once __DIR__ . '/guarda-host.php';
+
 /** Nome do cookie da sessão do cliente (independente do AGENDAYSESSID). */
 const AGENDAY_PORTAL_COOKIE = 'AGENDAY_CLIENTE';
 
@@ -88,7 +92,101 @@ function agenday_portal_slug_sugerir(string $nome): string
     if (in_array($slug, AGENDAY_PORTAL_SLUGS_RESERVADOS, true)) {
         $slug .= '-agenda';
     }
-    return substr($slug, 0, 60);
+    return rtrim(substr($slug, 0, 60), '-');
+}
+
+/**
+ * Um slug já pertence a outro estabelecimento?
+ *
+ * $ignorarId permite validar o próprio registro durante a edição.
+ */
+function agenday_portal_slug_ocupado(mysqli $conexao, string $slug, int $ignorarId = 0): bool
+{
+    if (!agenday_portal_slug_valido($slug)) {
+        return true;
+    }
+    $stmt = $conexao->prepare(
+        'SELECT id_estabelecimento FROM estabelecimento
+          WHERE slug = ? AND id_estabelecimento <> ? LIMIT 1'
+    );
+    $stmt->bind_param('si', $slug, $ignorarId);
+    $stmt->execute();
+    $stmt->store_result();
+    $ocupado = $stmt->num_rows > 0;
+    $stmt->close();
+    return $ocupado;
+}
+
+/**
+ * Primeiro slug livre a partir do nome: "barbearia-joao", "barbearia-joao-2"…
+ *
+ * Não grava nada. O sufixo numérico é o que resolve dois estabelecimentos com
+ * o mesmo nome — o dono pode trocar depois na tela de Configurações.
+ */
+function agenday_portal_slug_disponivel(mysqli $conexao, string $nome, int $ignorarId = 0): string
+{
+    $base = agenday_portal_slug_sugerir($nome);
+    if (!agenday_portal_slug_ocupado($conexao, $base, $ignorarId)) {
+        return $base;
+    }
+    for ($numero = 2; $numero <= 50; $numero++) {
+        $sufixo = '-' . $numero;
+        $candidato = rtrim(substr($base, 0, 60 - strlen($sufixo)), '-') . $sufixo;
+        if (!agenday_portal_slug_ocupado($conexao, $candidato, $ignorarId)) {
+            return $candidato;
+        }
+    }
+    // Fallback improvável: base cheia de colisões.
+    $aleatorio = '-' . bin2hex(random_bytes(3));
+    return rtrim(substr($base, 0, 60 - strlen($aleatorio)), '-') . $aleatorio;
+}
+
+/**
+ * Grava o slug de uma conta recém-criada, resolvendo colisão de última hora.
+ *
+ * Duas contas com o mesmo nome podem calcular o mesmo slug ao mesmo tempo; o
+ * índice único recusa a segunda e a tentativa seguinte já usa "-2".
+ */
+function agenday_portal_slug_gravar(mysqli $conexao, int $idEstabelecimento, string $nome): ?string
+{
+    for ($tentativa = 0; $tentativa < 5; $tentativa++) {
+        $slug = agenday_portal_slug_disponivel($conexao, $nome, $idEstabelecimento);
+        try {
+            $stmt = $conexao->prepare(
+                'UPDATE estabelecimento SET slug = ? WHERE id_estabelecimento = ?'
+            );
+            $stmt->bind_param('si', $slug, $idEstabelecimento);
+            $stmt->execute();
+            $stmt->close();
+            return $slug;
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() !== 1062) {
+                throw $e;
+            }
+        }
+    }
+    return null;
+}
+
+/**
+ * Valida o endereço digitado pelo estabelecimento.
+ *
+ * Devolve [slug normalizado, erro]. O erro é null quando está tudo certo.
+ * Texto com acento ou maiúscula é convertido, não recusado.
+ */
+function agenday_portal_slug_analisar(string $texto): array
+{
+    $slug = agenday_portal_slug_normalizar($texto);
+    if ($slug === '') {
+        return ['', 'Informe o endereço do portal.'];
+    }
+    if (in_array($slug, AGENDAY_PORTAL_SLUGS_RESERVADOS, true)) {
+        return [$slug, 'Esse endereço é reservado pelo sistema. Escolha outro.'];
+    }
+    if (!agenday_portal_slug_valido($slug)) {
+        return [$slug, 'Use de 3 a 60 caracteres: letras minúsculas, números e hífen.'];
+    }
+    return [$slug, null];
 }
 
 /* ---------------------------------------------------------------------------
@@ -221,6 +319,21 @@ function agenday_portal_host_normalizar(string $host): string
         $host = substr($host, 4);
     }
     return $host;
+}
+
+/**
+ * Domínios públicos onde o portal responde. O primeiro é o padrão.
+ *
+ * Um estabelecimento sem domínio próprio compartilha esse endereço com os
+ * demais — o que diferencia cada um é o ?e=slug.
+ */
+function agenday_portal_hosts_publicos(): array
+{
+    $hosts = array_values(array_filter(array_map(
+        static fn($host): string => agenday_portal_host_normalizar((string) $host),
+        agenday_guarda_hosts_cliente()
+    )));
+    return $hosts !== [] ? $hosts : ['agenday-agendamentos.infinityfree.io'];
 }
 
 /**
@@ -361,23 +474,29 @@ function agenday_portal_estabelecimento_resolver(mysqli $conexao, ?string $slugP
 /**
  * Base pública do estabelecimento para montar links (mensagens e QR).
  *
- * No local usa o host atual (para o link abrir o sistema que gerou a mensagem);
- * fora dele usa o domínio do cliente e, sem domínio, um caminho relativo.
+ * Sem slug não existe link: devolve '' para a tela mostrar "ainda não definido"
+ * em vez de um endereço quebrado. No local usa o host atual (para o link abrir
+ * o sistema que gerou a mensagem); fora dele usa o domínio próprio do
+ * estabelecimento e, sem domínio, o domínio público do portal.
  */
 function agenday_portal_base_url(array $estabelecimento): string
 {
-    $slug = isset($estabelecimento['slug']) ? (string) $estabelecimento['slug'] : '';
+    $slug = isset($estabelecimento['slug']) ? trim((string) $estabelecimento['slug']) : '';
+    if ($slug === '') {
+        return '';
+    }
+    $slug = rawurlencode($slug);
     if (agenday_portal_host_local()) {
         $host = agenday_portal_host_atual_completo();
         if ($host !== '') {
-            return 'http://' . $host . '/cliente.php?e=' . rawurlencode($slug);
+            return 'http://' . $host . '/cliente.php?e=' . $slug;
         }
     }
     $dominio = isset($estabelecimento['dominio']) ? trim((string) $estabelecimento['dominio']) : '';
-    if ($dominio !== '') {
-        return 'https://' . agenday_portal_host_normalizar($dominio) . '/?e=' . rawurlencode($slug);
+    if ($dominio === '') {
+        $dominio = agenday_portal_hosts_publicos()[0];
     }
-    return '?e=' . rawurlencode($slug);
+    return 'https://' . agenday_portal_host_normalizar($dominio) . '/?e=' . $slug;
 }
 
 /* ---------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/sessao.php';
+require_once __DIR__ . '/lib/portal-cliente.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Location: index.php', true, 302);
@@ -94,6 +95,15 @@ try {
     $stmt->execute();
     $novoId = (int) $conexao->insert_id;
     $stmt->close();
+
+    // Slug público: nasce do nome do estabelecimento ("barbearia-joao"), com
+    // sufixo numérico se já existir. Se a migração do portal não estiver
+    // aplicada, o cadastro segue normalmente e o endereço fica pendente.
+    try {
+        agenday_portal_slug_gravar($conexao, $novoId, $nome);
+    } catch (Throwable $e) {
+        error_log('AgenDay cadastro: slug público não gerado (' . get_class($e) . ').');
+    }
 
     // A conta já nasce com o horário informado no cadastro gravado.
     agenday_horario_criar_padrao($conexao, $novoId, $diasFuncionamento);

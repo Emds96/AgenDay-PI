@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/sessao.php';
+require_once __DIR__ . '/lib/portal-cliente.php';
 
 function agenday_google_erro_cadastro(string $mensagem): never
 {
@@ -75,6 +76,14 @@ try {
     $stmt->bind_param('sis', $pendente['sub'], $id, $pendente['email']);
     $stmt->execute();
     $stmt->close();
+
+    // Mesmo slug automático do cadastro comum. Falha aqui não impede a conta
+    // de ser criada: o endereço pode ser definido depois em Configurações.
+    try {
+        agenday_portal_slug_gravar($conexao, $id, $nome);
+    } catch (Throwable $e) {
+        error_log('AgenDay Google: slug público não gerado (' . get_class($e) . ').');
+    }
 
     // Mesma base de tempo do cadastro comum: a conta nasce com os 7 dias
     // gravados, sem sobrescrever nada e sem derrubar o cadastro se a
