@@ -1,10 +1,12 @@
 /*
- * PRIMEIROS-PASSOS-01
+ * PRIMEIROS-PASSOS-02
  *
- * Dois comportamentos da tela, os dois do link do portal:
+ * Três comportamentos da tela, todos do link do portal:
  * 1. prévia ao vivo — a pessoa digita o nome e vê embaixo como o link fica;
  * 2. copiar — só libera quando o endereço exibido é o que está salvo, para
- *    ninguém enviar ao cliente um link que ainda não existe.
+ *    ninguém enviar ao cliente um link que ainda não existe;
+ * 3. ver a página — o botão de abrir a página do cliente segue a mesma regra:
+ *    fica desativado enquanto o nome digitado não foi salvo.
  *
  * A normalização espelha agenday_portal_slug_normalizar() (lib/portal-cliente.php):
  * minúsculas, sem acento, [a-z0-9] e hífen simples, até 60 caracteres.
@@ -15,6 +17,7 @@ const campoEndereco = document.getElementById('pp-endereco');
 const previaLink = document.getElementById('pp-portal-preview');
 const avisoPrevia = document.getElementById('pp-preview-aviso');
 const botaoCopiar = document.getElementById('copiar-portal-link');
+const botaoVerPagina = document.getElementById('abrir-portal-link');
 
 const normalizarEndereco = texto => {
     const semAcento = String(texto || '')
@@ -40,6 +43,20 @@ if (campoEndereco && previaLink && avisoPrevia && botaoCopiar) {
         previaLink.textContent = link;
         botaoCopiar.dataset.link = igualAoSalvo ? link : '';
         botaoCopiar.disabled = !igualAoSalvo;
+
+        if (botaoVerPagina) {
+            if (igualAoSalvo) {
+                botaoVerPagina.setAttribute('href', link);
+                botaoVerPagina.classList.remove('disabled');
+                botaoVerPagina.removeAttribute('aria-disabled');
+                botaoVerPagina.removeAttribute('tabindex');
+            } else {
+                botaoVerPagina.removeAttribute('href');
+                botaoVerPagina.classList.add('disabled');
+                botaoVerPagina.setAttribute('aria-disabled', 'true');
+                botaoVerPagina.setAttribute('tabindex', '-1');
+            }
+        }
 
         if (igualAoSalvo) {
             avisoPrevia.hidden = true;

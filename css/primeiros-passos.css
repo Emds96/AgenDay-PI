@@ -331,6 +331,19 @@
     min-height: 44px;
 }
 
+/* Botão de ver a página do cliente: rótulo longo, então alinha à esquerda
+   e mantém o ícone junto do texto quando quebrar em duas linhas. */
+.agenday-app .pp-link-acoes .pp-ver-pagina {
+    display: inline-flex;
+    align-items: center;
+    text-align: left;
+}
+
+.agenday-app .pp-link-acoes .pp-ver-pagina.disabled {
+    opacity: .55;
+    pointer-events: none;
+}
+
 .agenday-app .pp-vazio {
     margin: 0;
     color: var(--ad-text-muted);
