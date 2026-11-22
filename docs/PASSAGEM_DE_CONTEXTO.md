@@ -48,7 +48,7 @@ Sistema web acadêmico de agendamentos (PHP 8 + MySQL/MariaDB + Bootstrap 5), fo
 | Comparecimento e status (`agendado` → `confirmado` → `em_atendimento` → `concluido`, mais `faltou`/`cancelado`) | Publicado, fechamento sem cron |
 | Conta de demonstração | Publicada |
 | **PEND-01** — modo híbrido de sessões (ligar/desligar no cadastro e nas Configurações) | A implementar |
-| **PEND-02** — lembretes ao cliente (SMS pago; e-mail Brevo como alternativa) | Decisão pendente |
+| **PEND-02** — lembretes ao cliente | WhatsApp 24h antes implementado no PC local (LEMBRETE-01, não publicado); SMS/e-mail a avaliar |
 | Reagendamento com vínculo ao atendimento anterior | Pendente |
 | Visões dia/semana no calendário | Pendente (hoje é mensal + painel do dia) |
 | QA em celular físico e leitor de tela | Pendente de relato do responsável |

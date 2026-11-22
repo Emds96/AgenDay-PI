@@ -1,5 +1,22 @@
 # STATUS — AgenDay 2.0
 
+## LEMBRETE-01 — Lembrete automático 24h antes do horário (22/11/2026)
+
+- **Pedido do responsável (22/11/2026):** com o celular já confirmado (TEL-01), avisar o cliente **um dia antes** do horário. Respondeu "pode fazer" para executar **somente no local**, sem publicar e sem SQL.
+- **Por que só agora:** o lembrete depende de um celular com WhatsApp confirmado; antes do TEL-01 o painel aceitava fixo e número digitado errado. O `tipo='lembrete'` e a coluna `agendado_para` já existiam em `mensagem_whatsapp` — **nenhuma alteração de banco**.
+- **Como funciona (`lib/whatsapp.php`):** `agenday_whatsapp_agendar_lembrete()` lê cliente, serviço, profissional e estabelecimento do próprio agendamento e enfileira o lembrete com `agendado_para = data_inicio − 24h`. Não agenda quando o cliente não tem celular com WhatsApp, o agendamento está cancelado/já começou, ou faltam menos de 30 minutos para a hora do lembrete (a confirmação acabou de sair). `agenday_whatsapp_cancelar_lembrete()` remove o pendente.
+- **Um lembrete por agendamento:** a função apaga o lembrete antigo **antes** das checagens, então remarcar troca o aviso e um horário novo sem lembrete não deixa o aviso do horário antigo na fila.
+- **Onde é chamado:** portal na **criação** e na **remarcação** (`api/cliente-agendamentos.php`) e painel na **criação** (`salvar-agendamento.php`). O **cancelamento** apaga o lembrete dentro de `agenday_agenda_cancelar_para()`, cobrindo portal, painel e link público de cancelamento de uma vez.
+- **Fila sem cron:** antes de enviar, `agenday_whatsapp_limpar_lembretes_vencidos()` descarta lembrete de agendamento cancelado ou que já começou. A janela é tolerante: o aviso sai no próximo uso do sistema enquanto o horário não chegou — nunca depois.
+- **Texto (`agenday_whatsapp_texto()`):** o lembrete deixou de cair em "Agendamento confirmado" e tem título próprio **"Lembrete do seu horário"**, mantendo serviço, profissional, data/hora, link de cancelamento e a assinatura "Enviado pela AgenDay em nome de …".
+- **Link absoluto:** `agenday_portal_link_cancelamento()` passou a usar o **domínio público do portal** quando o estabelecimento não tem domínio próprio; antes devolvia caminho relativo, que não abre no WhatsApp.
+- **Testes no PC local (22/11/2026):** `php -l` limpo nos cinco arquivos; `tests/portal-cliente.php` de 122 para **134** (título próprio, sem "confirmado", link, assinatura, constantes/funções e ligação nos fluxos); `responsividade-check` **219**; `agendamento-validacao` (19), `agendamento-cancelamento` (20), `configuracao-estabelecimento` (13) e `alteracao-senha-validacao` (16) limpos.
+- **Provas com banco local (`agenday_local`, estabelecimento 29), sem envio real:** lembrete enfileirado 24h antes; reagendar não acumula; remarcação troca a data; horário a menos de 24h não gera; cancelar remove o pendente (inclusive cancelamento repetido); fila descarta lembrete de horário já iniciado e de agendamento cancelado; telefone fixo não gera. Cliente, agendamentos e mensagens de teste apagados ao final.
+- **Pendências:** não publicado e sem teste na hospedagem; o **opt-out "responda SAIR"** continua adiado (exigiria coluna/tabela); agendamento criado no **painel** recebe lembrete, mas não recebe confirmação imediata — decisão para depois da feira.
+- **Estado real:** implementado e testado **somente no PC local**, **não publicado**, **sem alteração de banco**.
+
+---
+
 ## TEL-01 — Celular do cliente confirmado por código no painel (22/11/2026)
 
 - **Pedido do responsável (21/11/2026):** a recepcionista pede o número, o sistema manda o código no WhatsApp e ela digita de volta — igual ao portal. Só número com WhatsApp; sem WhatsApp, o cliente é salvo sem número. Número repetido avisa e deixa continuar. Autorizou executar **somente no local**, sem publicar e sem SQL.
@@ -12,7 +29,7 @@
 - **Sem trava no atendimento:** se o WhatsApp da plataforma estiver fora do ar (`agenday_whatsapp_pronto()` falso), a confirmação deixa de ser exigida e o cadastro segue — com o número entrando como não confirmado.
 - **Provas no PC local (22/11/2026):** `php -l` limpo nos sete arquivos; `tests/portal-cliente.php` de 117 para **122** (celular com WhatsApp, fixo, 10 dígitos, vazio e nulo); `responsividade-check` de 214 para **219** (blocos e script nas duas telas).
 - **Prova real com banco local:** fixo recusado no envio; número da Mariana recusado como duplicado com o nome; salvar sem confirmar recusado; "sem WhatsApp" salvou com `telefone_digits` NULL; código errado recusado; código certo confirmou (`(92) 9****-7777`) e o cadastro salvou; cliente rápido recusou sem confirmação; edição só do nome passou, troca para celular sem confirmação foi recusada, fixo com "sem WhatsApp" passou. As contas e verificações de teste foram apagadas.
-- **Pendências:** o **lembrete automático** (lote B) ainda não foi implementado; nada foi publicado e o comportamento na hospedagem não foi conferido.
+- **Pendências:** o **lembrete automático** (lote B) foi implementado depois, no registro LEMBRETE-01; nada foi publicado e o comportamento na hospedagem não foi conferido.
 - **Estado real:** implementado e testado **somente no PC local**, **não publicado**, **sem alteração de banco**.
 
 ---
@@ -44,7 +61,7 @@
 - **Front-end:** `js/configuracoes.js` perdeu o mapeamento da aba `whatsapp`; `tests/responsividade-check.js` passou a exigir **três** abas e a falhar se `whatsapp_api_key`/`whatsapp_base_url` voltarem para `config.php`.
 - **Testes executados no PC local (21/11/2026):** `php -l` limpo em `config.php`, `whatsapp-plataforma.php` e `lib/whatsapp.php`; `tests/portal-cliente.php` de 100 para **110 verificações** (assinatura nos cinco tipos de texto, assinatura sem estabelecimento); `responsividade-check` com **213 verificações**; `agendamento-validacao` (19) e `agendamento-cancelamento` (20) limpos.
 - **Prova funcional no banco local (`agenday_local`, estabelecimento 29):** POST em `config.php` com `salvar_estabelecimento` gravou `exigir_codigo_whatsapp` de **1 → 0** e devolveu para **1**; POST em `whatsapp-plataforma.php` com **chave errada** mostrou "Confirme a chave de API atual…" e com **chave certa** mostrou "Conexão da plataforma salva."; as duas páginas renderizaram sem `Fatal error`/`Warning` (126 KB e 24 KB).
-- **Pendências conhecidas:** (1) não existe papel de operador da plataforma no banco, então a proteção é a chave de API — criar permissão própria fica para depois da feira; (2) o **opt-out "responda SAIR"** não foi implementado (exigiria coluna/tabela nova, fora do escopo autorizado); (3) o **lembrete automático** continua sem gatilho (item 3 da fila).
+- **Pendências conhecidas:** (1) não existe papel de operador da plataforma no banco, então a proteção é a chave de API — criar permissão própria fica para depois da feira; (2) o **opt-out "responda SAIR"** não foi implementado (exigiria coluna/tabela nova, fora do escopo autorizado); (3) o **lembrete automático** continuava sem gatilho (item 3 da fila) e foi implementado depois, no LEMBRETE-01.
 - **Estado real:** implementado e testado **somente no PC local**, **não publicado** e **sem alteração de banco**.
 
 ---

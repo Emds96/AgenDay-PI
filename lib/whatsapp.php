@@ -246,7 +246,11 @@ function agenday_whatsapp_texto(string $tipo, array $dados): string
         case 'lembrete':
         case 'remarcacao':
             $quando = agenday_whatsapp_data_hora((string) ($dados['data_inicio'] ?? ''));
-            $titulo = $tipo === 'remarcacao' ? 'Agendamento remarcado' : 'Agendamento confirmado';
+            $titulo = match ($tipo) {
+                'remarcacao' => 'Agendamento remarcado',
+                'lembrete' => 'Lembrete do seu horário',
+                default => 'Agendamento confirmado',
+            };
             $linhas = [
                 $saudacao,
                 '',
@@ -460,6 +464,126 @@ function agenday_whatsapp_enfileirar(
     return $id;
 }
 
+/* ---------------------------------------------------------------------------
+ * Lembrete automático (24 horas antes do horário)
+ * ------------------------------------------------------------------------- */
+
+/** Horas de antecedência do lembrete automático. */
+const AGENDAY_WHATSAPP_LEMBRETE_HORAS = 24;
+
+/**
+ * Agenda o lembrete de um agendamento já gravado.
+ *
+ * Lê do banco cliente, serviço, profissional e estabelecimento, então serve
+ * tanto para o portal quanto para o painel. Não agenda nada quando:
+ * - o cliente não tem celular com WhatsApp confirmado;
+ * - o agendamento está cancelado ou já começou;
+ * - faltam menos de 30 minutos para a hora do lembrete (a confirmação acabou
+ *   de sair e um segundo aviso na sequência só incomoda).
+ *
+ * Devolve o id da mensagem ou 0.
+ */
+function agenday_whatsapp_agendar_lembrete(
+    mysqli $conexao,
+    int $idEstabelecimento,
+    int $idAgendamento
+): int {
+    if ($idEstabelecimento < 1 || $idAgendamento < 1) {
+        return 0;
+    }
+    require_once __DIR__ . '/portal-cliente.php';
+
+    // Um lembrete por agendamento: remarcar troca o antigo, não acumula. Feito
+    // antes das checagens para que um novo horário sem lembrete não deixe o
+    // aviso do horário antigo na fila.
+    agenday_whatsapp_cancelar_lembrete($conexao, $idAgendamento);
+
+    $horas = AGENDAY_WHATSAPP_LEMBRETE_HORAS;
+    $stmt = $conexao->prepare(
+        "SELECT a.token_publico, a.data_inicio,
+                c.nome_cliente, c.telefone_digits,
+                s.nome_servico, f.nome_funcionario,
+                e.nome_estabelecimento, e.slug, e.dominio,
+                DATE_SUB(a.data_inicio, INTERVAL $horas HOUR) AS lembrete_em,
+                (a.status IN ('agendado', 'confirmado')
+                 AND a.data_inicio > NOW()
+                 AND DATE_SUB(a.data_inicio, INTERVAL $horas HOUR)
+                     > DATE_ADD(NOW(), INTERVAL 30 MINUTE)) AS pode_agendar
+           FROM agendamentos a
+           JOIN clientes c
+             ON c.id_estabelecimento = a.id_estabelecimento AND c.id_cliente = a.id_cliente
+           JOIN servicos s
+             ON s.id_estabelecimento = a.id_estabelecimento AND s.id_servicos = a.id_servicos
+           JOIN funcionarios f
+             ON f.id_estabelecimento = a.id_estabelecimento AND f.id_funcionario = a.id_funcionario
+           JOIN estabelecimento e
+             ON e.id_estabelecimento = a.id_estabelecimento
+          WHERE a.id_estabelecimento = ? AND a.id_agendamento = ?
+          LIMIT 1"
+    );
+    $stmt->bind_param('ii', $idEstabelecimento, $idAgendamento);
+    $stmt->execute();
+    $linha = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$linha || (int) $linha['pode_agendar'] !== 1) {
+        return 0;
+    }
+
+    $digitos = (string) ($linha['telefone_digits'] ?? '');
+    if (!agenday_portal_telefone_whatsapp_ok($digitos)) {
+        return 0;
+    }
+
+    $token = (string) ($linha['token_publico'] ?? '');
+    $estabelecimento = [
+        'slug' => (string) ($linha['slug'] ?? ''),
+        'dominio' => (string) ($linha['dominio'] ?? ''),
+    ];
+    $texto = agenday_whatsapp_texto('lembrete', [
+        'estabelecimento' => (string) $linha['nome_estabelecimento'],
+        'nome' => (string) $linha['nome_cliente'],
+        'servico' => (string) $linha['nome_servico'],
+        'profissional' => (string) $linha['nome_funcionario'],
+        'data_inicio' => (string) $linha['data_inicio'],
+        'link_cancelar' => $token !== ''
+            ? agenday_portal_link_cancelamento($estabelecimento, $token)
+            : '',
+    ]);
+
+    return agenday_whatsapp_enfileirar(
+        $conexao,
+        $idEstabelecimento,
+        $idAgendamento,
+        $digitos,
+        'lembrete',
+        $texto,
+        (string) $linha['lembrete_em']
+    );
+}
+
+/** Remove o lembrete ainda pendente de um agendamento. Devolve quantos saíram. */
+function agenday_whatsapp_cancelar_lembrete(mysqli $conexao, int $idAgendamento): int
+{
+    if ($idAgendamento < 1) {
+        return 0;
+    }
+    // 'enviando' fica de fora: outra requisição pode estar entregando agora.
+    $stmt = $conexao->prepare(
+        "DELETE FROM mensagem_whatsapp
+          WHERE id_agendamento = ? AND tipo = 'lembrete'
+            AND status IN ('pendente', 'erro')"
+    );
+    if (!$stmt) {
+        return 0;
+    }
+    $stmt->bind_param('i', $idAgendamento);
+    $stmt->execute();
+    $total = $stmt->affected_rows;
+    $stmt->close();
+    return $total;
+}
+
 /**
  * Agenda uma tentativa de envio para depois de a página ser entregue.
  *
@@ -498,6 +622,34 @@ function agenday_whatsapp_gatilho_apos_resposta(mysqli $conexao): void
 }
 
 /**
+ * Descarta lembretes que perderam o sentido.
+ *
+ * Não há cron: a fila roda no uso do sistema, então um lembrete pode ficar
+ * esperando horas. Se nesse meio-tempo o agendamento foi cancelado ou já
+ * começou, avisar "seu horário é amanhã" seria pior do que não avisar.
+ */
+function agenday_whatsapp_limpar_lembretes_vencidos(mysqli $conexao): int
+{
+    try {
+        $resultado = $conexao->query(
+            "DELETE m FROM mensagem_whatsapp m
+              LEFT JOIN agendamentos a ON a.id_agendamento = m.id_agendamento
+              WHERE m.tipo = 'lembrete'
+                AND m.status IN ('pendente', 'erro')
+                AND (a.id_agendamento IS NULL
+                     OR a.status NOT IN ('agendado', 'confirmado')
+                     OR a.data_inicio <= NOW())"
+        );
+    } catch (Throwable $e) {
+        return 0;
+    }
+    if ($resultado === false) {
+        return 0;
+    }
+    return (int) $conexao->affected_rows;
+}
+
+/**
  * Processa até $limite mensagens pendentes.
  *
  * Sem cron na hospedagem, esta função é chamada por gatilho de uso (abrir a
@@ -527,6 +679,9 @@ function agenday_whatsapp_processar_fila(mysqli $conexao, int $limite = AGENDAY_
     if (!$podeExecutar) {
         return ['ok' => true, 'motivo' => 'aguardando', 'enviadas' => 0, 'falhas' => 0];
     }
+
+    // Lembrete de horário cancelado ou já iniciado não deve sair nunca.
+    agenday_whatsapp_limpar_lembretes_vencidos($conexao);
 
     $stmt = $conexao->prepare(
         'SELECT id_mensagem, telefone, corpo, tentativas

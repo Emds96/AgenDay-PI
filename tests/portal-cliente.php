@@ -242,6 +242,35 @@ verificar(str_contains($textoConfirmacao, 'Precisa cancelar?'), 'confirmação m
 verificar(str_contains(agenday_whatsapp_texto('remarcacao', $dadosConfirmacao), 'Agendamento remarcado'), 'remarcação tem título próprio');
 verificar(str_contains(agenday_whatsapp_texto('remarcacao', $dadosConfirmacao), $assinaturaEstab), 'remarcação também assina');
 
+$textoLembrete = agenday_whatsapp_texto('lembrete', $dadosConfirmacao);
+verificar(str_contains($textoLembrete, 'Lembrete do seu horário'), 'lembrete tem título próprio');
+verificar(!str_contains($textoLembrete, 'Agendamento confirmado'), 'lembrete não se anuncia como confirmação');
+verificar(str_contains($textoLembrete, 'Precisa cancelar?'), 'lembrete mantém o link de cancelamento');
+verificar(str_contains($textoLembrete, $assinaturaEstab), 'lembrete também assina');
+verificar(defined('AGENDAY_WHATSAPP_LEMBRETE_HORAS') && AGENDAY_WHATSAPP_LEMBRETE_HORAS === 24, 'lembrete sai 24 horas antes');
+verificar(function_exists('agenday_whatsapp_agendar_lembrete'), 'agendamento do lembrete disponível');
+verificar(function_exists('agenday_whatsapp_cancelar_lembrete'), 'cancelamento do lembrete disponível');
+verificar(function_exists('agenday_whatsapp_limpar_lembretes_vencidos'), 'limpeza de lembrete vencido disponível');
+
+/* --------------------------- lembrete ligado nos fluxos certos (estrutural) */
+$fonte = static fn(string $arquivo): string => (string) @file_get_contents(__DIR__ . '/../' . $arquivo);
+verificar(
+    substr_count($fonte('api/cliente-agendamentos.php'), 'agenday_whatsapp_agendar_lembrete') >= 2,
+    'portal agenda o lembrete na criação e na remarcação'
+);
+verificar(
+    str_contains($fonte('salvar-agendamento.php'), 'agenday_whatsapp_agendar_lembrete'),
+    'painel agenda o lembrete do agendamento criado na agenda'
+);
+verificar(
+    str_contains($fonte('lib/agendamento-cancelar.php'), 'agenday_whatsapp_cancelar_lembrete'),
+    'cancelamento apaga o lembrete pendente'
+);
+verificar(
+    str_contains($fonte('lib/whatsapp.php'), 'agenday_whatsapp_limpar_lembretes_vencidos($conexao)'),
+    'fila descarta lembrete vencido antes de enviar'
+);
+
 $textoCancelamento = agenday_whatsapp_texto('cancelamento', [
     'estabelecimento' => 'Studio Bella Vita',
     'data_inicio' => '2026-12-01 10:00:00',

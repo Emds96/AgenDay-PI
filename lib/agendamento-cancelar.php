@@ -113,6 +113,9 @@ function agenday_agenda_cancelar_para(mysqli $conexao, int $empresa, int $idAgen
         }
 
         $conexao->commit();
+        // O lembrete pendente de um horário cancelado nunca deve ser enviado.
+        require_once __DIR__ . '/whatsapp.php';
+        agenday_whatsapp_cancelar_lembrete($conexao, $idAgendamento);
         return ['ja_cancelado' => false, 'data_inicio' => $dataInicio];
     } catch (Throwable $e) {
         try {
