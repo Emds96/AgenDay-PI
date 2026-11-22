@@ -489,11 +489,8 @@ $enderecoDigitado = isset($_SESSION['pp_endereco']) && is_string($_SESSION['pp_e
 $progresso = $estado ?? agenday_primeiros_passos_progresso([]);
 $sugestoes = agenday_primeiros_passos_sugestoes($segmento);
 $segmentos = agenday_primeiros_passos_segmentos();
-$segmentoRotulo = $segmento !== '' && isset($segmentos[$segmento])
-    ? $segmentos[$segmento]['rotulo']
-    : '';
-// Rótulo curto para a faixa do primeiro serviço ("Outro", em vez de
-// "Outro tipo de negócio" repetindo a palavra "tipo de negócio").
+// Rótulo curto para o passo de serviço ("Outro", em vez de "Outro tipo de
+// negócio" repetindo a palavra "tipo de negócio").
 $segmentoCurto = $segmento !== '' && isset($segmentos[$segmento])
     ? (string) ($segmentos[$segmento]['curto'] ?? $segmentos[$segmento]['rotulo'])
     : '';
@@ -554,7 +551,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
-    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp07">
+    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp08">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
@@ -629,31 +626,7 @@ $csrfToken = agenday_token_csrf();
             </div>
         </section>
     <?php else: ?>
-        <?php if ($sugestoes === []): ?>
-            <?php
-            // Sem sugestões para este tipo, o cartão grande não tem o que
-            // mostrar: vira uma faixa com o tipo escolhido e o cadastro.
-            ?>
-            <section class="ag-settings-panel pp-painel pp-faixa" aria-labelledby="pp-titulo-servico">
-                <div class="ag-settings-body">
-                    <h2 id="pp-titulo-servico" class="visually-hidden">Cadastre o seu primeiro serviço</h2>
-                    <div class="pp-faixa-linha">
-                        <div class="pp-trocar pp-faixa-tipo">
-                            <span>Tipo de negócio: <strong><?= agenday_config_html($segmentoCurto) ?></strong></span>
-                            <form method="post" action="primeiros-passos.php" class="pp-trocar-form">
-                                <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                                <input type="hidden" name="acao" value="trocar">
-                                <button type="submit" class="link-acao">Trocar</button>
-                            </form>
-                        </div>
-                        <button type="button" class="btn btn-primary"
-                                data-bs-toggle="modal" data-bs-target="#pp-modal-servico">
-                            Cadastrar serviço
-                        </button>
-                    </div>
-                </div>
-            </section>
-        <?php else: ?>
+        <?php if ($sugestoes !== []): ?>
         <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-sugestoes">
             <div class="ag-settings-body">
                 <div class="ag-settings-section-title">
@@ -662,15 +635,6 @@ $csrfToken = agenday_token_csrf();
                         Um clique cria o serviço com duração e preço de exemplo.
                         Ajuste os valores depois, na tela de Serviços.
                     </p>
-                </div>
-
-                <div class="pp-trocar pp-tipo">
-                    <span>Tipo de negócio: <strong><?= agenday_config_html($segmentoRotulo) ?></strong></span>
-                    <form method="post" action="primeiros-passos.php" class="pp-trocar-form">
-                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                        <input type="hidden" name="acao" value="trocar">
-                        <button type="submit" class="link-acao">Trocar</button>
-                    </form>
                 </div>
 
                 <form method="post" action="primeiros-passos.php" class="pp-sugestoes">
@@ -742,6 +706,20 @@ $csrfToken = agenday_token_csrf();
                                 <?php endif; ?>
                             </h3>
                             <p><?= agenday_config_html($item['ajuda']) ?></p>
+                            <?php if ($item['chave'] === 'servico' && $segmento !== ''): ?>
+                                <?php
+                                // O tipo de negócio fica no passo que ele alimenta
+                                // (as sugestões de serviço), não num cartão solto.
+                                ?>
+                                <div class="pp-trocar pp-tipo-passo">
+                                    <span>Tipo de negócio: <strong><?= agenday_config_html($segmentoCurto) ?></strong></span>
+                                    <form method="post" action="primeiros-passos.php" class="pp-trocar-form">
+                                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                                        <input type="hidden" name="acao" value="trocar">
+                                        <button type="submit" class="link-acao">Trocar</button>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <?php if ($item['chave'] === 'equipe' && $conexaoOk): ?>
                             <?php if ($item['feito']): ?>
