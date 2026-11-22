@@ -99,7 +99,7 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 
 ## Fase 7 — Testes e PR
 
-- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo, lembrete, confirmação) - 140 verificações.
+- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo, lembrete, confirmação) - 145 verificações.
 - [x] Regressão: `tests/agendamento-validacao.php` (19) e `tests/agendamento-cancelamento.php` (20).
 - [x] `node tests/responsividade-check.js` — 210 verificações (inclui as quatro abas de Configurações).
 - [x] Fluxo completo por HTTP local: entrar com código, criar, listar, remarcar, cancelar, cancelar por link.
