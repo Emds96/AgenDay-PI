@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## SESSÃO-CONTA-01 — Sessão de conta apagada é encerrada (22/11/2026)
+
+- **Origem:** durante o teste local do primeiro uso, a conta de análise #39 foi apagada com a sessão ainda aberta no navegador. As telas continuavam abrindo normalmente, mas o cadastro de serviço falhava com *"Não foi possível cadastrar o serviço agora"*. Causa real: `INSERT` em `servicos` para um `id_estabelecimento` inexistente, recusado pela chave estrangeira `fk_servicos_empresa` (**erro 1452**), com mensagem genérica na tela.
+- **Agora:** `verifica_login.php` confere se o `id_estabelecimento` da sessão ainda existe em `estabelecimento`. Se a conta foi apagada, a sessão é encerrada do mesmo jeito que no `logout.php` (limpa `$_SESSION`, apaga o cookie e redireciona para `index.php`).
+- **Banco fora do ar não desloga ninguém:** a exceção é registrada em `error_log` e a sessão é mantida, para não expulsar quem está trabalhando por uma falha momentânea.
+- **Custo:** uma consulta por chave primária em cada request autenticado.
+- **Efeito colateral aceito:** se a conexão falhar, `conexao.php` responde 503 como antes — as páginas protegidas já dependiam do banco.
+- **Testes (PC local, 22/11/2026):** prova HTTP real com sessões forjadas apontando para a conta 999 (inexistente): `cad.servicos.php`, `agenda.php`, `primeiros-passos.php` e `config.php` encerram a sessão (302 → `index.php`, arquivo de sessão com 0 byte). Com a conta real (#40) logada, as mesmas quatro páginas abrem 200. **10 verificações, 0 falha**, repetidas duas vezes. Suítes: `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 44, `tests/responsividade-check.js` 233.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-06 — "Tenho equipe" virou pop-up (22/11/2026)
 
 - **Relato do responsável:** *"esse 'tenho equipe' não está legal… se eu clico, ele sai da tela primária de cadastro; prefiro um pop-up ou um menu"*. O botão mandava para `cad-funcionario.php` no meio do primeiro uso.
