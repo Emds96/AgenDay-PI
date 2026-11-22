@@ -148,8 +148,29 @@ $minutosDuracao = static function (string $duracao): int {
                 <div class="novo-cliente" id="novoCliente" hidden>
                     <label for="novoNome" class="visually-hidden">Nome do novo cliente</label>
                     <input id="novoNome" type="text" placeholder="Nome do cliente" maxlength="120">
-                    <label for="novoTel" class="visually-hidden">Telefone do novo cliente</label>
-                    <input id="novoTel" type="tel" placeholder="Telefone (opcional)" maxlength="20">
+                    <div data-confirmar-telefone id="confirmarTelefoneNovo">
+                        <label for="novoTel" class="visually-hidden">Celular do novo cliente</label>
+                        <input id="novoTel" type="tel" placeholder="Celular com WhatsApp (opcional)" maxlength="20"
+                               data-telefone-campo>
+                        <div class="acoes">
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-enviar-codigo>
+                                <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Confirmar no WhatsApp
+                            </button>
+                        </div>
+                        <div data-codigo-area hidden>
+                            <label for="novoCodigo" class="visually-hidden">Código recebido no WhatsApp</label>
+                            <div class="acoes">
+                                <input id="novoCodigo" type="text" placeholder="Código" maxlength="6"
+                                       inputmode="numeric" autocomplete="one-time-code" data-codigo-campo>
+                                <button type="button" class="btn btn-primary btn-sm" data-confirmar-codigo>Confirmar</button>
+                            </div>
+                        </div>
+                        <p class="campo-ajuda" data-status role="status" aria-live="polite"></p>
+                        <label class="campo-ajuda d-block">
+                            <input type="checkbox" name="sem_whatsapp" value="1" data-sem-whatsapp>
+                            Este cliente não tem WhatsApp
+                        </label>
+                    </div>
                     <div class="acoes">
                         <button type="button" class="btn btn-primary btn-sm" id="salvarNovoCliente">Salvar e usar</button>
                         <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelarNovoCliente">Voltar</button>
@@ -268,6 +289,7 @@ $minutosDuracao = static function (string $duracao): int {
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
 <script src="js/menu-lateral.js"></script>
-<script src="js/agendar.js?v=20261121-ag06"></script>
+<script src="js/confirmar-telefone.js"></script>
+<script src="js/agendar.js?v=20261122-tel01"></script>
 </body>
 </html>

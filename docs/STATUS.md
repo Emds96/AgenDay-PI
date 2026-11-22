@@ -1,5 +1,22 @@
 # STATUS — AgenDay 2.0
 
+## TEL-01 — Celular do cliente confirmado por código no painel (22/11/2026)
+
+- **Pedido do responsável (21/11/2026):** a recepcionista pede o número, o sistema manda o código no WhatsApp e ela digita de volta — igual ao portal. Só número com WhatsApp; sem WhatsApp, o cliente é salvo sem número. Número repetido avisa e deixa continuar. Autorizou executar **somente no local**, sem publicar e sem SQL.
+- **Por que importa:** o telefone é a identidade do cliente no portal (`telefone_digits`). Sem confirmação, o painel aceitava fixo e número digitado errado — e esse cliente nunca conseguia entrar no portal nem receber lembrete.
+- **Regra separada:** `agenday_portal_telefone_whatsapp_ok()` (11 dígitos, 9 na terceira posição). O telefone fixo continua valendo como contato na ficha; só não recebe mensagem.
+- **Endpoint novo `api/painel-telefone.php`** (POST autenticado + CSRF): `enviar` e `confirmar`. Reaproveita `verificacao_acesso` e o mesmo esquema de código do portal (6 dígitos, 10 minutos, 5 tentativas), com limites de 1 código por minuto, 3 a cada 10 minutos e 10 por dia. Número de outro cliente responde **409** com o nome, e a tela pergunta se deve continuar.
+- **Confirmação na sessão, não no banco:** vale 30 minutos e é consumida no cadastro/edição. Nenhuma coluna nova, nenhum SQL.
+- **Telas:** cadastro de cliente, edição de cliente e cliente rápido do agendamento usam o mesmo bloco (`js/confirmar-telefone.js`) com "Confirmar no WhatsApp" e "Este cliente não tem WhatsApp".
+- **Edição não trava cliente antigo:** o celular só é exigido quando o número **muda**; corrigir nome de quem tem fixo continua funcionando. O modal já abre com "sem WhatsApp" marcado quando o cliente não tem número confirmado.
+- **Sem trava no atendimento:** se o WhatsApp da plataforma estiver fora do ar (`agenday_whatsapp_pronto()` falso), a confirmação deixa de ser exigida e o cadastro segue — com o número entrando como não confirmado.
+- **Provas no PC local (22/11/2026):** `php -l` limpo nos sete arquivos; `tests/portal-cliente.php` de 117 para **122** (celular com WhatsApp, fixo, 10 dígitos, vazio e nulo); `responsividade-check` de 214 para **219** (blocos e script nas duas telas).
+- **Prova real com banco local:** fixo recusado no envio; número da Mariana recusado como duplicado com o nome; salvar sem confirmar recusado; "sem WhatsApp" salvou com `telefone_digits` NULL; código errado recusado; código certo confirmou (`(92) 9****-7777`) e o cadastro salvou; cliente rápido recusou sem confirmação; edição só do nome passou, troca para celular sem confirmação foi recusada, fixo com "sem WhatsApp" passou. As contas e verificações de teste foram apagadas.
+- **Pendências:** o **lembrete automático** (lote B) ainda não foi implementado; nada foi publicado e o comportamento na hospedagem não foi conferido.
+- **Estado real:** implementado e testado **somente no PC local**, **não publicado**, **sem alteração de banco**.
+
+---
+
 ## SLUG-01 — Endereço público automático e editável (21/11/2026)
 
 - **Pedido do responsável (21/11/2026):** ao criar uma conta, o estabelecimento já deve sair com link público funcionando; e o dono precisa poder **editar o endereço** (exemplo: o nome repetido gerou `barbearia-joao-2` e ele quer `barbearia-joaoo`). Autorizou executar **somente no local**, sem publicar e sem SQL.

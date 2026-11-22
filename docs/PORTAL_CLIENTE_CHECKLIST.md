@@ -20,6 +20,7 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] `lib/guarda-host.php` (lista de domínios do cliente).
 - [x] `lib/whatsapp.php` (configuração, fila, envio, templates, gatilho pós-resposta).
 - [x] Telefone normalizado nos cadastros existentes (`cadastro-clientes.php`, `criar-cliente-rapido.php`, `editar-cliente.php`); 29/29 clientes normalizados no backfill.
+- [x] Celular confirmado por código no painel (TEL-01, 22/11/2026): `api/painel-telefone.php`, bloco `js/confirmar-telefone.js` nas três telas, opção "não tem WhatsApp" e aviso de número repetido.
 - [x] `php -l` em tudo que foi criado/alterado.
 
 ## Fase 1 — Acesso do cliente
@@ -97,7 +98,7 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 
 ## Fase 7 — Testes e PR
 
-- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo) — 117 verificações.
+- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo) - 122 verificações.
 - [x] Regressão: `tests/agendamento-validacao.php` (19) e `tests/agendamento-cancelamento.php` (20).
 - [x] `node tests/responsividade-check.js` — 210 verificações (inclui as quatro abas de Configurações).
 - [x] Fluxo completo por HTTP local: entrar com código, criar, listar, remarcar, cancelar, cancelar por link.

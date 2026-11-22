@@ -123,7 +123,7 @@ Há dois papéis de usuário:
 - **Estabelecimento:** conta administrativa; login, clientes, serviços, funcionários, agenda e configurações.
 - **Cliente final:** portal público em `https://agenday-agendamentos.infinityfree.io/?e=slug`, **publicado em 21/11/2026**; login por celular com código no primeiro acesso, agendamento, remarcação e cancelamento. Não confundir com `cad-cliente.php`, que é cadastro administrativo.
 
-**Decisões já tomadas:** o link público é `?e=slug` (não `/agendar/slug`), com o slug gerado automaticamente no cadastro (`barbearia-joao`, `barbearia-joao-2` se o nome repetir) e editável em Configurações → Estabelecimento desde o SLUG-01 (21/11/2026). **Ainda em aberto:** agendamento como convidado versus conta do consumidor, anti-spam e ajustes de UX. **Não implementar essas escolhas sem alinhamento.**
+**Decisões já tomadas:** o link público é `?e=slug` (não `/agendar/slug`), com o slug gerado automaticamente no cadastro (`barbearia-joao`, `barbearia-joao-2` se o nome repetir) e editável em Configurações → Estabelecimento desde o SLUG-01 (21/11/2026). O celular do cliente é confirmado por código no próprio painel (TEL-01, 22/11/2026): número sem WhatsApp é gravado sem `telefone_digits`, e número repetido avisa e deixa continuar. **Ainda em aberto:** agendamento como convidado versus conta do consumidor, anti-spam e ajustes de UX. **Não implementar essas escolhas sem alinhamento.**
 
 ## 7. Como iniciar outra sessão
 

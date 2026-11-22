@@ -231,6 +231,56 @@ function agenday_portal_telefone_normalizar($valor): ?string
     return $digitos;
 }
 
+/**
+ * O número é um celular no padrão atual (11 dígitos, 9 na terceira posição)?
+ *
+ * Um telefone fixo continua servindo de contato na ficha do cliente, mas não
+ * recebe mensagem: o WhatsApp não entrega nesse número.
+ */
+function agenday_portal_telefone_whatsapp_ok($digitos): bool
+{
+    return is_string($digitos)
+        && strlen($digitos) === 11
+        && $digitos[2] === '9';
+}
+
+/** Minutos que uma confirmação de celular vale dentro do painel. */
+const AGENDAY_PORTAL_CONFIRMACAO_MINUTOS = 30;
+
+/**
+ * Guarda que este celular foi confirmado por código nesta sessão do painel.
+ *
+ * Fica na sessão (e não em coluna nova) para não exigir alteração de banco:
+ * a confirmação vale só para o cadastro que está sendo feito agora.
+ */
+function agenday_portal_confirmacao_guardar(int $idEstabelecimento, string $digitos): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE || $digitos === '') {
+        return;
+    }
+    $_SESSION['telefone_confirmado'][$idEstabelecimento . '|' . $digitos] = time();
+}
+
+/** O celular foi confirmado por código nos últimos minutos? */
+function agenday_portal_confirmacao_ler(int $idEstabelecimento, string $digitos): bool
+{
+    if (session_status() !== PHP_SESSION_ACTIVE || $digitos === '') {
+        return false;
+    }
+    $quando = $_SESSION['telefone_confirmado'][$idEstabelecimento . '|' . $digitos] ?? 0;
+    return is_int($quando)
+        && $quando > time() - AGENDAY_PORTAL_CONFIRMACAO_MINUTOS * 60;
+}
+
+/** Descarta a confirmação depois de usada, para não valer em outro cadastro. */
+function agenday_portal_confirmacao_limpar(int $idEstabelecimento, string $digitos): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return;
+    }
+    unset($_SESSION['telefone_confirmado'][$idEstabelecimento . '|' . $digitos]);
+}
+
 /** Formata "92981111001" como "(92) 98111-1001". */
 function agenday_portal_telefone_formatar(string $digitos): string
 {

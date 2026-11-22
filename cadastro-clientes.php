@@ -31,8 +31,9 @@ $email = trim($email);
 $contato = trim($contato);
 $letrasNome = strlen($nome) <= 480 && preg_match('//u', $nome) ? preg_match_all('/./us', $nome) : 0;
 $digitos = preg_replace('/[^0-9]/', '', $contato);
-// Identidade do portal: DDD + número. Null quando o telefone não se encaixa.
-$telefoneDigits = agenday_portal_telefone_normalizar($contato);
+$semWhatsapp = isset($_POST['sem_whatsapp']) && $_POST['sem_whatsapp'] === '1';
+// Identidade do portal: DDD + número. Null quando não há WhatsApp confirmado.
+$telefoneDigits = $semWhatsapp ? null : agenday_portal_telefone_normalizar($contato);
 
 if ($nome === '' || $letrasNome === 0 || $letrasNome > 120) {
     agenday_erro_cliente('O nome é obrigatório (máximo de 120 caracteres).');
@@ -40,9 +41,17 @@ if ($nome === '' || $letrasNome === 0 || $letrasNome > 120) {
 if ($email !== '' && (strlen($email) > 190 || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
     agenday_erro_cliente('Informe um e-mail válido ou deixe esse campo vazio.');
 }
-if (strlen($contato) > 20 || !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato)
-    || strlen($digitos) < 8 || strlen($digitos) > 15) {
+if (strlen($contato) > 20
+    || ($contato !== '' && !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato))) {
     agenday_erro_cliente('Informe um telefone válido (de 8 a 15 dígitos).');
+}
+if (!$semWhatsapp) {
+    if ($contato === '' || strlen($digitos) < 8 || strlen($digitos) > 15) {
+        agenday_erro_cliente('Informe o celular do cliente ou marque "não tem WhatsApp".');
+    }
+    if (!agenday_portal_telefone_whatsapp_ok($telefoneDigits)) {
+        agenday_erro_cliente('Informe um celular com DDD e o 9 (11 dígitos), ou marque "não tem WhatsApp".');
+    }
 }
 
 // Foto opcional: apenas JPG/PNG real, até 2 MB; nome gerado pelo servidor.
@@ -84,15 +93,38 @@ if ($foto !== null) {
     }
 }
 
-// Uma mesma tentativa só pode chegar ao INSERT uma vez.
-if (!agenday_cadastro_token_consumir('clientes', $_POST['cadastro_token'] ?? null)) {
-    agenday_erro_cliente('Este cadastro já foi enviado ou expirou. Atualize a página antes de tentar novamente.');
-}
-
+// Uma mesma tentativa só pode chegar ao INSERT uma vez. A marca é consumida
+// depois da conferência do celular, para um erro de confirmação não obrigar a
+// recarregar a página e perder o que já foi digitado.
 $caminhoPublico = null;
 $caminhoFisico = null;
 try {
     require_once __DIR__ . '/conexao.php';
+
+    // Celular confirmado por código: o número só vale como identidade do portal
+    // depois que o cliente leu o código. Se o WhatsApp da plataforma estiver
+    // fora do ar, não bloqueia o cadastro — só deixa de exigir a confirmação.
+    if (!$semWhatsapp) {
+        require_once __DIR__ . '/lib/whatsapp.php';
+        $idEstabelecimentoAtual = (int) $_SESSION['id_estabelecimento'];
+        try {
+            $configWhats = agenday_whatsapp_config($conexao);
+            $exigirConfirmacao = agenday_whatsapp_pronto($configWhats);
+        } catch (Throwable $e) {
+            $exigirConfirmacao = false;
+        }
+        if ($exigirConfirmacao
+            && !agenday_portal_confirmacao_ler($idEstabelecimentoAtual, (string) $telefoneDigits)) {
+            agenday_erro_cliente(
+                'Confirme o celular pelo código do WhatsApp antes de salvar. '
+                . 'Se o cliente não tiver WhatsApp, marque a opção correspondente.'
+            );
+        }
+    }
+
+    if (!agenday_cadastro_token_consumir('clientes', $_POST['cadastro_token'] ?? null)) {
+        agenday_erro_cliente('Este cadastro já foi enviado ou expirou. Atualize a página antes de tentar novamente.');
+    }
 
     if ($extensao !== null) {
         $pasta = __DIR__ . '/arquivos/clientes';
@@ -117,6 +149,11 @@ try {
     $stmt->bind_param('isssss', $idEstabelecimento, $nome, $emailBanco, $contato, $telefoneDigits, $caminhoPublico);
     $stmt->execute();
     $stmt->close();
+
+    // A confirmação vale para um cadastro só.
+    if (!$semWhatsapp && $telefoneDigits !== null) {
+        agenday_portal_confirmacao_limpar($idEstabelecimento, (string) $telefoneDigits);
+    }
 
     $_SESSION['sucesso_cliente'] = true;
     header('Location: cad-cliente.php', true, 303);
