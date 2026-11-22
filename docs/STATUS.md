@@ -1,5 +1,21 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-05 — A página abre nas sugestões, checklist desce (22/11/2026)
+
+- **Pedido do responsável:** "esse fluxo de cadastro está errado — as sugestões devem vir primeiro, para ficar mais simples e fácil de preencher". Depois de conversar sobre o cadastro, o escopo ficou fechado em **reorganizar só a tela de primeiro uso**, sem tocar em `index.php`/`cadastrar.php`.
+- **Antes:** a página abria com **"Configuração da agenda"** + checklist de 4 passos. A pergunta do tipo de negócio e as sugestões de um clique ficavam **dois blocos abaixo** — a pessoa lia a lista de tarefas antes de descobrir o atalho.
+- **Agora a ordem é:** (1) **"Que tipo de negócio é o seu?"**, (2) sugestões de um clique, (3) **"O que falta"** com a barra de progresso, (4) "Sou eu que atendo", (5) link do portal.
+- **Tipo já escolhido:** a pergunta encolhe para a linha **"Tipo de negócio: Barbearia · Trocar"** dentro do cartão de sugestões — quem volta abre direto na ação, sem responder de novo.
+- **"Outro tipo de negócio":** o cartão ganha título próprio ("Cadastre o seu primeiro serviço") e o botão **"Cadastrar meu serviço"** no lugar do link solto. Nesse estado o **"Trocar"** agora existe (antes ele desaparecia junto com as sugestões).
+- **Sempre há saída:** com sugestões na tela, o rodapé do cartão traz "Não está na lista? Cadastre o seu serviço".
+- **Sem regra nova:** nenhuma ação, consulta ou gravação mudou; o checklist continua com os mesmos 4 itens e o mesmo critério de conclusão. Só apresentação (ordem, títulos e CSS um pouco mais compacto).
+- **Testes (PC local, 22/11/2026):** `php -l` limpo; prova HTTP real com a conta #35: **21 verificações, 0 falha** — pergunta antes do checklist, sugestões antes do checklist, título "O que falta", linha do tipo, "Trocar", sugestões da barbearia, saída para serviço próprio, painel "Sou eu que atendo" e link do portal preservados, estado "Outro" com título/botão/trocar, CSS `pp05`. Suítes: `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/link-portal-preview.js` 41, `tests/responsividade-check.js` 233.
+- **Conferência visual (Edge headless):** 1280 px e 360 px nas duas telas (pergunta e sugestões), sem rolagem horizontal.
+- **Decisão adiada:** pop-up para cadastrar serviço dentro da própria página — o responsável preferiu pop-up a outra tela; é código novo e fica para depois da feira.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado** (pedido expresso do responsável).
+
+---
+
 ## DEPLOY-04 — Publicação do lote até PRIMEIROS-PASSOS-04 (22/11/2026)
 
 - **Autorização:** "Pode publicar tudo" (22/11/2026), cobrindo o lote acumulado desde o DEPLOY-03 (`b6887f6`).
