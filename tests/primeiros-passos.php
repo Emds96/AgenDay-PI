@@ -193,35 +193,37 @@ conferir(
 
 /* Progresso --------------------------------------------------------------- */
 $vazio = agenday_primeiros_passos_progresso([]);
-conferir($vazio['total'] === 4, 'o checklist deveria ter 4 passos');
+conferir($vazio['total'] === 5, 'o checklist deveria ter 5 passos');
 conferir($vazio['concluidos'] === 0 && $vazio['percentual'] === 0, 'estado vazio deveria ser 0%');
 conferir($vazio['completo'] === false, 'estado vazio não pode estar completo');
 conferir(
-    array_column($vazio['itens'], 'chave') === ['servico', 'equipe', 'vinculo', 'horario'],
+    array_column($vazio['itens'], 'chave') === ['segmento', 'servico', 'equipe', 'vinculo', 'horario'],
     'ordem dos passos mudou'
 );
 conferir(
-    array_column($vazio['itens'], 'feito') === [false, false, false, false],
+    array_column($vazio['itens'], 'feito') === [false, false, false, false, false],
     'nenhum passo deveria estar feito no estado vazio'
 );
 
 $parcial = agenday_primeiros_passos_progresso([
+    'segmento' => 'barbearia',
     'servicos' => 2,
     'funcionarios' => 1,
     'vinculos' => 0,
     'dias_abertos' => 5,
 ]);
-conferir($parcial['concluidos'] === 3 && $parcial['percentual'] === 75, 'progresso parcial incorreto');
+conferir($parcial['concluidos'] === 4 && $parcial['percentual'] === 80, 'progresso parcial incorreto');
 conferir($parcial['completo'] === false, 'faltando vínculo não pode estar completo');
-conferir($parcial['itens'][2]['feito'] === false, 'vínculo deveria estar pendente');
+conferir($parcial['itens'][3]['feito'] === false, 'vínculo deveria estar pendente');
 
 $completo = agenday_primeiros_passos_progresso([
+    'segmento' => 'barbearia',
     'servicos' => 1,
     'funcionarios' => 1,
     'vinculos' => 1,
     'dias_abertos' => 1,
 ]);
-conferir($completo['concluidos'] === 4 && $completo['percentual'] === 100, 'progresso completo incorreto');
+conferir($completo['concluidos'] === 5 && $completo['percentual'] === 100, 'progresso completo incorreto');
 conferir($completo['completo'] === true, 'estado completo não reconhecido');
 
 $negativo = agenday_primeiros_passos_progresso([
@@ -232,10 +234,22 @@ $negativo = agenday_primeiros_passos_progresso([
 ]);
 conferir($negativo['concluidos'] === 0, 'valores negativos deveriam ser ignorados');
 
+/* Tipo de negócio é o primeiro passo e só conta quando é uma chave válida. */
+conferir(
+    agenday_primeiros_passos_progresso(['segmento' => 'nao-existe'])['itens'][0]['feito'] === false,
+    'tipo fora do catálogo não pode concluir o passo'
+);
+conferir(
+    agenday_primeiros_passos_progresso(['segmento' => 'outro'])['itens'][0]['feito'] === true,
+    '"outro" é um tipo válido e conclui o passo'
+);
+
 foreach ($completo['itens'] as $item) {
     conferir(trim((string) $item['titulo']) !== '', 'passo sem título');
     conferir(trim((string) $item['ajuda']) !== '', 'passo sem ajuda');
-    conferir(trim((string) $item['link']) !== '', 'passo sem link');
+    if ($item['chave'] !== 'segmento') {
+        conferir(trim((string) $item['link']) !== '', 'passo sem link');
+    }
 }
 
 echo 'Primeiros passos: ' . $aprovados . ' testes aprovados.' . PHP_EOL;
