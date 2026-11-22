@@ -1,5 +1,29 @@
 # STATUS — AgenDay 2.0
 
+## MENSAGENS-02 — Texto da confirmação fechado; lembrete e taxa em aberto (22/11/2026)
+
+- **Contexto:** revisão das cinco mensagens do WhatsApp com o responsável. Código de acesso, remarcação e cancelamento foram aprovados sem mudança. A confirmação foi fechada; o lembrete e a ideia de taxa de cancelamento seguem em decisão.
+- **Confirmação — texto aprovado (ainda não implementado):**
+  ```
+  Olá, Ana Souza!
+
+  Agendamento confirmado no Studio Bella Vita:
+  Serviço: Corte feminino
+  Profissional: Bia
+  Data: 24/11/2026 às 14:30
+
+  Remarcar ou cancelar: até 24h antes do horário.
+  Precisa remarcar ou cancelar? Acesse: https://agenday-agendamentos.infinityfree.io/?e=studio
+
+  Enviado pela AgenDay em nome de Studio Bella Vita.
+  ```
+  Regras: **um único link** (portal `?e=slug`), sem o link de token de cancelamento; o prazo é **dinâmico**, lido de `horas_cancelamento` (24 → "24h"; 1 → "1 hora"; 0 → "até o horário do atendimento"). O link do portal exige o celular (e o código, quando o estabelecimento exige) — não é remarcação em um clique.
+- **Lembrete — em aberto:** sem nenhum link. A primeira linha é "O prazo para remarcar ou cancelar já passou."; a última linha ainda será escolhida entre: (A) "Se não puder comparecer, avise com antecedência."; (B) "Se não puder comparecer, avise o Studio Bella Vita."; (C) telefone do estabelecimento quando cadastrado, com A como alternativa. Se `horas_cancelamento` for menor que 24, a frase muda para "Você ainda pode remarcar ou cancelar até X antes do horário."
+- **Taxa de cancelamento — ideia do responsável, adiada:** cobrar uma taxa quando o cliente cancela ou remarca em cima da hora. O sistema **não tem meio de cobrança** (sem gateway, sem cartão salvo), então a taxa não pode ser aplicada automaticamente. Sem SQL, o máximo é um **aviso textual** na mensagem; registrar cancelamento tardio no painel é possível derivando `data_inicio` × `atualizado_em`, mas remarcação tardia **não** é recuperável (o horário antigo é sobrescrito). Uma configuração por estabelecimento exigiria coluna nova — depois da feira.
+- **Estado real:** decisão registrada; **nada implementado além do LEMBRETE-01**; não publicado.
+
+---
+
 ## LEMBRETE-01 — Lembrete automático 24h antes do horário (22/11/2026)
 
 - **Pedido do responsável (22/11/2026):** com o celular já confirmado (TEL-01), avisar o cliente **um dia antes** do horário. Respondeu "pode fazer" para executar **somente no local**, sem publicar e sem SQL.
