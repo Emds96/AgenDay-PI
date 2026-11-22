@@ -178,6 +178,7 @@ if ($acao === 'criar') {
         'servico' => $servico['nome'],
         'profissional' => (string) $nomeProfissional,
         'data_inicio' => $inicio->format('Y-m-d H:i:s'),
+        'link_portal' => agenday_portal_link($estabelecimento),
         'link_cancelar' => agenday_portal_link_cancelamento($estabelecimento, $tokenPublico),
     ]);
     $idMensagem = agenday_whatsapp_enfileirar($conexao, $empresa, $idAgendamento, $telefone, 'confirmacao', $texto);
