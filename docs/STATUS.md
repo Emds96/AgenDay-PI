@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## CADASTRO-TELEFONE-01 — Telefone obrigatório em contas novas (22/11/2026)
+
+- **Decisão do responsável:** exigir o telefone **somente no cadastro de contas novas**. Os números das contas antigas serão tratados por outro plano do responsável — `Configurações` continua aceitando o campo vazio.
+- **Implementado:** campo **"Telefone do estabelecimento"** (obrigatório, `type=tel`, até 20 caracteres) no cadastro por e-mail/senha (`index.php` → `cadastrar.php`) e no cadastro com Google (`index.php` → `google-cadastro-concluir.php`). O valor vai para `estabelecimento.contato_estabelecimento`, a mesma coluna usada pelo lembrete de WhatsApp.
+- **Regra única:** `agenday_telefone_estabelecimento_valido()` em `lib/configuracao-estabelecimento.php` (8 a 15 dígitos, separadores comuns). `agenday_config_validar()` passou a reutilizá-la, mantendo as mensagens e o campo opcional em Configurações.
+- **Por que obrigatório:** o número é o que aparece na linha *"Se não puder comparecer, avise com antecedência: (92) ..."* do lembrete aprovado (MENSAGENS-02). Sem ele, o lembrete saía sem contato.
+- **Testes (PC local, 22/11/2026):** `tests/configuracao-estabelecimento.php` 13 → **27** (13 casos do telefone obrigatório/opcional + Configurações aceitando vazio). Simulação real do POST contra o banco local: sem telefone e com telefone inválido → conta **não** criada com a mensagem certa; com `(92) 98888-7700` → conta criada e número gravado. Mesmo teste no fluxo Google (`(92) 97777-6600`). Registros de teste apagados. Demais suítes verdes: portal 150, agenda 19, cancelamento 20, senha 16, avatar ok, Google 15, recuperação de senha ok, responsividade 219.
+- **Limite conhecido:** contas antigas sem telefone continuam sem número no lembrete até o responsável executar o plano dele.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## FEE-02 — Ação "Cancelar e cobrar taxa" na agenda (22/11/2026)
 
 - **Decisão do responsável:** quem sabe se é caso de taxa é o **salão**, no momento do cancelamento — não o sistema. Marca automática foi descartada porque hoje **só o salão cancela dentro das 24h** (o cliente é bloqueado no portal), então o automático marcaria até cancelamentos feitos por conta própria (profissional doente, por exemplo).

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/sessao.php';
 require_once __DIR__ . '/lib/portal-cliente.php';
+require_once __DIR__ . '/lib/configuracao-estabelecimento.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Location: index.php', true, 302);
@@ -9,10 +10,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 
 $nome = $_POST['estabelecimento'] ?? null;
 $email = $_POST['email'] ?? null;
+$contato = $_POST['contato_estabelecimento'] ?? null;
 $senha = $_POST['senha'] ?? null;
 $confirmacao = $_POST['confirmar_senha'] ?? null;
 
 if (!agenday_valida_csrf() || !is_string($nome) || !is_string($email)
+    || !is_string($contato)
     || !is_string($senha) || !is_string($confirmacao)) {
     $_SESSION['erro_cadastro'] = 'Não foi possível validar o formulário.';
     header('Location: index.php', true, 302);
@@ -21,10 +24,19 @@ if (!agenday_valida_csrf() || !is_string($nome) || !is_string($email)
 
 $nome = trim($nome);
 $email = trim($email);
+$contato = trim($contato);
 if ($nome === '' || mb_strlen($nome) > 120 || !filter_var($email, FILTER_VALIDATE_EMAIL)
     || strlen($email) > 190 || strlen($senha) < 8 || strlen($senha) > 72
     || !hash_equals($senha, $confirmacao)) {
     $_SESSION['erro_cadastro'] = 'Confira o nome, e-mail e confirmação da senha (8 a 72 bytes).';
+    header('Location: index.php', true, 302);
+    exit;
+}
+
+// Telefone obrigatório no cadastro: é ele que aparece na mensagem de
+// lembrete ao cliente. Contas antigas continuam podendo ficar sem número.
+if (!agenday_telefone_estabelecimento_valido($contato, true)) {
+    $_SESSION['erro_cadastro'] = 'Informe o telefone do estabelecimento com DDD (8 a 15 dígitos).';
     header('Location: index.php', true, 302);
     exit;
 }
@@ -88,10 +100,11 @@ try {
 
     $hash = password_hash($senha, PASSWORD_DEFAULT);
     $stmt = $conexao->prepare(
-        'INSERT INTO estabelecimento (nome_estabelecimento, email_estabelecimento, senha_estabelecimento)
-         VALUES (?, ?, ?)'
+        'INSERT INTO estabelecimento
+            (nome_estabelecimento, email_estabelecimento, senha_estabelecimento, contato_estabelecimento)
+         VALUES (?, ?, ?, ?)'
     );
-    $stmt->bind_param('sss', $nome, $email, $hash);
+    $stmt->bind_param('ssss', $nome, $email, $hash, $contato);
     $stmt->execute();
     $novoId = (int) $conexao->insert_id;
     $stmt->close();

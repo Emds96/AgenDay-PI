@@ -28,20 +28,29 @@ if (!is_array($pendente)
 }
 
 $nome = $_POST['estabelecimento'] ?? null;
+$contato = $_POST['contato_estabelecimento'] ?? null;
 $senha = $_POST['senha'] ?? null;
 $confirmacao = $_POST['confirmar_senha'] ?? null;
 $semSenha = ($_POST['sem_senha'] ?? null) === '1';
 
-if (!agenday_valida_csrf() || !is_string($nome)
+if (!agenday_valida_csrf() || !is_string($nome) || !is_string($contato)
     || !is_string($senha) || !is_string($confirmacao)) {
     agenday_google_erro_cadastro('Não foi possível validar o formulário. Confira os dados.');
 }
 
 $nome = trim($nome);
+$contato = trim($contato);
 if ($nome === '' || mb_strlen($nome) > 120
     || !filter_var($pendente['email'], FILTER_VALIDATE_EMAIL)
     || strlen($pendente['email']) > 190) {
     agenday_google_erro_cadastro('Informe um nome de estabelecimento válido (até 120 caracteres).');
+}
+
+// Telefone obrigatório no cadastro: é ele que aparece na mensagem de
+// lembrete ao cliente. Contas antigas continuam podendo ficar sem número.
+require_once __DIR__ . '/lib/configuracao-estabelecimento.php';
+if (!agenday_telefone_estabelecimento_valido($contato, true)) {
+    agenday_google_erro_cadastro('Informe o telefone do estabelecimento com DDD (8 a 15 dígitos).');
 }
 
 $hash = null;
@@ -61,10 +70,11 @@ try {
     // UNIQUE(email_estabelecimento) e UNIQUE(google_sub) garantem que
     // acessos simultâneos não criem duplicatas; rollback preserva integridade.
     $stmt = $conexao->prepare(
-        'INSERT INTO estabelecimento (nome_estabelecimento, email_estabelecimento, senha_estabelecimento)
-         VALUES (?, ?, ?)'
+        'INSERT INTO estabelecimento
+            (nome_estabelecimento, email_estabelecimento, senha_estabelecimento, contato_estabelecimento)
+         VALUES (?, ?, ?, ?)'
     );
-    $stmt->bind_param('sss', $nome, $pendente['email'], $hash);
+    $stmt->bind_param('ssss', $nome, $pendente['email'], $hash, $contato);
     $stmt->execute();
     $id = (int) $conexao->insert_id;
     $stmt->close();
