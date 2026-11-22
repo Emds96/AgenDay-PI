@@ -1,12 +1,59 @@
 /*
  * PRIMEIROS-PASSOS-01
- * Único comportamento de script da tela: copiar o link do portal.
- * Sem isso o botão existe mas não faz nada; o link continua visível para
- * copiar à mão em navegadores sem permissão de área de transferência.
+ *
+ * Dois comportamentos da tela, os dois do link do portal:
+ * 1. prévia ao vivo — a pessoa digita o nome e vê embaixo como o link fica;
+ * 2. copiar — só libera quando o endereço exibido é o que está salvo, para
+ *    ninguém enviar ao cliente um link que ainda não existe.
+ *
+ * A normalização espelha agenday_portal_slug_normalizar() (lib/portal-cliente.php):
+ * minúsculas, sem acento, [a-z0-9] e hífen simples, até 60 caracteres.
  */
 'use strict';
 
+const campoEndereco = document.getElementById('pp-endereco');
+const previaLink = document.getElementById('pp-portal-preview');
+const avisoPrevia = document.getElementById('pp-preview-aviso');
 const botaoCopiar = document.getElementById('copiar-portal-link');
+
+const normalizarEndereco = texto => {
+    const semAcento = String(texto || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    return semAcento
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60)
+        .replace(/-+$/g, '');
+};
+
+if (campoEndereco && previaLink && avisoPrevia && botaoCopiar) {
+    const atualizarPrevia = () => {
+        const prefixo = previaLink.dataset.prefixo || '';
+        const salvo = previaLink.dataset.slug || '';
+        const digitado = normalizarEndereco(campoEndereco.value);
+        const efetivo = digitado || normalizarEndereco(previaLink.dataset.nome || '');
+        const link = prefixo + efetivo;
+        const igualAoSalvo = efetivo !== '' && efetivo === salvo;
+
+        previaLink.textContent = link;
+        botaoCopiar.dataset.link = igualAoSalvo ? link : '';
+        botaoCopiar.disabled = !igualAoSalvo;
+
+        if (igualAoSalvo) {
+            avisoPrevia.hidden = true;
+        } else {
+            avisoPrevia.hidden = false;
+            avisoPrevia.textContent = efetivo === ''
+                ? 'Digite um nome para ver o link.'
+                : 'Salve o endereço para ativar este link.';
+        }
+    };
+
+    campoEndereco.addEventListener('input', atualizarPrevia);
+    atualizarPrevia();
+}
 
 if (botaoCopiar) {
     const textoOriginal = botaoCopiar.textContent;
@@ -24,14 +71,10 @@ if (botaoCopiar) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(link)
                 .then(() => avisar('Copiado!'))
-                .catch(() => avisar('Copie o campo ao lado'));
+                .catch(() => avisar('Selecione e copie o endereço'));
             return;
         }
 
-        const campo = document.getElementById('pp-portal-link');
-        if (campo) {
-            campo.select();
-            avisar('Copie o campo ao lado');
-        }
+        avisar('Selecione e copie o endereço');
     });
 }

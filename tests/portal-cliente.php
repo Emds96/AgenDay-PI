@@ -216,6 +216,19 @@ verificar(
         === 'https://meusalao.com.br/?e=studio',
     'domínio próprio tem prioridade no link'
 );
+verificar(
+    agenday_portal_url_base() === 'https://agenday-agendamentos.infinityfree.io/?e=',
+    'prefixo do link usa o domínio público do portal'
+);
+verificar(
+    agenday_portal_url_base('meusalao.com.br') === 'https://meusalao.com.br/?e=',
+    'prefixo do link aceita o domínio próprio'
+);
+verificar(
+    agenday_portal_base_url(['slug' => 'studio', 'dominio' => ''])
+        === agenday_portal_url_base() . 'studio',
+    'o link completo é o prefixo mais o endereço'
+);
 if ($hostAntesDoLinkBase === null) {
     unset($_SERVER['HTTP_HOST']);
 } else {
