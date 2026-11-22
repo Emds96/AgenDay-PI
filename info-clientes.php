@@ -38,6 +38,7 @@ while ($stmt->fetch()) {
         'arquivo_cliente' => $arquivoCliente,
         'faltas' => 0,
         'cancelamentos' => 0,
+        'taxa' => 0,
     ];
 }
 $stmt->close();
@@ -58,5 +59,6 @@ if ($clientes !== []) {
         $conta = $ausencias[(int) $cliente['id_cliente']] ?? [];
         $clientes[$indice]['faltas'] = (int) ($conta['faltas'] ?? 0);
         $clientes[$indice]['cancelamentos'] = (int) ($conta['cancelamentos'] ?? 0);
+        $clientes[$indice]['taxa'] = (int) ($conta['taxa'] ?? 0);
     }
 }

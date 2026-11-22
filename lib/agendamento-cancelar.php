@@ -26,20 +26,26 @@ function agenday_agenda_validar_id_cancelamento($valor): int
  * bloqueia e atualiza o registro. Evita ciclos de bloqueio ao cancelar
  * simultaneamente à criação para o mesmo funcionário.
  *
+ * @param bool $cobrarTaxa registra que o salão vai cobrar a taxa (FEE-01)
  * @return array{ja_cancelado:bool,data_inicio:string}
  */
-function agenday_agenda_cancelar(mysqli $conexao, int $idAgendamento): array
+function agenday_agenda_cancelar(mysqli $conexao, int $idAgendamento, bool $cobrarTaxa = false): array
 {
-    return agenday_agenda_cancelar_para($conexao, agenday_agenda_estabelecimento(), $idAgendamento);
+    return agenday_agenda_cancelar_para($conexao, agenday_agenda_estabelecimento(), $idAgendamento, $cobrarTaxa);
 }
 
 /**
  * Mesma operação com estabelecimento explícito (portal do cliente, sem sessão).
  *
+ * @param bool $cobrarTaxa registra que o salão vai cobrar a taxa (FEE-01)
  * @return array{ja_cancelado:bool,data_inicio:string}
  */
-function agenday_agenda_cancelar_para(mysqli $conexao, int $empresa, int $idAgendamento): array
-{
+function agenday_agenda_cancelar_para(
+    mysqli $conexao,
+    int $empresa,
+    int $idAgendamento,
+    bool $cobrarTaxa = false
+): array {
     if ($idAgendamento < 1 || $idAgendamento > 4294967295) {
         throw new InvalidArgumentException('Identificador de agendamento inválido.');
     }
@@ -99,12 +105,26 @@ function agenday_agenda_cancelar_para(mysqli $conexao, int $empresa, int $idAgen
         }
 
         // Preserva histórico. Cancelados deixam de ocupar horário na verificação de conflitos.
-        $stmt = $conexao->prepare(
-            "UPDATE agendamentos SET status = 'cancelado'
-             WHERE id_estabelecimento = ? AND id_agendamento = ?
-               AND status IN ('agendado', 'confirmado')"
-        );
-        $stmt->bind_param('ii', $empresa, $idAgendamento);
+        // Com "cobrar taxa", a marca fica nas observações (sem coluna nova no banco).
+        if ($cobrarTaxa) {
+            require_once __DIR__ . '/clientes-ausencias.php';
+            $marca = agenday_clientes_marca_taxa();
+            $stmt = $conexao->prepare(
+                "UPDATE agendamentos
+                    SET status = 'cancelado',
+                        observacoes = TRIM(CONCAT(COALESCE(observacoes, ''), ' ', ?))
+                  WHERE id_estabelecimento = ? AND id_agendamento = ?
+                    AND status IN ('agendado', 'confirmado')"
+            );
+            $stmt->bind_param('sii', $marca, $empresa, $idAgendamento);
+        } else {
+            $stmt = $conexao->prepare(
+                "UPDATE agendamentos SET status = 'cancelado'
+                 WHERE id_estabelecimento = ? AND id_agendamento = ?
+                   AND status IN ('agendado', 'confirmado')"
+            );
+            $stmt->bind_param('ii', $empresa, $idAgendamento);
+        }
         $stmt->execute();
         $alterados = $stmt->affected_rows;
         $stmt->close();

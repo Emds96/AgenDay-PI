@@ -5,6 +5,7 @@
  */
 declare(strict_types=1);
 require_once __DIR__ . '/../sessao.php';
+require_once __DIR__ . '/clientes-ausencias.php';
 
 /** Obtém o estabelecimento exclusivamente da sessão autenticada. */
 function agenday_agenda_estabelecimento(): int
@@ -93,7 +94,10 @@ function agenday_agenda_listar(mysqli $conexao, string $inicio, string $fim): ar
             'data_inicio' => $dataInicio,
             'data_fim' => $dataFim,
             'status' => $status,
-            'observacoes' => $observacoes,
+            // A marca de cobrança de taxa não é observação do cliente: sai do
+            // texto e vira um aviso próprio na agenda (FEE-01).
+            'observacoes' => agenday_clientes_sem_marca_taxa($observacoes) ?: null,
+            'cobrar_taxa' => agenday_clientes_tem_marca_taxa($observacoes),
         ];
     }
     $stmt->close();
