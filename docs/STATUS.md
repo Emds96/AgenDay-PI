@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-08 — O cartão vazio virou faixa (22/11/2026)
+
+- **Relato do responsável:** *"eu so nao to gostando de uma coisa esse 'Cadastre o seu primeiro serviço' engessado no inicio"*. No tipo "Outro tipo de negócio" o cartão era um retângulo grande com título, uma frase, a linha do tipo e **um botão** — repetindo o item 1 do checklist.
+- **Agora:** sem sugestões, o cartão encolhe para **uma faixa**: `Tipo de negócio: Outro · Trocar` à esquerda e **Cadastrar serviço** à direita, na mesma linha. No celular o botão desce e ocupa a largura toda. A página abre praticamente em "O que falta", que já tem a mesma ação no item 1.
+- **Rótulo curto:** o catálogo ganhou a chave opcional `curto` ("Outro") só para essa faixa, para não ler "tipo de negócio: outro tipo de negócio".
+- **Nenhuma lógica nova:** o botão abre o mesmo pop-up de serviço; o "Trocar" continua sendo o mesmo POST. O título "Cadastre o seu primeiro serviço" segue no HTML como `visually-hidden`, para leitores de tela não perderem o assunto da seção.
+- **Com sugestões nada muda:** o cartão com os atalhos de um clique continua igual.
+- **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php` e `lib/primeiros-passos.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **17 verificações, 0 falha**: faixa presente, grade de sugestões ausente, tipo curto, "Trocar", pop-up de serviço, rótulo novo, faixa antes do checklist, checklist com 4 itens e "Trocar" voltando para a pergunta de tipo. Suítes: `tests/primeiros-passos.php` 176 → **177** (rótulo curto do "outro"), `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
+- **Conferência visual (navegador real, 22/11/2026):** 1897 px (faixa em uma linha) e 360 px (botão em largura cheia), sem rolagem horizontal.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-07 — Todo cadastro do primeiro uso virou pop-up (22/11/2026)
 
 - **Pedido do responsável:** *"tira da pagina de primeiro acesso tudo que clicar ali quero que apareça um pop-up"* e *"quero que o usuario so saia da pagina de primeiro acesso quando terminar seus cadastros"*.
