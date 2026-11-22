@@ -8,8 +8,8 @@
 - **Publicação:** `workflow_dispatch` no run **`44967236148`**, environment `producao-agenday` aprovado. Os três jobs concluíram com **success** — `Validar codigo e pacote`, `Testar FTPS sem publicar arquivos` e `Enviar ao InfinityFree somente com autorizacao` — em cerca de 4,5 minutos.
 - **Flags:** `AGENDAY_DEPLOY_ENABLED=true` e `AGENDAY_DEPLOY_MODE=publish` ativadas às 00:31 UTC e restauradas para **`false`/`disabled`** às 00:38 UTC.
 - **Conferência pós-deploy (21/11/2026, navegador):** a página de cancelamento em produção responde agora `Referrer-Policy: same-origin` (antes `no-referrer`) e mantém o campo oculto `assinatura` com 64 caracteres — confirmando que a versão publicada é a do PORTAL-07.
-- **Pendência:** clicar no botão **Confirmar cancelamento** pelo **celular físico**; é o único teste que ainda falta.
-- **Estado real:** código publicado e conferido; **fluxo do botão ainda não validado no aparelho**.
+- **Validação do responsável (21/11/2026):** informou que o cancelamento **funcionou** depois deste deploy. É o teste que faltava — clique no botão pelo celular.
+- **Estado real:** publicado, conferido e **validado pelo responsável**.
 
 ---
 
@@ -22,7 +22,8 @@
 - **Testes no PC local (21/11/2026):** `tests/portal-cliente.php` subiu de 93 para **100 verificações** (assinatura sem `Origin`, assinatura com `Origin: null`, página em cache sem assinatura usando `Origin`, assinatura de outro token recusada, assinatura correta prevalecendo sobre origem estranha); demais suítes limpas (19, 20, 13, 16, 210); `php -l` limpo.
 - **Prova por HTTP local:** sem `Origin` + assinatura → `200 Agendamento cancelado`; `Origin` válido sem assinatura → `200`; `Origin: null` + assinatura → `200`; sem nada → `403`; `Origin` falso + assinatura correta → `200`; assinatura errada → `403`.
 - **Custo do teste:** os quatro cancelamentos de teste dispararam o aviso real de WhatsApp para o responsável (4 mensagens seguidas às 20:24). Agendamentos e mensagens de teste apagados do `agenday_local` em seguida.
-- **Estado real:** corrigido, testado no PC local e **publicado** em 21/11/2026 no deploy do SHA `b6887f6` (DEPLOY-03).
+- **Validação do responsável (21/11/2026):** depois do DEPLOY-03, informou que o cancelamento pelo link **funcionou**. A pendência do celular físico está fechada; o registro é o relato do responsável, somado à conferência técnica em produção (`Referrer-Policy: same-origin` e `assinatura` de 64 caracteres).
+- **Estado real:** corrigido, testado no PC local, **publicado** no SHA `b6887f6` (DEPLOY-03) e **validado pelo responsável**.
 
 ---
 
