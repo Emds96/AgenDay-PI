@@ -44,7 +44,8 @@ function conferir(condicao, mensagem) {
  * Monta os elementos que o script usa e roda o arquivo real.
  * O DOM é falso de propósito: aqui interessa a regra, não o navegador.
  */
-function montar(slugSalvo, nomeEstabelecimento, hash) {
+function montar(slugSalvo, nomeEstabelecimento, hash, extras) {
+    const opcoes = extras || {};
     const campo = { value: '', addEventListener: (tipo, fn) => { campo.aoDigitar = fn; } };
     const previa = {
         dataset: {
@@ -91,7 +92,7 @@ function montar(slugSalvo, nomeEstabelecimento, hash) {
     const campoAtalho = { focado: false, focus: () => { campoAtalho.focado = true; } };
 
     const documento = {
-        getElementById: id => mapa[id] || null,
+        getElementById: id => (id === 'pp-modal-equipe' ? (opcoes.modal || null) : (mapa[id] || null)),
         querySelector: seletor => (seletor === '[data-focar-ao-chegar="sou-eu-que-atendo"]' ? campoAtalho : null),
     };
     const janela = {
@@ -99,7 +100,7 @@ function montar(slugSalvo, nomeEstabelecimento, hash) {
         location: { hash: hash || '' },
         addEventListener: (tipo, fn) => { if (tipo === 'hashchange') { janela.aoMudarHash = fn; } },
     };
-    new Function('document', 'window', codigo)(documento, janela);
+    new Function('document', 'window', 'bootstrap', codigo)(documento, janela, opcoes.bootstrap);
 
     return { campo, previa, aviso, botao, verPagina, campoAtalho, janela };
 }
@@ -189,5 +190,27 @@ conferir(typeof mudouHash.janela.aoMudarHash === 'function', 'script escuta muda
 mudouHash.janela.location.hash = '#sou-eu-que-atendo';
 mudouHash.janela.aoMudarHash();
 conferir(mudouHash.campoAtalho.focado === true, 'clicar no atalho já na página foca o campo');
+
+/* Pop-up "Tenho equipe": reabre sozinho quando o cadastro voltou com erro. */
+let aberturas = 0;
+const bootstrapFalso = { Modal: { getOrCreateInstance: () => ({ show: () => { aberturas++; } }) } };
+
+montar('clinica-sorriso-prime', undefined, '', {
+    modal: { dataset: { reabrirErro: 'true' } },
+    bootstrap: bootstrapFalso,
+});
+conferir(aberturas === 1, 'erro no cadastro reabre o pop-up da equipe');
+
+montar('clinica-sorriso-prime', undefined, '', {
+    modal: { dataset: { reabrirErro: 'false' } },
+    bootstrap: bootstrapFalso,
+});
+conferir(aberturas === 1, 'sem erro o pop-up não abre sozinho');
+
+montar('clinica-sorriso-prime', undefined, '', {
+    modal: { dataset: { reabrirErro: 'true' } },
+    bootstrap: undefined,
+});
+conferir(aberturas === 1, 'sem Bootstrap na página o script não quebra');
 
 console.log('Prévia do link do portal: ' + aprovados + ' testes aprovados.');
