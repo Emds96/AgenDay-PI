@@ -41,7 +41,7 @@ function conferir(condicao, mensagem) {
 }
 
 /**
- * Monta os quatro elementos que o script usa e roda o arquivo real.
+ * Monta os elementos que o script usa e roda o arquivo real.
  * O DOM é falso de propósito: aqui interessa a regra, não o navegador.
  */
 function montar(slugSalvo, nomeEstabelecimento) {
@@ -56,18 +56,42 @@ function montar(slugSalvo, nomeEstabelecimento) {
     };
     const aviso = { hidden: true, textContent: '' };
     const botao = { dataset: { link: '' }, disabled: false, textContent: 'Copiar', addEventListener: () => {} };
+
+    /* <a> de abrir a página: guarda classList e atributos como o navegador faria. */
+    const classes = new Set();
+    const atributos = {};
+    const verPagina = {
+        dataset: { link: '' },
+        href: '',
+        classList: {
+            add: c => classes.add(c),
+            remove: c => classes.delete(c),
+            contains: c => classes.has(c),
+        },
+        setAttribute(nome, valor) {
+            atributos[nome] = String(valor);
+            if (nome === 'href') { verPagina.href = String(valor); }
+        },
+        removeAttribute(nome) {
+            delete atributos[nome];
+            if (nome === 'href') { verPagina.href = ''; }
+        },
+        temAtributo: nome => Object.prototype.hasOwnProperty.call(atributos, nome),
+    };
+
     const mapa = {
         'pp-endereco': campo,
         'pp-portal-preview': previa,
         'pp-preview-aviso': aviso,
         'copiar-portal-link': botao,
+        'abrir-portal-link': verPagina,
     };
 
     const documento = { getElementById: id => mapa[id] || null };
     const janela = { setTimeout: () => {} };
     new Function('document', 'window', codigo)(documento, janela);
 
-    return { campo, previa, aviso, botao };
+    return { campo, previa, aviso, botao, verPagina };
 }
 
 const digitar = (tela, valor) => {
@@ -82,6 +106,9 @@ conferir(salvo.previa.textContent === 'https://portal.test/?e=clinica-sorriso-pr
 conferir(salvo.botao.disabled === false, 'copiar liberado quando a prévia é o endereço salvo');
 conferir(salvo.botao.dataset.link === 'https://portal.test/?e=clinica-sorriso-prime', 'copiar aponta para o link salvo');
 conferir(salvo.aviso.hidden === true, 'sem aviso quando está salvo');
+conferir(salvo.verPagina.href === 'https://portal.test/?e=clinica-sorriso-prime', 'botão de ver a página abre o link salvo');
+conferir(salvo.verPagina.classList.contains('disabled') === false, 'botão de ver a página fica ativo quando está salvo');
+conferir(salvo.verPagina.temAtributo('aria-disabled') === false, 'sem aria-disabled no botão ativo');
 
 /* Nome novo: prévia acompanha e copiar fica bloqueado até salvar. */
 const editando = montar('clinica-sorriso-prime');
@@ -93,11 +120,18 @@ conferir(
     editando.aviso.hidden === false && editando.aviso.textContent === 'Salve o endereço para ativar este link.',
     'aviso pede para salvar'
 );
+conferir(editando.verPagina.href === '', 'ver a página fica sem href enquanto não salva');
+conferir(editando.verPagina.classList.contains('disabled') === true, 'ver a página fica desativado enquanto não salva');
+conferir(
+    editando.verPagina.temAtributo('aria-disabled') === true && editando.verPagina.temAtributo('tabindex'),
+    'ver a página desativado sai da navegação por teclado'
+);
 
 /* Acento e maiúscula no nome digitado. */
 digitar(editando, 'Clínica Sorriso Prime');
 conferir(editando.previa.textContent === 'https://portal.test/?e=clinica-sorriso-prime', 'acento e maiúscula são convertidos');
 conferir(editando.botao.disabled === false, 'nome que normaliza para o salvo libera o copiar');
+conferir(editando.verPagina.href === 'https://portal.test/?e=clinica-sorriso-prime', 'nome que normaliza para o salvo reativa ver a página');
 
 /* Campo vazio: o servidor usa o nome do estabelecimento. */
 digitar(editando, '');
@@ -114,11 +148,13 @@ digitar(semNome, '');
 conferir(semNome.aviso.textContent === 'Digite um nome para ver o link.', 'aviso quando o nome não gera endereço');
 conferir(semNome.previa.textContent === 'https://portal.test/?e=', 'prévia mostra só o prefixo nesse caso');
 conferir(semNome.botao.disabled === true, 'sem endereço não há o que copiar');
+conferir(semNome.verPagina.classList.contains('disabled') === true, 'sem endereço o ver a página fica desativado');
 
 const semSlug = montar('');
 digitar(semSlug, '');
 conferir(semSlug.previa.textContent === 'https://portal.test/?e=clinica-sorriso-prime', 'prévia funciona sem endereço salvo');
 conferir(semSlug.botao.disabled === true, 'sem endereço salvo o copiar fica bloqueado');
+conferir(semSlug.verPagina.href === '', 'conta sem endereço salvo não tem página para abrir');
 
 /* Normalização idêntica ao PHP. */
 for (const [entrada, esperado] of normalizacao) {

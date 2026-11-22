@@ -289,7 +289,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
-    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp02">
+    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp03">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
@@ -530,10 +530,20 @@ $csrfToken = agenday_token_csrf();
 
                     <div class="pp-link-acoes">
                         <button type="submit" class="btn btn-primary">Salvar endereço</button>
-                        <?php if ($portalLink !== ''): ?>
-                            <a class="btn btn-outline-secondary" href="<?= agenday_config_html($portalLink) ?>"
-                               target="_blank" rel="noopener">Abrir o portal</a>
-                        <?php endif; ?>
+                        <?php
+                        // O botão fica sempre visível: sem endereço salvo ele aparece
+                        // desativado, em vez de sumir e deixar a pessoa sem saber que existe.
+                        $atributosVerPagina = $portalLink !== ''
+                            ? 'href="' . agenday_config_html($portalLink) . '"'
+                            : 'aria-disabled="true" tabindex="-1"';
+                        ?>
+                        <a class="btn btn-outline-secondary pp-ver-pagina<?= $portalLink === '' ? ' disabled' : '' ?>"
+                           id="abrir-portal-link"
+                           data-link="<?= agenday_config_html($portalLink) ?>"
+                           target="_blank" rel="noopener"
+                           <?= $atributosVerPagina ?>>
+                            <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>Ver a página de agendamentos do seu cliente
+                        </a>
                     </div>
                 </form>
             <?php endif; ?>
@@ -549,7 +559,7 @@ $csrfToken = agenday_token_csrf();
     <?php endif; ?>
 </main>
 
-<script defer src="js/primeiros-passos.js?v=20261122-pp02"></script>
+<script defer src="js/primeiros-passos.js?v=20261122-pp03"></script>
 </body>
 
 </html>

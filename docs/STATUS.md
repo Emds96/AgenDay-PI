@@ -1,5 +1,19 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-03 — Botão para ver a página do cliente (22/11/2026)
+
+- **Pedido do responsável:** repor o botão que abria o link criado e trocar o nome "Abrir o portal" por algo mais direto, do tipo "clique aqui para ver a página de agendamentos do seu cliente".
+- **Causa do sumiço:** o botão era renderizado só quando o estabelecimento já tinha `slug` salvo (`<?php if ($portalLink !== '')`). Em conta sem endereço salvo ele simplesmente não existia — não era remoção.
+- **Agora (`primeiros-passos.php`):** o botão **"Ver a página de agendamentos do seu cliente"** fica sempre visível. Sem endereço salvo aparece desativado (`disabled`, `aria-disabled`, fora da navegação por teclado) em vez de desaparecer; o aviso "Salve o endereço para ativar este link" continua explicando o motivo.
+- **Regra igual à do Copiar:** o JS (`js/primeiros-passos.js`) só devolve o `href` quando a prévia é exatamente o endereço salvo, para ninguém abrir um link que ainda não existe. Ao salvar, a página recarrega com o botão ativo.
+- **Acessibilidade/visual:** link real (`<a target="_blank" rel="noopener">`), ícone `bi-box-arrow-up-right`, alvo ≥44 px, rótulo alinhado à esquerda quando quebra em duas linhas. Versões dos estáticos para `?v=20261122-pp03`.
+- **Sem SQL e sem mudança de regra de negócio:** só apresentação e estado do botão.
+- **Testes (PC local, 22/11/2026):** `tests/link-portal-preview.js` 27 → **36** (novo botão: `href` do endereço salvo, desativado ao digitar nome não salvo, reativado ao voltar ao nome salvo, conta sem slug sem `href`); prova HTTP real com a conta #35: **17 verificações** — botão presente, rótulo novo, rótulo antigo ausente, `href` do portal, sem `disabled`/`aria-disabled`, `target`/`rel`, versões novas, `cliente.php` respondendo 200. Demais suítes: portal 153, primeiros passos 166, agenda 19, cancelamento 20, configuração 27, responsividade 233.
+- **Conferência visual (Edge headless, 22/11/2026):** desktop 1280 e iframe de 360 px; o botão quebra em duas linhas sem estourar a largura.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-02 — Link do portal escolhido pelo nome (22/11/2026)
 
 - **Pedido do responsável:** no primeiro uso, escolher só o nome do link e ver embaixo como vai ficar, com opção de copiar — como nos sites de registro de domínio.
