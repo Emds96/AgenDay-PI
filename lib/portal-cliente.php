@@ -387,6 +387,19 @@ function agenday_portal_hosts_publicos(): array
 }
 
 /**
+ * O host é um dos endereços compartilhados do portal?
+ *
+ * Nesses endereços o estabelecimento é identificado SÓ pelo `?e=slug`. Se um
+ * deles fosse aceito como "domínio próprio" no banco, o estabelecimento que o
+ * gravasse abriria a própria agenda em qualquer acesso sem slug.
+ */
+function agenday_portal_dominio_eh_publico(string $host): bool
+{
+    $host = agenday_portal_host_normalizar($host);
+    return $host !== '' && in_array($host, agenday_portal_hosts_publicos(), true);
+}
+
+/**
  * O sistema está respondendo em um host local (desenvolvimento)?
  *
  * Serve para montar links que funcionem onde o sistema está rodando. Sem isso,
@@ -486,11 +499,20 @@ function agenday_portal_estabelecimento_por_slug(mysqli $conexao, string $slug):
     return $linha ?: null;
 }
 
-/** Busca o estabelecimento pelo domínio do portal (sem "www." e sem porta). */
+/**
+ * Busca o estabelecimento pelo domínio do portal (sem "www." e sem porta).
+ *
+ * A coluna `dominio` é para domínio PRÓPRIO (ex.: studiobellavita.com.br). Os
+ * domínios compartilhados do portal ficam de fora: neles quem identifica o
+ * estabelecimento é sempre o slug, nunca o domínio.
+ */
 function agenday_portal_estabelecimento_por_dominio(mysqli $conexao, string $host): ?array
 {
     $host = agenday_portal_host_normalizar($host);
     if ($host === '') {
+        return null;
+    }
+    if (agenday_portal_dominio_eh_publico($host)) {
         return null;
     }
     $sql = 'SELECT ' . agenday_portal_colunas_estabelecimento()
