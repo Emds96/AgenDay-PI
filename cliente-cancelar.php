@@ -4,7 +4,8 @@
  *
  * Aberto por cliente-cancelar.php?t=<token de 64 caracteres>. Não exige login:
  * o próprio token aleatório identifica o agendamento. A escrita é POST com
- * conferência de origem, e o prazo de cancelamento é o mesmo da agenda.
+ * assinatura derivada do token (o Origin só é aceito como alternativa) e o
+ * prazo de cancelamento é o mesmo da agenda.
  */
 declare(strict_types=1);
 
@@ -14,7 +15,12 @@ require_once __DIR__ . '/lib/whatsapp.php';
 
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('X-Content-Type-Options: nosniff');
-header('Referrer-Policy: no-referrer');
+/*
+ * `same-origin` (em vez de `no-referrer`): o Referer volta nas requisições para
+ * o próprio site, servindo de segunda prova no POST, e não é enviado ao CDN do
+ * Bootstrap nem a terceiros — o token do link não vaza para fora.
+ */
+header('Referrer-Policy: same-origin');
 
 $esc = static fn($valor): string => htmlspecialchars((string) $valor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
@@ -138,17 +144,14 @@ $janela = agenday_portal_pode_cancelar((int) $agendamento['horas_cancelamento'],
  * ------------------------------------------------------------------------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     /*
-     * Sem sessão nesta página, a proteção do POST é a assinatura derivada do
-     * token, que o navegador reenvia no campo oculto. O cabeçalho Origin é
-     * conferido só quando o navegador o envia: alguns navegadores móveis não
-     * mandam Origin nem Referer (a página usa Referrer-Policy: no-referrer),
-     * e exigir o cabeçalho fazia o botão falhar com "Pedido não reconhecido".
+     * Sem sessão nesta página, a prova de que o pedido veio do link é a
+     * assinatura derivada do token, que o formulário reenvia no campo oculto.
+     * O cabeçalho Origin/Referer é aceito como alternativa (páginas antigas em
+     * cache), mas não é exigido: navegadores embutidos (WhatsApp, Instagram)
+     * podem mandar `Origin: null` ou nenhum cabeçalho, o que fazia o botão
+     * falhar com "Pedido não reconhecido".
      */
-    $assinatura = $_POST['assinatura'] ?? '';
-    $assinaturaOk = is_string($assinatura) && $assinatura !== ''
-        && hash_equals(agenday_portal_assinatura_cancelamento($token), $assinatura);
-    $origemEnviada = ($_SERVER['HTTP_ORIGIN'] ?? '') !== '' || ($_SERVER['HTTP_REFERER'] ?? '') !== '';
-    if (!$assinaturaOk || ($origemEnviada && !agenday_portal_origem_valida())) {
+    if (!agenday_portal_cancelamento_autorizado($token, $_POST)) {
         agenday_cancelar_pagina(
             'Pedido não reconhecido',
             'Recarregue esta página e tente novamente.',

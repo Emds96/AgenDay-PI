@@ -268,6 +268,32 @@ function agenday_portal_assinatura_cancelamento(string $token): string
     return hash('sha256', 'agenday-cancelar-v1|' . $token);
 }
 
+/**
+ * Decide se um POST de cancelamento por link pode prosseguir.
+ *
+ * Duas provas independentes valem:
+ *  1. a assinatura derivada do token, que o formulário reenvia no campo oculto;
+ *  2. um Origin/Referer que aponte para o próprio site.
+ *
+ * A assinatura vem primeiro porque não depende de cabeçalho nenhum. O Origin
+ * continua aceito como alternativa (páginas que ficaram em cache antes desta
+ * correção), mas nunca é exigido: navegadores móveis e navegadores embutidos
+ * (WhatsApp, Instagram) podem enviar `Origin: null` ou omitir o cabeçalho.
+ */
+function agenday_portal_cancelamento_autorizado(string $token, array $post): bool
+{
+    $assinatura = $post['assinatura'] ?? '';
+    if (
+        is_string($assinatura)
+        && $assinatura !== ''
+        && hash_equals(agenday_portal_assinatura_cancelamento($token), $assinatura)
+    ) {
+        return true;
+    }
+
+    return agenday_portal_origem_valida();
+}
+
 /* ---------------------------------------------------------------------------
  * Estabelecimento
  * ------------------------------------------------------------------------- */
