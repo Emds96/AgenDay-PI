@@ -15,7 +15,7 @@ Navegador do cliente
 Consequências que precisam ser aceitas:
 
 - O PC precisa estar **ligado, com Docker Desktop aberto e o ngrok rodando** durante todo o uso.
-- Se o PC reiniciar, o endereço do ngrok gratuito **muda** e precisa ser atualizado na aba WhatsApp (2 minutos).
+- Se o PC reiniciar, o endereço do ngrok gratuito **muda** e precisa ser atualizado na página **WhatsApp da plataforma** (`whatsapp-plataforma.php`, 2 minutos).
 - O número pareado é o remetente. Quem escaneia o QR precisa estar disponível no momento do pareamento.
 - WAHA é um projeto não oficial: existe risco de o WhatsApp bloquear o número. **Não usar o número pessoal principal.**
 - Sem WhatsApp, o portal continua funcionando com a contingência (login só pelo celular), descrita no fim.
@@ -60,7 +60,7 @@ docker run --rm -v "${PWD}:/app/env" devlikeapro/waha init-waha /app/env
 Get-Content .env
 ```
 
-O comando gera um `.env` com `WAHA_API_KEY`, `WAHA_DASHBOARD_USERNAME` e `WAHA_DASHBOARD_PASSWORD`. Guarde a **API key** (a mesma que vai em Configurações no AgenDay) e a senha do painel.
+O comando gera um `.env` com `WAHA_API_KEY`, `WAHA_DASHBOARD_USERNAME` e `WAHA_DASHBOARD_PASSWORD`. Guarde a **API key** (a mesma que vai na página WhatsApp da plataforma, `whatsapp-plataforma.php`) e a senha do painel.
 
 ## Passo 3 — Subir o WAHA
 
@@ -127,7 +127,9 @@ Se responder o JSON da sessão, a hospedagem também conseguirá falar com o WAH
 
 ## Passo 6 — Configurar no AgenDay
 
-No domínio administrativo (`agenday-sistema.infinityfree.io`), entre com a conta do estabelecimento e abra **Configurações → WhatsApp**:
+A conexão do WhatsApp é **uma só, da plataforma**: o número é único e atende todos os estabelecimentos. Por isso ela não fica na tela de Configurações do estabelecimento.
+
+No domínio administrativo (`agenday-sistema.infinityfree.io`), com qualquer conta logada, abra **`https://agenday-sistema.infinityfree.io/whatsapp-plataforma.php`**:
 
 | Campo | Valor |
 | --- | --- |
@@ -135,11 +137,12 @@ No domínio administrativo (`agenday-sistema.infinityfree.io`), entre com a cont
 | Endereço do WAHA | `https://SEU-ENDERECO.ngrok-free.app` (**sem** barra no fim) — no PC do responsável é o domínio fixo `https://additionally-nondeluded-elane.ngrok-free.dev` |
 | Sessão | `default` |
 | Chave da API | a `WAHA_API_KEY` do `.env` |
-| Exigir código por WhatsApp | ligado |
 
 Salve e clique em **Testar conexão**. O retorno esperado é a sessão `WORKING`. Se houver mensagens na fila, use **Enviar pendentes agora**.
 
-> **Produção (21/11/2026):** o código do portal já está publicado no InfinityFree e esta aba **já foi preenchida e testada** pelo responsável (`ativo=1`, domínio fixo do ngrok, sessão `default`). O primeiro agendamento real pelo portal foi confirmado com mensagem recebida. Ao trocar de computador ou reinstalar o WAHA, refaça este passo com a nova chave.
+> **Alteração protegida (21/11/2026):** depois da primeira configuração, salvar exige digitar a **chave de API atual** no campo de confirmação. Assim, um estabelecimento logado não consegue trocar o endereço nem desligar o envio de todos. A chave nunca volta para o navegador.
+
+> **Produção (21/11/2026):** o código do portal já está publicado no InfinityFree e a conexão **já foi preenchida e testada** pelo responsável (`ativo=1`, domínio fixo do ngrok, sessão `default`). O primeiro agendamento real pelo portal foi confirmado com mensagem recebida. Ao trocar de computador ou reinstalar o WAHA, refaça este passo com a nova chave.
 
 ## Passo 7 — Teste real (obrigatório antes da feira)
 
@@ -153,7 +156,7 @@ Salve e clique em **Testar conexão**. O retorno esperado é a sessão `WORKING`
 
 1. Dar dois cliques no atalho **AgenDay - Iniciar WhatsApp** na Área de Trabalho (ou rodar `powershell -ExecutionPolicy Bypass -File scripts\iniciar-feira.ps1`). Ele limpa as variáveis de proxy, sobe o Docker Desktop se preciso, inicia o contêiner `agenday-waha`, confere se a sessão `default` está `WORKING` e abre o ngrok no domínio fixo. A chave do WAHA é lida do próprio contêiner e não aparece na tela.
 2. Ler o resumo: se aparecer `Sessao: WORKING` e `ngrok: https://...`, está pronto. Se o script avisar de pendência, ele diz o que fazer (normalmente escanear o QR em <http://localhost:3000/dashboard>).
-3. Se o endereço do ngrok mudou, atualizar em **Configurações → WhatsApp** e salvar.
+3. Se o endereço do ngrok mudou, atualizar em **`whatsapp-plataforma.php`** (informando a chave de API atual) e salvar.
 4. **Testar conexão** e enviar uma mensagem de teste para o próprio celular.
 5. Deixar o PC ligado, sem suspender, e o ngrok aberto.
 
@@ -176,7 +179,7 @@ A fila tenta de novo sozinha (até 5 tentativas, com espera crescente) e também
 
 ## Plano B — feira sem WhatsApp
 
-Se o WhatsApp não puder ser usado, o portal funciona sem ele: em **Configurações → WhatsApp**, desligue **Exigir código por WhatsApp**. O cliente entra só com o celular, agenda, remarca e cancela normalmente; as mensagens ficam na fila sem atrapalhar.
+Se o WhatsApp não puder ser usado, o portal funciona sem ele: em **Configurações → Estabelecimento**, desligue **Exigir código de 6 dígitos enviado pelo WhatsApp para entrar**. O cliente entra só com o celular, agenda, remarca e cancela normalmente; as mensagens ficam na fila sem atrapalhar. Cada estabelecimento controla essa opção na própria conta — a conexão da plataforma continua como está.
 
 Isso serve para demonstração: sem o código, quem souber o número de outra pessoa entra na conta dela. Não deixar desligado fora do período da feira.
 

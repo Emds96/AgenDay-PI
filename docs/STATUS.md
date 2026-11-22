@@ -1,5 +1,21 @@
 # STATUS — AgenDay 2.0
 
+## WA-01 — Conexão do WhatsApp da plataforma e assinatura da mensagem (21/11/2026)
+
+- **Pedido do responsável (21/11/2026):** confirmou **um número único global** ("vamos usar somente esse numero de forma global"), concordou em **tirar toda a configuração do WhatsApp da tela do estabelecimento** e em a mensagem **dizer em nome de quem fala**. Autorizou executar **somente no local**, sem publicar e sem SQL.
+- **Decisão de arquitetura (debate fechado):** o "canal" é o número que envia. Hoje existe **um canal, o da AgenDay**, e ele atende todos os estabelecimentos. Se um dia um salão conectar o próprio número, a regra é *"manda pelo número do salão se ele tiver um; senão, pelo da plataforma"*. **Não** foi criada tabela de canais agora: com um número só ela não mudaria o comportamento e a fila (`mensagem_whatsapp`) já é por estabelecimento, então a migração depois é acréscimo, não reescrita.
+- **Risco corrigido (item 2 da fila):** até aqui qualquer estabelecimento logado abria **Configurações → WhatsApp** e podia apagar o endereço ou a chave do WAHA, derrubando o envio de **todos**. A conexão saiu da tela do estabelecimento e foi para `whatsapp-plataforma.php` (endereço `https://agenday-sistema.infinityfree.io/whatsapp-plataforma.php`), onde **salvar exige digitar a chave de API atual** (`hash_equals`). A chave continua sem voltar ao navegador.
+- **Assinatura da mensagem (`lib/whatsapp.php`):** nova constante `AGENDAY_WHATSAPP_REMETENTE = 'AgenDay'` e função `agenday_whatsapp_assinatura()`. Os cinco textos (`codigo`, `confirmacao`, `lembrete`, `remarcacao`, `cancelamento`) passam a terminar com **"Enviado pela AgenDay em nome de <estabelecimento>."** — o cliente recebe do número da plataforma, mas sabe de quem é o agendamento.
+- **Tela do estabelecimento (`config.php`):** a aba **WhatsApp foi removida** (agora são **três** abas: Estabelecimento, Horários, Minha Conta). As ações `salvar_whatsapp`, `testar_whatsapp` e `enviar_pendentes` deixaram de existir ali; o `require` de `lib/whatsapp.php` também saiu. **O que é do estabelecimento ficou na aba Estabelecimento**: a chave **"Exigir código de 6 dígitos enviado pelo WhatsApp"** (coluna `exigir_codigo_whatsapp`) e o **link do portal** com o botão copiar.
+- **Página da plataforma (`whatsapp-plataforma.php`, novo):** mostra situação, endereço, sessão e fila; permite ativar/desativar, trocar endereço/sessão, definir nova chave, **testar conexão** e **enviar pendentes agora**. Aviso explícito de que a conexão é de **todos** os estabelecimentos. Ela não aparece no menu: o operador chega pela URL.
+- **Front-end:** `js/configuracoes.js` perdeu o mapeamento da aba `whatsapp`; `tests/responsividade-check.js` passou a exigir **três** abas e a falhar se `whatsapp_api_key`/`whatsapp_base_url` voltarem para `config.php`.
+- **Testes executados no PC local (21/11/2026):** `php -l` limpo em `config.php`, `whatsapp-plataforma.php` e `lib/whatsapp.php`; `tests/portal-cliente.php` de 100 para **110 verificações** (assinatura nos cinco tipos de texto, assinatura sem estabelecimento); `responsividade-check` com **213 verificações**; `agendamento-validacao` (19) e `agendamento-cancelamento` (20) limpos.
+- **Prova funcional no banco local (`agenday_local`, estabelecimento 29):** POST em `config.php` com `salvar_estabelecimento` gravou `exigir_codigo_whatsapp` de **1 → 0** e devolveu para **1**; POST em `whatsapp-plataforma.php` com **chave errada** mostrou "Confirme a chave de API atual…" e com **chave certa** mostrou "Conexão da plataforma salva."; as duas páginas renderizaram sem `Fatal error`/`Warning` (126 KB e 24 KB).
+- **Pendências conhecidas:** (1) não existe papel de operador da plataforma no banco, então a proteção é a chave de API — criar permissão própria fica para depois da feira; (2) o **opt-out "responda SAIR"** não foi implementado (exigiria coluna/tabela nova, fora do escopo autorizado); (3) o **lembrete automático** continua sem gatilho (item 3 da fila).
+- **Estado real:** implementado e testado **somente no PC local**, **não publicado** e **sem alteração de banco**.
+
+---
+
 ## DEPLOY-03 — Publicação do PORTAL-07 (21/11/2026)
 
 - **Autorização do responsável (21/11/2026):** confirmou "Sim, publicar agora" para o lote do PORTAL-07 (cancelamento por link sem exigir `Origin`), **somente código**, sem SQL.
