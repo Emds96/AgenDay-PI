@@ -1,5 +1,19 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-09 — "Outro" agora pergunta o nome do negócio (22/11/2026)
+
+- **Pedido do responsável:** *"acho que nao esta ideal colocar outro como qual estabelecimento ou negocio a ser cadastrado; o ideal seria colocar pra pessoa digitar qual negocio dela"* — e, depois, que isso acontecesse **em pop-up**, com uma breve explicação.
+- **Agora:** o cartão **"Outro tipo de negócio"** não salva mais direto. Ele abre o pop-up **"Qual é o seu negócio?"**, que explica por que não há sugestões e pede o nome, com exemplo ("Pet shop, estúdio de tatuagem"). Ao continuar, a faixa passa a ler **`Tipo de negócio: Pet shop da Ana · Trocar`** em vez de "Outro".
+- **Sem tocar no banco:** o nome fica no navegador, no mesmo esquema já usado para o tipo — cookie `agenday_pp_neg_<id_estabelecimento>`, um ano, `HttpOnly`, `SameSite=Lax`. O `setcookie()` codifica e o PHP decodifica sozinho; nada de coluna nova, SQL ou migração.
+- **Validação:** 2 a 60 caracteres, sem tags, espaços repetidos normalizados. Nome vazio ou curto volta com mensagem, **reabre o pop-up** e devolve o texto digitado para corrigir.
+- **Limpeza automática:** "Trocar" apaga tipo e nome; escolher um tipo com sugestões apaga o nome antigo, para ele não reaparecer numa próxima escolha. O nome é sempre escapado na saída.
+- **Limite conhecido e aceito:** por ser cookie, o nome vale para aquele navegador e aquela conta — não acompanha outro aparelho. Se um dia precisar aparecer em relatórios ou em outro computador, aí sim vira coluna no banco, com autorização própria.
+- **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php` e `lib/primeiros-passos.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **28 verificações, 0 falha**: pop-up presente, cartão abrindo o pop-up, tipos com sugestões ainda em um clique, erro de nome vazio reabrindo e sem gravar o tipo, texto devolvido no campo, nome normalizado no cookie, faixa e aviso com o nome, persistência ao recarregar, tag removida, "Trocar" apagando o cookie e tipo novo limpando o nome. Suítes: `tests/primeiros-passos.php` 177 → **191** (nome do cookie separado, normalização, tags, limites, cookie de outra conta, valor que não é texto), `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
+- **Conferência visual (navegador real, 22/11/2026):** pop-up em 1912 px e 360 px, sem corte nem rolagem horizontal.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-08 — O cartão vazio virou faixa (22/11/2026)
 
 - **Relato do responsável:** *"eu so nao to gostando de uma coisa esse 'Cadastre o seu primeiro serviço' engessado no inicio"*. No tipo "Outro tipo de negócio" o cartão era um retângulo grande com título, uma frase, a linha do tipo e **um botão** — repetindo o item 1 do checklist.

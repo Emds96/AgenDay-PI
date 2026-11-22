@@ -154,6 +154,43 @@ conferir(
     'cookie apagado (vazio) deveria devolver vazio'
 );
 
+/* Nome do negócio digitado (tipo "outro") ---------------------------------- */
+
+conferir(
+    agenday_primeiros_passos_negocio_cookie_nome(35) === 'agenday_pp_neg_35',
+    'cookie do nome do negócio é separado do cookie do tipo'
+);
+conferir(
+    agenday_primeiros_passos_negocio_normalizar('  Pet   shop  ') === 'Pet shop',
+    'nome do negócio deveria perder espaços repetidos'
+);
+conferir(
+    agenday_primeiros_passos_negocio_normalizar('<b>Pet</b> shop') === 'Pet shop',
+    'nome do negócio não pode carregar tags'
+);
+foreach (['', '   ', 'A', str_repeat('a', 61), ['Pet'], null, 42] as $invalido) {
+    conferir(
+        agenday_primeiros_passos_negocio_normalizar($invalido) === '',
+        'nome do negócio inválido aceito: ' . json_encode($invalido)
+    );
+}
+conferir(
+    agenday_primeiros_passos_negocio_do_cookie(35, ['agenday_pp_neg_35' => 'Pet shop da Ana']) === 'Pet shop da Ana',
+    'cookie codificado deveria devolver o nome com acento e espaço'
+);
+conferir(
+    agenday_primeiros_passos_negocio_do_cookie(35, ['agenday_pp_neg_35' => '  ']) === '',
+    'cookie só com espaços deveria devolver vazio'
+);
+conferir(
+    agenday_primeiros_passos_negocio_do_cookie(35, ['agenday_pp_neg_36' => 'Pet']) === '',
+    'nome de outro estabelecimento não pode vazar'
+);
+conferir(
+    agenday_primeiros_passos_negocio_do_cookie(35, ['agenday_pp_neg_35' => ['Pet']]) === '',
+    'nome que não é texto deveria ser ignorado'
+);
+
 /* Progresso --------------------------------------------------------------- */
 $vazio = agenday_primeiros_passos_progresso([]);
 conferir($vazio['total'] === 4, 'o checklist deveria ter 4 passos');
