@@ -10,6 +10,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
 
 require_once __DIR__ . '/lib/agendamentos.php';
 require_once __DIR__ . '/lib/whatsapp.php';
+require_once __DIR__ . '/lib/primeiros-passos.php';
 
 $opcoesAgenda = ['clientes' => [], 'servicos' => [], 'funcionarios_servicos' => []];
 $erroOpcoesAgenda = false;
@@ -23,6 +24,22 @@ try {
 if (isset($conexao) && $conexao instanceof mysqli) {
     // Sem cron: aproveita a abertura da agenda para esvaziar a fila.
     agenday_whatsapp_gatilho_apos_resposta($conexao);
+}
+
+// PRIMEIROS-PASSOS-01: enquanto a configuração básica não termina, a agenda
+// mostra o que falta. É o primeiro contato de quem acabou de criar a conta.
+$primeirosPassos = null;
+$primeirosPassosProximo = '';
+if (isset($conexao) && $conexao instanceof mysqli) {
+    $primeirosPassos = agenday_primeiros_passos_estado($conexao, (int) $_SESSION['id_estabelecimento']);
+    if ($primeirosPassos !== null) {
+        foreach ($primeirosPassos['itens'] as $passo) {
+            if (!$passo['feito']) {
+                $primeirosPassosProximo = (string) $passo['titulo'];
+                break;
+            }
+        }
+    }
 }
 // Data do último agendamento salvo, validada pelo backend (uso único na interface).
 $agendaDiaInicial = $_SESSION['agenda_dia_recem_salvo'] ?? '';
@@ -73,6 +90,26 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
         </div>
     </header>
     <main>
+        <?php if ($primeirosPassos !== null && !$primeirosPassos['completo']): ?>
+            <section class="container-fluid pt-4 pb-0" aria-labelledby="primeiros-passos-titulo">
+                <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-3 mb-0"
+                     role="status">
+                    <div>
+                        <h2 id="primeiros-passos-titulo" class="h6 mb-1">
+                            Sua agenda ainda não está pronta
+                            (<?= (int) $primeirosPassos['concluidos'] ?> de <?= (int) $primeirosPassos['total'] ?>)
+                        </h2>
+                        <p class="mb-0 small">
+                            Próximo passo: <strong><?= htmlspecialchars($primeirosPassosProximo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>.
+                            Leva uns 5 minutos e destrava os agendamentos.
+                        </p>
+                    </div>
+                    <a class="btn btn-primary" href="primeiros-passos.php">
+                        Continuar configuração
+                    </a>
+                </div>
+            </section>
+        <?php endif; ?>
         <!-- 4.3: formulário autenticado; validação final e gravação no servidor. -->
                 <!-- O agendamento tem tela própria (AGD-01); a agenda apenas consulta. -->
         <section class="container-fluid py-4" aria-labelledby="novo-agendamento-titulo">

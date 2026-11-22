@@ -121,7 +121,19 @@ try {
     // A conta já nasce com o horário informado no cadastro gravado.
     agenday_horario_criar_padrao($conexao, $novoId, $diasFuncionamento);
 
+    // PRIMEIROS-PASSOS-01: a conta nova entra já logada. Antes, o cadastro
+    // devolvia a pessoa para a tela de login e ela precisava digitar e-mail e
+    // senha outra vez no primeiro contato com o sistema.
+    session_regenerate_id(true);
+    $_SESSION['id_estabelecimento'] = $novoId;
+    $_SESSION['nome_estabelecimento'] = $nome;
+    $_SESSION['email_estabelecimento'] = $email;
+    unset($_SESSION['nao_autenticado']);
     $_SESSION['status_cadastro'] = true;
+    $_SESSION['pp_aviso'] = 'Conta criada! Agora vamos deixar a sua agenda pronta.';
+
+    header('Location: primeiros-passos.php', true, 303);
+    exit;
 } catch (mysqli_sql_exception $e) {
     if ($e->getCode() === 1062) {
         $_SESSION['usuario_existe'] = true;

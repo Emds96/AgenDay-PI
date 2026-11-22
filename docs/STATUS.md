@@ -1,5 +1,21 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-01 — Primeiro uso de um estabelecimento novo (22/11/2026)
+
+- **Problema:** testando o primeiro uso com uma conta fictícia (Clínica Odontológica Sorriso Prime, banco local), o cadastro devolvia a pessoa para a tela de login e a conta nascia sem serviço, sem profissional e sem nenhuma indicação da ordem a seguir. O botão **Agendar** respondia "cadastre um serviço e vincule um funcionário", sem dizer onde nem em que ordem.
+- **Implementado (sem SQL):**
+  1. **Login automático** depois do cadastro (`cadastrar.php`): a conta nova já entra na sessão e vai direto para `primeiros-passos.php`, sem redigitar e-mail e senha.
+  2. **Nova tela `primeiros-passos.php`**: checklist de 4 itens (serviço → quem atende → vínculo → horário), barra de progresso, atalho **"Sou eu que atendo"** (cria o profissional com o telefone do estabelecimento e vincula todos os serviços) e o link do portal com botão **Copiar**.
+  3. **Sugestões por tipo de negócio** (odontologia, salão, barbearia, estética, consultório, outro): um clique cria o serviço com duração e preço de exemplo, editáveis depois em Serviços. O tipo escolhido fica **só na sessão** — nenhuma coluna nova.
+  4. **Aviso na agenda** enquanto o checklist não termina, com o próximo passo e o link. Some sozinho quando completa.
+  5. Link para o checklist em **Configurações**.
+- **Segurança:** todas as ações são POST com CSRF; `id_estabelecimento` vem da sessão; prepared statements; nome, duração e preço vêm do catálogo do sistema (o navegador manda apenas o **índice** da sugestão); cadastro do profissional em transação.
+- **Testes (PC local, 22/11/2026):** `tests/primeiros-passos.php` **novo, 166 verificações** (catálogo íntegro, segmento válido/inválido, índice fora do catálogo, preço e duração, progresso vazio/parcial/completo e valores negativos). Prova de ponta a ponta contra o PHP local + MySQL: **34 verificações** — cadastro 303 para a tela nova, tela abre logada (200), 1 de 4, sugestão criada, 2 de 4, "já cadastrado", profissional + vínculo, 4 de 4, aviso da agenda desaparece, POST sem CSRF e índice inválido recusados, banco conferido (`00:45:00` e `150.00`), dados de teste apagados. `tests/responsividade-check.js` 219 → **233** (a nova página entra na lista) e sem rolagem horizontal em 360 px (`scrollWidth = clientWidth = 360`). Demais suítes: portal 150, agenda 19, cancelamento 20, configuração 27.
+- **Não incluído:** QR code na tela nova (o projeto não tem gerador; o link com Copiar cobre), item próprio no menu lateral (o teste exige a ordem aprovada de 6 links) e sugestões a partir de endereço/CNPJ.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## CADASTRO-TELEFONE-01 — Telefone obrigatório em contas novas (22/11/2026)
 
 - **Decisão do responsável:** exigir o telefone **somente no cadastro de contas novas**. Os números das contas antigas serão tratados por outro plano do responsável — `Configurações` continua aceitando o campo vazio.

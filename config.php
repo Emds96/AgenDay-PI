@@ -533,6 +533,9 @@ $nomesDias = agenday_dias_semana();
                             A conexão do WhatsApp é única da plataforma (número da AgenDay). As mensagens
                             saem com o nome do estabelecimento na assinatura.
                         </p>
+                        <p class="form-text mb-0">
+                            <a href="primeiros-passos.php">Ver o checklist de primeiros passos</a>
+                        </p>
                     </div>
                 </div>
             </section>
