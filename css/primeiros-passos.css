@@ -254,13 +254,7 @@
     color: var(--ad-text-muted);
 }
 
-/* Formulário do profissional ----------------------------------------------- */
-
-.agenday-app .pp-form {
-    display: grid;
-    gap: .9rem;
-    max-width: 32rem;
-}
+/* Campos dos formulários (painel do link e pop-ups) ------------------------ */
 
 .agenday-app .pp-campo {
     display: grid;
@@ -379,6 +373,103 @@
     margin: 0 0 2rem;
 }
 
+/* Pop-ups do primeiro uso -------------------------------------------------- */
+
+.agenday-app .modal-body .pp-campo {
+    margin-bottom: .9rem;
+}
+
+.agenday-app .pp-campo-duplo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: .9rem;
+    margin-bottom: .9rem;
+}
+
+.agenday-app .pp-campo-duplo .pp-campo {
+    margin-bottom: 0;
+}
+
+.agenday-app .modal-body .pp-check {
+    margin-bottom: .6rem;
+}
+
+.agenday-app .pp-modal-vazio {
+    margin: 0;
+    color: var(--ad-text-muted);
+}
+
+.agenday-app .pp-sem-js {
+    margin: .9rem 0 0;
+    font-size: .875rem;
+    color: var(--ad-text-muted);
+}
+
+/* Quem atende o quê: um grupo por profissional. */
+.agenday-app .pp-vinculo-grupo {
+    margin: 0 0 .9rem;
+    padding: .75rem .9rem .5rem;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-md);
+}
+
+.agenday-app .pp-vinculo-grupo:last-of-type {
+    margin-bottom: 0;
+}
+
+.agenday-app .pp-vinculo-nome {
+    float: none;
+    width: auto;
+    margin: 0 0 .35rem;
+    padding: 0 .3rem;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ad-text);
+}
+
+/* Horário de funcionamento no pop-up. */
+.agenday-app .pp-horarios {
+    display: grid;
+    gap: .35rem;
+}
+
+.agenday-app .pp-horario-linha {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1fr) 7.5rem auto 7.5rem;
+    align-items: center;
+    gap: .5rem;
+    padding: .35rem .5rem;
+    border-radius: var(--ad-radius-sm, .5rem);
+}
+
+.agenday-app .pp-horario-linha:nth-child(odd) {
+    background: var(--ad-surface-muted);
+}
+
+.agenday-app .pp-horario-linha .pp-check {
+    margin-bottom: 0;
+}
+
+.agenday-app .pp-horario-ate {
+    font-size: .85rem;
+    color: var(--ad-text-muted);
+}
+
+/* Botão com cara de link dentro de um texto. */
+.agenday-app .pp-link-botao {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ad-primary);
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.agenday-app .pp-link-botao:hover {
+    color: var(--ad-primary-hover);
+}
+
 /* Celular ------------------------------------------------------------------ */
 
 @media (max-width: 575.98px) {
@@ -417,5 +508,21 @@
 
     .agenday-app .pp-sugestao {
         grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .agenday-app .pp-campo-duplo {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .agenday-app .pp-horario-linha {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .agenday-app .pp-horario-linha .pp-check {
+        grid-column: 1 / -1;
+    }
+
+    .agenday-app .pp-horario-ate {
+        display: none;
     }
 }

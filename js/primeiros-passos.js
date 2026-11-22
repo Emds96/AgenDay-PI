@@ -1,12 +1,14 @@
 /*
- * PRIMEIROS-PASSOS-02
+ * PRIMEIROS-PASSOS-02 / PRIMEIROS-PASSOS-07
  *
- * Três comportamentos da tela, todos do link do portal:
- * 1. prévia ao vivo — a pessoa digita o nome e vê embaixo como o link fica;
+ * Comportamentos da tela:
+ * 1. prévia ao vivo do link do portal — a pessoa digita o nome e vê embaixo
+ *    como o link fica;
  * 2. copiar — só libera quando o endereço exibido é o que está salvo, para
  *    ninguém enviar ao cliente um link que ainda não existe;
  * 3. ver a página — o botão de abrir a página do cliente segue a mesma regra:
- *    fica desativado enquanto o nome digitado não foi salvo.
+ *    fica desativado enquanto o nome digitado não foi salvo;
+ * 4. pop-ups de cadastro — se um deles voltou com erro, reabre sozinho.
  *
  * A normalização espelha agenday_portal_slug_normalizar() (lib/portal-cliente.php):
  * minúsculas, sem acento, [a-z0-9] e hífen simples, até 60 caracteres.
@@ -97,32 +99,12 @@ if (botaoCopiar) {
 }
 
 /*
- * Atalho "Sou eu que atendo": quando a pessoa chega pelo link do checklist
- * (#sou-eu-que-atendo), o campo do nome já fica pronto para digitar — ela não
- * precisa procurar onde escrever.
+ * Pop-ups do primeiro uso: se um cadastro voltou com erro, o pop-up certo
+ * reabre sozinho para a pessoa corrigir sem procurar onde clicar de novo.
+ * Só um pop-up fica marcado com data-reabrir-erro="true" por vez.
  */
-const focarCampoDoAtalho = () => {
-    if (window.location.hash !== '#sou-eu-que-atendo') {
-        return;
-    }
-
-    const alvo = document.querySelector('[data-focar-ao-chegar="sou-eu-que-atendo"]');
-    if (alvo) {
-        alvo.focus({ preventScroll: true });
-    }
-};
-
-focarCampoDoAtalho();
-window.addEventListener('hashchange', focarCampoDoAtalho);
-
-/*
- * Pop-up "Tenho equipe": se o cadastro voltou com erro, o formulário reabre
- * sozinho para a pessoa corrigir sem procurar onde clicar de novo.
- */
-const modalEquipe = document.getElementById('pp-modal-equipe');
-if (modalEquipe
-    && modalEquipe.dataset
-    && modalEquipe.dataset.reabrirErro === 'true'
-    && typeof bootstrap !== 'undefined') {
-    bootstrap.Modal.getOrCreateInstance(modalEquipe).show();
+if (typeof bootstrap !== 'undefined') {
+    document.querySelectorAll('[data-reabrir-erro="true"]').forEach(elemento => {
+        bootstrap.Modal.getOrCreateInstance(elemento).show();
+    });
 }
