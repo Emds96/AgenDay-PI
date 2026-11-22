@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## PORTAL-07 — "Pedido não reconhecido" continuava no celular (21/11/2026)
+
+- **Relato do responsável (21/11/2026):** depois do deploy do PORTAL-06, ao clicar em **Confirmar cancelamento** pelo celular ainda aparecia **"Pedido não reconhecido, recarregue esta página e tente novamente"**.
+- **O que foi conferido em produção:** o formulário publicado já trazia o campo oculto `assinatura` com 64 caracteres, e o valor conferia exatamente com `sha256('agenday-cancelar-v1|' . token)` calculado no PC — ou seja, o código publicado estava consistente e a assinatura não era o problema. O 403 só podia vir da exigência de `Origin`/`Referer`: a página respondia `Referrer-Policy: no-referrer` e o POST era recusado quando o navegador não mandava o cabeçalho (ou mandava `Origin: null`, comum em navegador embutido do WhatsApp).
+- **Correção (`lib/portal-cliente.php`, `cliente-cancelar.php`):** nova função `agenday_portal_cancelamento_autorizado($token, $post)` — o POST é aceito se a **assinatura** confere (prova independente de cabeçalho) **ou** se o `Origin`/`Referer` aponta para o próprio site. Antes a assinatura era obrigatória e o `Origin` era conferido quando presente; agora a assinatura vale sozinha e o `Origin` serve de alternativa para páginas que ficaram em cache antes da correção.
+- **`Referrer-Policy`:** passou de `no-referrer` para **`same-origin`**. O `Referer` volta nas requisições para o próprio site (segunda prova no POST) e continua **não** sendo enviado ao CDN do Bootstrap nem a terceiros, então o token do link não vaza.
+- **Testes no PC local (21/11/2026):** `tests/portal-cliente.php` subiu de 93 para **100 verificações** (assinatura sem `Origin`, assinatura com `Origin: null`, página em cache sem assinatura usando `Origin`, assinatura de outro token recusada, assinatura correta prevalecendo sobre origem estranha); demais suítes limpas (19, 20, 13, 16, 210); `php -l` limpo.
+- **Prova por HTTP local:** sem `Origin` + assinatura → `200 Agendamento cancelado`; `Origin` válido sem assinatura → `200`; `Origin: null` + assinatura → `200`; sem nada → `403`; `Origin` falso + assinatura correta → `200`; assinatura errada → `403`.
+- **Custo do teste:** os quatro cancelamentos de teste dispararam o aviso real de WhatsApp para o responsável (4 mensagens seguidas às 20:24). Agendamentos e mensagens de teste apagados do `agenday_local` em seguida.
+- **Estado real:** corrigido e testado **no PC local**; **não publicado** — depende de autorização de SHA e destino.
+
+---
+
 ## DEPLOY-02 — Publicação do PORTAL-06 (21/11/2026)
 
 - **Autorização do responsável (21/11/2026):** "pode publicar" para o lote do PORTAL-06 (link de cancelamento no celular e aviso de remarcação), **somente código**, sem SQL.

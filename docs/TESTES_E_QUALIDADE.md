@@ -132,7 +132,7 @@ Documento específico: [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md). **Não co
 ## 11. PORTAL-01 a PORTAL-05 — Portal do cliente (publicado; fluxo principal validado em produção)
 
 - **Escopo:** domínio do cliente com `cliente.php` e `cliente-cancelar.php`; login por celular (código de 6 dígitos só no primeiro acesso); agendamento com serviço e profissional em menu e dia em calendário; remarcação; cancelamento logado e por link; fila de WhatsApp (WAHA) com cinco tipos de mensagem.
-- **Testes automatizados:** `tests/portal-cliente.php` (93 verificações, incluindo host local, links locais e assinatura do formulário de cancelamento) mais `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `responsividade-check` (210), executados na CI e no local; `php -l` e `node --check` limpos nos arquivos alterados.
+- **Testes automatizados:** `tests/portal-cliente.php` (100 verificações, incluindo host local, links locais, assinatura do formulário de cancelamento e autorização do POST sem `Origin`) mais `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `responsividade-check` (210), executados na CI e no local; `php -l` e `node --check` limpos nos arquivos alterados.
 - **Validação local (21/11/2026):** fluxo completo em 1366 px e 360 px, com agendamento real gravado e cancelado em seguida; sem rolagem horizontal em 360 px. Envio real pelo WAHA/GOWS com número novo e antigo (HTTP 201) e ciclo completo com WhatsApp real.
 - **Validação em produção (21/11/2026, relato do responsável + conferência no banco):** conta criada pelo portal com o código recebido no WhatsApp, agendamento confirmado (id 189, 23/11 15:00–17:00) e mensagem `confirmacao` `enviado` em 3 segundos; cliente novo no Studio (17 para 18).
 - **Ainda pendente:** cancelamento pelo link no **celular físico** em produção e leitores de tela.
@@ -143,3 +143,9 @@ Documento específico: [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md). **Não co
 - **Defeito 2 (reproduzido):** mensagens geradas no PC levavam o domínio de produção com token só do banco local. Agora `agenday_portal_host_local()` faz os links apontarem para o host atual no desenvolvimento.
 - **Envio imediato:** `agenday_whatsapp_enviar_agora()` entrega a mensagem recém-enfileirada sem esperar a trava de 1 minuto; confirmado com `mensagem_whatsapp.status = enviado` no mesmo instante.
 - **Verificações:** 93 em `tests/portal-cliente.php`, 19 + 20 + 13 + 16 + 210 nos demais; `php -l` limpo. **Publicado** em 21/11/2026 no deploy do SHA `4dbf227` (run `44965206160`); falta o clique no celular físico.
+
+### PORTAL-07 — "Pedido não reconhecido" ainda no celular (21/11/2026)
+
+- **Relato:** depois do deploy do PORTAL-06 o botão continuava devolvendo `403 Pedido não reconhecido` no aparelho. Em produção a assinatura do formulário conferia com o `sha256` esperado, então o 403 vinha da exigência de `Origin`/`Referer` (navegador embutido manda `Origin: null` ou nada).
+- **Correção:** `agenday_portal_cancelamento_autorizado()` aceita a **assinatura** sozinha **ou** um `Origin`/`Referer` do próprio site; `Referrer-Policy` passou a `same-origin`, que devolve o `Referer` ao próprio site sem vazar o token para o CDN.
+- **Verificações:** `tests/portal-cliente.php` de 93 para **100**; demais 19 + 20 + 13 + 16 + 210; `php -l` limpo. HTTP local: sem `Origin` + assinatura → `200`; `Origin: null` + assinatura → `200`; sem nada → `403`; assinatura errada → `403`. **Não publicado.**

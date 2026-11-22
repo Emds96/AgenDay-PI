@@ -245,6 +245,53 @@ verificar(!simular_origem('https://outro.test', null, 'studio.test'), 'origem es
 verificar(!simular_origem(null, null, 'studio.test'), 'sem origem recusado');
 verificar(!simular_origem('http://studio.test.evil.test', null, 'studio.test'), 'host parecido recusado');
 
+/* ------------------------------- autorização do POST de cancelamento por link */
+function autorizar_cancelamento(?string $origem, ?string $referer, string $host, string $token, array $post): bool
+{
+    $antes = [$_SERVER['HTTP_ORIGIN'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, $_SERVER['HTTP_HOST'] ?? null];
+    if ($origem === null) { unset($_SERVER['HTTP_ORIGIN']); } else { $_SERVER['HTTP_ORIGIN'] = $origem; }
+    if ($referer === null) { unset($_SERVER['HTTP_REFERER']); } else { $_SERVER['HTTP_REFERER'] = $referer; }
+    $_SERVER['HTTP_HOST'] = $host;
+    $resultado = agenday_portal_cancelamento_autorizado($token, $post);
+    [$o, $r, $h] = $antes;
+    if ($o === null) { unset($_SERVER['HTTP_ORIGIN']); } else { $_SERVER['HTTP_ORIGIN'] = $o; }
+    if ($r === null) { unset($_SERVER['HTTP_REFERER']); } else { $_SERVER['HTTP_REFERER'] = $r; }
+    if ($h === null) { unset($_SERVER['HTTP_HOST']); } else { $_SERVER['HTTP_HOST'] = $h; }
+    return $resultado;
+}
+
+$tokenCancelar = str_repeat('a', 64);
+$assinaturaBoa = agenday_portal_assinatura_cancelamento($tokenCancelar);
+
+verificar(
+    autorizar_cancelamento(null, null, 'studio.test', $tokenCancelar, ['assinatura' => $assinaturaBoa]),
+    'cancelamento: assinatura vale sem Origin (navegador móvel)'
+);
+verificar(
+    autorizar_cancelamento('null', null, 'studio.test', $tokenCancelar, ['assinatura' => $assinaturaBoa]),
+    'cancelamento: assinatura vale com Origin null'
+);
+verificar(
+    autorizar_cancelamento('https://studio.test', null, 'studio.test', $tokenCancelar, []),
+    'cancelamento: pagina em cache sem assinatura ainda usa o Origin'
+);
+verificar(
+    !autorizar_cancelamento('https://outro.test', null, 'studio.test', $tokenCancelar, []),
+    'cancelamento: sem assinatura e com origem estranha é recusado'
+);
+verificar(
+    !autorizar_cancelamento(null, null, 'studio.test', $tokenCancelar, ['assinatura' => str_repeat('0', 64)]),
+    'cancelamento: assinatura errada e sem origem é recusada'
+);
+verificar(
+    !autorizar_cancelamento(null, null, 'studio.test', $tokenCancelar, ['assinatura' => agenday_portal_assinatura_cancelamento(str_repeat('b', 64))]),
+    'cancelamento: assinatura de outro token é recusada'
+);
+verificar(
+    autorizar_cancelamento('https://outro.test', null, 'studio.test', $tokenCancelar, ['assinatura' => $assinaturaBoa]),
+    'cancelamento: assinatura correta prevalece sobre origem estranha'
+);
+
 /* --------------------------------------------------- regra de acesso do cliente */
 $acesso = agenday_portal_acesso_decidir(true, true, '');
 verificar($acesso['acao'] === 'direto' && $acesso['motivo'] === 'cliente_existente', 'acesso: cliente cadastrado entra sem código');
