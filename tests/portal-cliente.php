@@ -260,8 +260,17 @@ verificar(str_contains(agenday_whatsapp_texto('remarcacao', $dadosConfirmacao), 
 $textoLembrete = agenday_whatsapp_texto('lembrete', $dadosConfirmacao);
 verificar(str_contains($textoLembrete, 'Lembrete do seu horário'), 'lembrete tem título próprio');
 verificar(!str_contains($textoLembrete, 'Agendamento confirmado'), 'lembrete não se anuncia como confirmação');
-verificar(str_contains($textoLembrete, 'Precisa cancelar?'), 'lembrete mantém o link de cancelamento');
+verificar(str_contains($textoLembrete, 'O prazo para remarcar ou cancelar já passou.'), 'lembrete avisa que o prazo fechou');
+verificar(!str_contains($textoLembrete, 'Precisa cancelar?'), 'lembrete não leva link de cancelamento');
+verificar(!str_contains($textoLembrete, 'cliente-cancelar.php'), 'lembrete não mistura link de token');
+verificar(str_contains($textoLembrete, 'Se não puder comparecer, avise com antecedência.'), 'lembrete sem telefone orienta a avisar');
 verificar(str_contains($textoLembrete, $assinaturaEstab), 'lembrete também assina');
+
+$textoLembreteContato = agenday_whatsapp_texto('lembrete', $dadosConfirmacao + [
+    'contato' => '(92) 98888-7700',
+]);
+verificar(str_contains($textoLembreteContato, 'avise com antecedência: (92) 98888-7700.'), 'lembrete mostra o telefone do estabelecimento');
+verificar(!str_contains($textoLembreteContato, 'cliente-cancelar.php'), 'lembrete com telefone continua sem link');
 verificar(defined('AGENDAY_WHATSAPP_LEMBRETE_HORAS') && AGENDAY_WHATSAPP_LEMBRETE_HORAS === 24, 'lembrete sai 24 horas antes');
 verificar(function_exists('agenday_whatsapp_agendar_lembrete'), 'agendamento do lembrete disponível');
 verificar(function_exists('agenday_whatsapp_cancelar_lembrete'), 'cancelamento do lembrete disponível');

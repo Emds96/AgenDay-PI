@@ -224,9 +224,11 @@ function agenday_whatsapp_assinatura(string $estabelecimento): string
  *
  * Dados esperados por tipo:
  * - codigo: estabelecimento, codigo, minutos
- * - confirmacao/lembrete: estabelecimento, nome, servico, profissional,
- *   data_inicio (Y-m-d H:i:s), link_cancelar
- * - remarcacao: os mesmos de confirmacao
+ * - confirmacao: estabelecimento, nome, servico, profissional,
+ *   data_inicio (Y-m-d H:i:s), link_portal (ou link_cancelar sem slug)
+ * - lembrete: estabelecimento, nome, servico, profissional,
+ *   data_inicio (Y-m-d H:i:s), contato (telefone do estabelecimento)
+ * - remarcacao: os mesmos de confirmacao, com link_cancelar
  * - cancelamento: estabelecimento, data_inicio, link_agendar
  */
 function agenday_whatsapp_texto(string $tipo, array $dados): string
@@ -277,9 +279,28 @@ function agenday_whatsapp_texto(string $tipo, array $dados): string
             return implode("\n", $linhas);
 
         case 'lembrete':
+            $quando = agenday_whatsapp_data_hora((string) ($dados['data_inicio'] ?? ''));
+            $linhas = [
+                $saudacao,
+                '',
+                'Lembrete do seu horário no ' . $estab . ':',
+                'Serviço: ' . trim((string) ($dados['servico'] ?? '')),
+                'Profissional: ' . trim((string) ($dados['profissional'] ?? '')),
+                'Data: ' . $quando['data'] . ' às ' . $quando['hora'],
+                '',
+                'O prazo para remarcar ou cancelar já passou.',
+            ];
+            $contato = trim((string) ($dados['contato'] ?? ''));
+            $linhas[] = $contato !== ''
+                ? 'Se não puder comparecer, avise com antecedência: ' . $contato . '.'
+                : 'Se não puder comparecer, avise com antecedência.';
+            $linhas[] = '';
+            $linhas[] = agenday_whatsapp_assinatura($estab);
+            return implode("\n", $linhas);
+
         case 'remarcacao':
             $quando = agenday_whatsapp_data_hora((string) ($dados['data_inicio'] ?? ''));
-            $titulo = $tipo === 'remarcacao' ? 'Agendamento remarcado' : 'Lembrete do seu horário';
+            $titulo = 'Agendamento remarcado';
             $linhas = [
                 $saudacao,
                 '',
@@ -529,10 +550,10 @@ function agenday_whatsapp_agendar_lembrete(
 
     $horas = AGENDAY_WHATSAPP_LEMBRETE_HORAS;
     $stmt = $conexao->prepare(
-        "SELECT a.token_publico, a.data_inicio,
+        "SELECT a.data_inicio,
                 c.nome_cliente, c.telefone_digits,
                 s.nome_servico, f.nome_funcionario,
-                e.nome_estabelecimento, e.slug, e.dominio,
+                e.nome_estabelecimento, e.contato_estabelecimento,
                 DATE_SUB(a.data_inicio, INTERVAL $horas HOUR) AS lembrete_em,
                 (a.status IN ('agendado', 'confirmado')
                  AND a.data_inicio > NOW()
@@ -564,20 +585,19 @@ function agenday_whatsapp_agendar_lembrete(
         return 0;
     }
 
-    $token = (string) ($linha['token_publico'] ?? '');
-    $estabelecimento = [
-        'slug' => (string) ($linha['slug'] ?? ''),
-        'dominio' => (string) ($linha['dominio'] ?? ''),
-    ];
+    // Telefone do salão para o cliente avisar que não vai; formatado quando possível.
+    $contatoBruto = trim((string) ($linha['contato_estabelecimento'] ?? ''));
+    $contatoDigitos = agenday_portal_telefone_normalizar($contatoBruto);
+    $contato = $contatoDigitos !== null
+        ? agenday_portal_telefone_formatar($contatoDigitos)
+        : $contatoBruto;
     $texto = agenday_whatsapp_texto('lembrete', [
         'estabelecimento' => (string) $linha['nome_estabelecimento'],
         'nome' => (string) $linha['nome_cliente'],
         'servico' => (string) $linha['nome_servico'],
         'profissional' => (string) $linha['nome_funcionario'],
         'data_inicio' => (string) $linha['data_inicio'],
-        'link_cancelar' => $token !== ''
-            ? agenday_portal_link_cancelamento($estabelecimento, $token)
-            : '',
+        'contato' => $contato,
     ]);
 
     return agenday_whatsapp_enfileirar(

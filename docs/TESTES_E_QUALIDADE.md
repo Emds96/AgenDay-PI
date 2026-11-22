@@ -36,7 +36,7 @@ node tests/responsividade-check.js
 
 Workflows: `.github/workflows/php-lint.yml` e `.github/workflows/agenday-publicar.yml` (job `validar`). **Testes não acessam o MySQL do InfinityFree.** O teste de responsividade é estrutural; não substitui navegador real.
 
-`tests/portal-cliente.php` (140 verificações) cobre normalização do celular com o 9 e formato antigo, variantes de busca, slug, código de acesso, token público, sessão do cliente, CSRF, conferência de origem, prazo de cancelamento, endereço público (normalização, reservado, tamanho, link sem slug e domínio padrão), assinatura das mensagens do WhatsApp ("Enviado pela AgenDay em nome de …") nos cinco tipos de texto, a distinção entre celular com WhatsApp e telefone fixo (TEL-01), o lembrete automático de 24h (título próprio, link, assinatura e ligação nos fluxos — LEMBRETE-01) e a confirmação com prazo de 24h e um único link do portal, com fallback para o token (MENSAGENS-02).
+`tests/portal-cliente.php` (145 verificações) cobre normalização do celular com o 9 e formato antigo, variantes de busca, slug, código de acesso, token público, sessão do cliente, CSRF, conferência de origem, prazo de cancelamento, endereço público (normalização, reservado, tamanho, link sem slug e domínio padrão), assinatura das mensagens do WhatsApp ("Enviado pela AgenDay em nome de …") nos cinco tipos de texto, a distinção entre celular com WhatsApp e telefone fixo (TEL-01), o lembrete automático de 24h (título próprio, prazo encerrado, telefone do estabelecimento, sem link e ligação nos fluxos — LEMBRETE-01/MENSAGENS-02) e a confirmação com prazo de 24h e um único link do portal, com fallback para o token (MENSAGENS-02).
 
 ## 3. Ferramentas para auditoria online
 

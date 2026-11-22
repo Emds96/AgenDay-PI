@@ -1,8 +1,8 @@
 # STATUS — AgenDay 2.0
 
-## MENSAGENS-02 — Confirmação implementada; lembrete e taxa em aberto (22/11/2026)
+## MENSAGENS-02 — Confirmação e lembrete ajustados; telefone obrigatório pendente (22/11/2026)
 
-- **Contexto:** revisão das cinco mensagens do WhatsApp com o responsável. Código de acesso, remarcação e cancelamento foram aprovados sem mudança. A confirmação foi fechada e implementada; o lembrete e a ideia de taxa de cancelamento seguem em decisão.
+- **Contexto:** revisão das cinco mensagens do WhatsApp com o responsável. Código de acesso, remarcação e cancelamento foram aprovados sem mudança. A confirmação e o lembrete foram fechados e implementados; o telefone obrigatório e a taxa de cancelamento seguem como decisões futuras.
 - **Confirmação — implementada no PC local (22/11/2026, PR #87):**
   ```
   Olá, Ana Souza!
@@ -19,9 +19,24 @@
   ```
   Regras: **um único link** (portal `?e=slug`), sem o link de token de cancelamento; o prazo é **fixo em 24 horas antes do horário marcado** (`AGENDAY_WHATSAPP_PRAZO_AVISO_HORAS`), igual à regra que o sistema já aplica (`data_inicio − 24h`) para cancelar e remarcar. Nenhuma tela altera `horas_cancelamento`, então o texto pode dizer **24h** sem divergir da regra. O link do portal exige o celular (e o código, quando o estabelecimento exige) — não é remarcação em um clique. **Sem endereço público (slug), a mensagem mantém o link de token de cancelamento**, para o cliente não ficar sem caminho.
 - **Esclarecimento (22/11/2026):** "dinâmico" nunca significou contagem regressiva por cliente; significava ler o número do cadastro. Como não existe tela para mudar esse número, a decisão passou a ser **24h fixo no texto**. Se um dia a configuração por estabelecimento existir, o texto volta a precisar do valor real.
-- **Lembrete — em aberto:** sem nenhum link. A primeira linha é "O prazo para remarcar ou cancelar já passou." (com prazo fixo de 24h, o lembrete sempre chega depois do fechamento da janela); a última linha ainda será escolhida entre: (A) "Se não puder comparecer, avise com antecedência."; (B) "Se não puder comparecer, avise o Studio Bella Vita."; (C) telefone do estabelecimento quando cadastrado, com A como alternativa.
+- **Lembrete — implementado no PC local (22/11/2026):** sem nenhum link. A mensagem avisa que o prazo fechou e orienta a avisar com antecedência, mostrando o **telefone de contato do estabelecimento** quando cadastrado:
+  ```
+  Olá, Ana Souza!
+
+  Lembrete do seu horário no Studio Bella Vita:
+  Serviço: Corte feminino
+  Profissional: Bia
+  Data: 24/11/2026 às 14:30
+
+  O prazo para remarcar ou cancelar já passou.
+  Se não puder comparecer, avise com antecedência: (92) 98888-7700.
+
+  Enviado pela AgenDay em nome de Studio Bella Vita.
+  ```
+  Sem telefone cadastrado, a última linha fica "Se não puder comparecer, avise com antecedência." O número é lido de `contato_estabelecimento`, normalizado e formatado; o texto é montado na hora de agendar o lembrete.
+- **Telefone obrigatório — pedido do responsável, adiado:** todo estabelecimento deverá ter um telefone de contato cadastrado. Hoje o campo é **opcional** (1 dos 24 preenchido) e a mensagem cai na versão sem número. Tornar obrigatório no cadastro e em Configurações é alteração de validação — depois da feira.
 - **Taxa de cancelamento — ideia do responsável, adiada:** cobrar uma taxa quando o cliente cancela ou remarca em cima da hora. O sistema **não tem meio de cobrança** (sem gateway, sem cartão salvo), então a taxa não pode ser aplicada automaticamente. Sem SQL, o máximo é um **aviso textual** na mensagem; registrar cancelamento tardio no painel é possível derivando `data_inicio` × `atualizado_em`, mas remarcação tardia **não** é recuperável (o horário antigo é sobrescrito). Uma configuração por estabelecimento exigiria coluna nova — depois da feira.
-- **Estado real:** confirmação implementada e testada **somente no PC local**; lembrete e taxa em aberto; **não publicado**.
+- **Estado real:** confirmação e lembrete implementados e testados **somente no PC local**; telefone obrigatório e taxa em aberto; **não publicado**.
 
 ---
 
@@ -33,8 +48,8 @@
 - **Um lembrete por agendamento:** a função apaga o lembrete antigo **antes** das checagens, então remarcar troca o aviso e um horário novo sem lembrete não deixa o aviso do horário antigo na fila.
 - **Onde é chamado:** portal na **criação** e na **remarcação** (`api/cliente-agendamentos.php`) e painel na **criação** (`salvar-agendamento.php`). O **cancelamento** apaga o lembrete dentro de `agenday_agenda_cancelar_para()`, cobrindo portal, painel e link público de cancelamento de uma vez.
 - **Fila sem cron:** antes de enviar, `agenday_whatsapp_limpar_lembretes_vencidos()` descarta lembrete de agendamento cancelado ou que já começou. A janela é tolerante: o aviso sai no próximo uso do sistema enquanto o horário não chegou — nunca depois.
-- **Texto (`agenday_whatsapp_texto()`):** o lembrete deixou de cair em "Agendamento confirmado" e tem título próprio **"Lembrete do seu horário"**, mantendo serviço, profissional, data/hora, link de cancelamento e a assinatura "Enviado pela AgenDay em nome de …".
-- **Link absoluto:** `agenday_portal_link_cancelamento()` passou a usar o **domínio público do portal** quando o estabelecimento não tem domínio próprio; antes devolvia caminho relativo, que não abre no WhatsApp.
+- **Texto (`agenday_whatsapp_texto()`):** o lembrete deixou de cair em "Agendamento confirmado" e tem título próprio **"Lembrete do seu horário"**, com serviço, profissional, data/hora e a assinatura "Enviado pela AgenDay em nome de …". O texto final foi ajustado depois no MENSAGENS-02: **sem link**, avisa que o prazo fechou e mostra o telefone de contato do estabelecimento.
+- **Link absoluto:** `agenday_portal_link_cancelamento()` passou a usar o **domínio público do portal** quando o estabelecimento não tem domínio próprio; antes devolvia caminho relativo, que não abre no WhatsApp. Continua valendo para a **remarcação**, que ainda leva o link de cancelar.
 - **Testes no PC local (22/11/2026):** `php -l` limpo nos cinco arquivos; `tests/portal-cliente.php` de 122 para **134** (título próprio, sem "confirmado", link, assinatura, constantes/funções e ligação nos fluxos); `responsividade-check` **219**; `agendamento-validacao` (19), `agendamento-cancelamento` (20), `configuracao-estabelecimento` (13) e `alteracao-senha-validacao` (16) limpos.
 - **Provas com banco local (`agenday_local`, estabelecimento 29), sem envio real:** lembrete enfileirado 24h antes; reagendar não acumula; remarcação troca a data; horário a menos de 24h não gera; cancelar remove o pendente (inclusive cancelamento repetido); fila descarta lembrete de horário já iniciado e de agendamento cancelado; telefone fixo não gera. Cliente, agendamentos e mensagens de teste apagados ao final.
 - **Pendências:** não publicado e sem teste na hospedagem; o **opt-out "responda SAIR"** continua adiado (exigiria coluna/tabela); agendamento criado no **painel** recebe lembrete, mas não recebe confirmação imediata — decisão para depois da feira.
