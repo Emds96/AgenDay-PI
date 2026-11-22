@@ -29,4 +29,38 @@ if (agenday_config_html('<script>"x"</script>') !== '&lt;script&gt;&quot;x&quot;
     fwrite(STDERR, "FAIL: escaping HTML" . PHP_EOL);
     exit(1);
 }
+
+// Telefone no cadastro de contas novas: obrigatório (o número aparece no
+// lembrete ao cliente). Em Configurações continua opcional.
+$casosTelefone = [
+    ['(92) 99999-9999', true, true],
+    ['+55 (92) 99999-9999', true, true],
+    ['92345678', true, true],
+    ['', true, false],
+    ['   ', true, false],
+    ['123', true, false],
+    ['1234567', true, false],
+    ['1234567890123456', true, false],
+    ['telefone', true, false],
+    ['(92) 99999-9999 ramal 2', true, false],
+    ['', false, true],
+    ['123', false, false],
+    ['(92) 98888-7700', false, true],
+];
+foreach ($casosTelefone as [$telefone, $obrigatorio, $esperado]) {
+    $valido = agenday_telefone_estabelecimento_valido($telefone, $obrigatorio);
+    if ($valido !== $esperado) {
+        fwrite(STDERR, "FAIL telefone: " . var_export([$telefone, $obrigatorio], true) . PHP_EOL);
+        exit(1);
+    }
+    $aprovados++;
+}
+
+// Configurações segue aceitando o telefone vazio (contas antigas).
+if (agenday_config_validar('Empresa Antiga', '') !== null) {
+    fwrite(STDERR, "FAIL: Configurações deveria aceitar telefone vazio" . PHP_EOL);
+    exit(1);
+}
+$aprovados++;
+
 echo "Configuração do estabelecimento: " . ($aprovados + 1) . " testes aprovados." . PHP_EOL;

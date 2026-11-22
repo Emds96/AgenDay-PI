@@ -88,6 +88,16 @@ if (!is_array($googlePending)
                 <div class="row">
                     <div class="mb-2 col">
                         <div class="input-group">
+                            <input class="input rounded rounded-4" name="contato_estabelecimento" type="tel"
+                                placeholder=" " maxlength="20" inputmode="tel" autocomplete="tel" required />
+                            <label class="letra">Telefone do estabelecimento</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="mb-2 col">
+                        <div class="input-group">
                             <input class="input rounded rounded-4" name="email" type="email" placeholder=" " required />
                             <label class="letra">E-mail</label>
                         </div>
@@ -277,6 +287,12 @@ if (!is_array($googlePending)
                     <input type="text" id="ad-google-estabelecimento" name="estabelecimento"
                            maxlength="120" autocomplete="organization" required
                            placeholder="Ex.: Meu estabelecimento">
+                </div>
+                <div class="ad-google-field">
+                    <label for="ad-google-contato">Telefone do estabelecimento *</label>
+                    <input type="tel" id="ad-google-contato" name="contato_estabelecimento"
+                           maxlength="20" inputmode="tel" autocomplete="tel" required
+                           placeholder="(92) 99999-9999">
                 </div>
                 <div class="ad-google-field">
                     <label for="ad-google-senha">Criar senha do AgenDay (opcional)</label>
