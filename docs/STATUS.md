@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## DEPLOY-03 — Publicação do PORTAL-07 (21/11/2026)
+
+- **Autorização do responsável (21/11/2026):** confirmou "Sim, publicar agora" para o lote do PORTAL-07 (cancelamento por link sem exigir `Origin`), **somente código**, sem SQL.
+- **Backup prévio:** `Documents\AgenDay-Backups\2026-11-21_202710_e149e0c8` — `BACKUP OK`, 137 arquivos, 16 tabelas, restauração local **aprovada**; `sha256_sql` `a6d9d0a6…c7eea`, `sha256_zip` `e6fc1aca…46583`. Feito depois do DEPLOY-02, então representa o estado atual do servidor.
+- **SHA e destino:** `b6887f60bc2eb6d9694dfa659d533490713138e0` (`dev-feira-uninorte`, merge do PR #78), conferido igual no `git rev-parse` local e na ref remota antes de ativar as flags. Destino: as duas pastas (`htdocs` e `agenday-agendamentos.infinityfree.io/htdocs`). Sem migração.
+- **Publicação:** `workflow_dispatch` no run **`44967236148`**, environment `producao-agenday` aprovado. Os três jobs concluíram com **success** — `Validar codigo e pacote`, `Testar FTPS sem publicar arquivos` e `Enviar ao InfinityFree somente com autorizacao` — em cerca de 4,5 minutos.
+- **Flags:** `AGENDAY_DEPLOY_ENABLED=true` e `AGENDAY_DEPLOY_MODE=publish` ativadas às 00:31 UTC e restauradas para **`false`/`disabled`** às 00:38 UTC.
+- **Conferência pós-deploy (21/11/2026, navegador):** a página de cancelamento em produção responde agora `Referrer-Policy: same-origin` (antes `no-referrer`) e mantém o campo oculto `assinatura` com 64 caracteres — confirmando que a versão publicada é a do PORTAL-07.
+- **Pendência:** clicar no botão **Confirmar cancelamento** pelo **celular físico**; é o único teste que ainda falta.
+- **Estado real:** código publicado e conferido; **fluxo do botão ainda não validado no aparelho**.
+
+---
+
 ## PORTAL-07 — "Pedido não reconhecido" continuava no celular (21/11/2026)
 
 - **Relato do responsável (21/11/2026):** depois do deploy do PORTAL-06, ao clicar em **Confirmar cancelamento** pelo celular ainda aparecia **"Pedido não reconhecido, recarregue esta página e tente novamente"**.
@@ -9,7 +22,7 @@
 - **Testes no PC local (21/11/2026):** `tests/portal-cliente.php` subiu de 93 para **100 verificações** (assinatura sem `Origin`, assinatura com `Origin: null`, página em cache sem assinatura usando `Origin`, assinatura de outro token recusada, assinatura correta prevalecendo sobre origem estranha); demais suítes limpas (19, 20, 13, 16, 210); `php -l` limpo.
 - **Prova por HTTP local:** sem `Origin` + assinatura → `200 Agendamento cancelado`; `Origin` válido sem assinatura → `200`; `Origin: null` + assinatura → `200`; sem nada → `403`; `Origin` falso + assinatura correta → `200`; assinatura errada → `403`.
 - **Custo do teste:** os quatro cancelamentos de teste dispararam o aviso real de WhatsApp para o responsável (4 mensagens seguidas às 20:24). Agendamentos e mensagens de teste apagados do `agenday_local` em seguida.
-- **Estado real:** corrigido e testado **no PC local**; **não publicado** — depende de autorização de SHA e destino.
+- **Estado real:** corrigido, testado no PC local e **publicado** em 21/11/2026 no deploy do SHA `b6887f6` (DEPLOY-03).
 
 ---
 
