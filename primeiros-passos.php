@@ -273,6 +273,9 @@ $enderecoDigitado = isset($_SESSION['pp_endereco']) && is_string($_SESSION['pp_e
 $progresso = $estado ?? agenday_primeiros_passos_progresso([]);
 $sugestoes = agenday_primeiros_passos_sugestoes($segmento);
 $segmentos = agenday_primeiros_passos_segmentos();
+$segmentoRotulo = $segmento !== '' && isset($segmentos[$segmento])
+    ? $segmentos[$segmento]['rotulo']
+    : '';
 $precisaProfissional = true;
 foreach ($progresso['itens'] as $itemProgresso) {
     if ($itemProgresso['chave'] === 'equipe') {
@@ -303,7 +306,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
-    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp04">
+    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp05">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
@@ -325,7 +328,9 @@ $csrfToken = agenday_token_csrf();
 <main class="container ag-settings">
     <div class="ag-settings-heading">
         <h1 class="fw-bold">Primeiros passos</h1>
-        <p>Estas são as quatro coisas que fazem a sua agenda funcionar. Leva uns 5 minutos.</p>
+        <p><?= $segmento === ''
+            ? 'Escolha o seu tipo de negócio: o AgenDay já sugere os serviços. Leva uns 5 minutos.'
+            : 'Escolha os serviços, diga quem atende e confira os horários. Leva uns 5 minutos.' ?></p>
     </div>
 
     <?php if ($aviso !== null): ?>
@@ -344,13 +349,89 @@ $csrfToken = agenday_token_csrf();
         </div>
     <?php endif; ?>
 
+    <?php if ($segmento === ''): ?>
+        <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-segmento">
+            <div class="ag-settings-body">
+                <div class="ag-settings-section-title">
+                    <h2 id="pp-titulo-segmento">Que tipo de negócio é o seu?</h2>
+                    <p>Escolha abaixo: o AgenDay já sugere os serviços mais comuns. Você pode editar tudo depois.</p>
+                </div>
+                <form method="post" action="primeiros-passos.php" class="pp-segmentos">
+                    <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                    <input type="hidden" name="acao" value="segmento">
+                    <?php foreach ($segmentos as $chave => $dadosSegmento): ?>
+                        <button type="submit" class="pp-chip" name="segmento" value="<?= agenday_config_html($chave) ?>">
+                            <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
+                            <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
+                        </button>
+                    <?php endforeach; ?>
+                </form>
+            </div>
+        </section>
+    <?php else: ?>
+        <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-sugestoes">
+            <div class="ag-settings-body">
+                <div class="ag-settings-section-title">
+                    <h2 id="pp-titulo-sugestoes">
+                        <?= $sugestoes === [] ? 'Cadastre o seu primeiro serviço' : 'Escolha os seus serviços' ?>
+                    </h2>
+                    <p>
+                        <?php if ($sugestoes === []): ?>
+                            Este tipo de negócio não tem sugestões prontas. Cadastre o seu serviço —
+                            ele já fica disponível para agendar.
+                        <?php else: ?>
+                            Um clique cria o serviço com duração e preço de exemplo.
+                            Ajuste os valores depois em <a href="cad.servicos.php">Serviços</a>.
+                        <?php endif; ?>
+                    </p>
+                </div>
+
+                <div class="pp-trocar pp-tipo">
+                    <span>Tipo de negócio: <strong><?= agenday_config_html($segmentoRotulo) ?></strong></span>
+                    <form method="post" action="primeiros-passos.php" class="pp-trocar-form">
+                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                        <input type="hidden" name="acao" value="trocar">
+                        <button type="submit" class="link-acao">Trocar</button>
+                    </form>
+                </div>
+
+                <?php if ($sugestoes === []): ?>
+                    <div class="pp-acoes">
+                        <a class="btn btn-primary" href="cad.servicos.php">Cadastrar meu serviço</a>
+                    </div>
+                <?php else: ?>
+                    <form method="post" action="primeiros-passos.php" class="pp-sugestoes">
+                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                        <input type="hidden" name="acao" value="servico">
+                        <?php foreach ($sugestoes as $indice => $sugestao): ?>
+                            <?php $jaExiste = isset($servicosExistentes[mb_strtolower($sugestao['nome'])]); ?>
+                            <button type="submit" class="pp-sugestao" name="sugestao" value="<?= (int) $indice ?>"
+                                <?= $jaExiste ? 'disabled' : '' ?>>
+                                <span class="pp-sugestao-nome"><?= agenday_config_html($sugestao['nome']) ?></span>
+                                <span class="pp-sugestao-meta">
+                                    <?= (int) $sugestao['minutos'] ?> min · R$ <?= agenday_config_html($sugestao['preco']) ?>
+                                </span>
+                                <span class="pp-sugestao-aco">
+                                    <?= $jaExiste ? 'Já cadastrado' : '+ Adicionar' ?>
+                                </span>
+                            </button>
+                        <?php endforeach; ?>
+                    </form>
+                    <p class="pp-outro-servico">
+                        Não está na lista? <a href="cad.servicos.php">Cadastre o seu serviço</a>.
+                    </p>
+                <?php endif; ?>
+            </div>
+        </section>
+    <?php endif; ?>
+
     <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-progresso">
         <div class="ag-settings-body">
             <div class="ag-settings-section-title">
-                <h2 id="pp-titulo-progresso">Configuração da agenda</h2>
+                <h2 id="pp-titulo-progresso">O que falta</h2>
                 <p><?= $progresso['completo']
                     ? 'Tudo pronto: sua agenda já pode receber agendamentos.'
-                    : 'Complete os passos abaixo para liberar os horários.' ?></p>
+                    : 'Estes são os quatro itens que liberam os horários da sua agenda.' ?></p>
             </div>
 
             <div class="pp-progresso">
@@ -405,70 +486,6 @@ $csrfToken = agenday_token_csrf();
             </ol>
         </div>
     </section>
-
-    <?php if ($segmento === ''): ?>
-        <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-segmento">
-            <div class="ag-settings-body">
-                <div class="ag-settings-section-title">
-                    <h2 id="pp-titulo-segmento">Que tipo de negócio é o seu?</h2>
-                    <p>Assim o AgenDay sugere os serviços mais comuns. Você pode editar tudo depois.</p>
-                </div>
-                <form method="post" action="primeiros-passos.php" class="pp-segmentos">
-                    <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                    <input type="hidden" name="acao" value="segmento">
-                    <?php foreach ($segmentos as $chave => $dadosSegmento): ?>
-                        <button type="submit" class="pp-chip" name="segmento" value="<?= agenday_config_html($chave) ?>">
-                            <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
-                            <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
-                        </button>
-                    <?php endforeach; ?>
-                </form>
-            </div>
-        </section>
-    <?php else: ?>
-        <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-sugestoes">
-            <div class="ag-settings-body">
-                <div class="ag-settings-section-title">
-                    <h2 id="pp-titulo-sugestoes">Serviços sugeridos</h2>
-                    <p>
-                        Um clique cria o serviço com duração e preço de exemplo.
-                        Ajuste os valores depois em <a href="cad.servicos.php">Serviços</a>.
-                    </p>
-                </div>
-
-                <?php if ($sugestoes === []): ?>
-                    <p class="pp-vazio">Este tipo de negócio não tem sugestões prontas.
-                        <a href="cad.servicos.php">Cadastre os seus serviços</a>.</p>
-                <?php else: ?>
-                    <form method="post" action="primeiros-passos.php" class="pp-sugestoes">
-                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                        <input type="hidden" name="acao" value="servico">
-                        <?php foreach ($sugestoes as $indice => $sugestao): ?>
-                            <?php $jaExiste = isset($servicosExistentes[mb_strtolower($sugestao['nome'])]); ?>
-                            <button type="submit" class="pp-sugestao" name="sugestao" value="<?= (int) $indice ?>"
-                                <?= $jaExiste ? 'disabled' : '' ?>>
-                                <span class="pp-sugestao-nome"><?= agenday_config_html($sugestao['nome']) ?></span>
-                                <span class="pp-sugestao-meta">
-                                    <?= (int) $sugestao['minutos'] ?> min · R$ <?= agenday_config_html($sugestao['preco']) ?>
-                                </span>
-                                <span class="pp-sugestao-aco">
-                                    <?= $jaExiste ? 'Já cadastrado' : '+ Adicionar' ?>
-                                </span>
-                            </button>
-                        <?php endforeach; ?>
-                    </form>
-                    <div class="pp-trocar">
-                        <span>Não é bem isso?</span>
-                        <form method="post" action="primeiros-passos.php" class="pp-trocar-form">
-                            <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                            <input type="hidden" name="acao" value="trocar">
-                            <button type="submit" class="link-acao">Trocar o tipo de negócio</button>
-                        </form>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </section>
-    <?php endif; ?>
 
     <?php if ($precisaProfissional && $conexaoOk): ?>
         <section class="ag-settings-panel pp-painel" id="sou-eu-que-atendo" aria-labelledby="pp-titulo-profissional">

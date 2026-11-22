@@ -45,7 +45,7 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: .6rem;
+    gap: .5rem;
 }
 
 .agenday-app .pp-passo {
@@ -53,7 +53,7 @@
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: .85rem;
-    padding: .85rem 1rem;
+    padding: .7rem .85rem;
     border: 1px solid var(--ad-border);
     border-radius: var(--ad-radius-md);
     background: var(--ad-surface);
@@ -234,6 +234,24 @@
 
 .agenday-app .pp-trocar .link-acao:hover {
     color: var(--ad-primary-hover);
+}
+
+/* Tipo de negócio escolhido: uma linha discreta acima das sugestões. */
+.agenday-app .pp-tipo {
+    margin: 0 0 .9rem;
+}
+
+.agenday-app .pp-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .25rem 0 0;
+}
+
+.agenday-app .pp-outro-servico {
+    margin: .9rem 0 0;
+    font-size: .875rem;
+    color: var(--ad-text-muted);
 }
 
 /* Formulário do profissional ----------------------------------------------- */
