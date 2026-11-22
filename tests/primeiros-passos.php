@@ -54,6 +54,10 @@ foreach ($segmentos as $chave => $dados) {
 }
 
 conferir(agenday_primeiros_passos_segmentos()['outro']['servicos'] === [], '"outro" não deveria ter sugestões');
+conferir(
+    (agenday_primeiros_passos_segmentos()['outro']['curto'] ?? '') === 'Outro',
+    'rótulo curto da faixa do primeiro serviço mudou'
+);
 
 /* Segmento ---------------------------------------------------------------- */
 

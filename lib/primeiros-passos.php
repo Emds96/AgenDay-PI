@@ -78,6 +78,9 @@ function agenday_primeiros_passos_segmentos(): array
         ],
         'outro' => [
             'rotulo' => 'Outro tipo de negócio',
+            // Rótulo curto para a faixa do primeiro serviço, onde "tipo de
+            // negócio: outro tipo de negócio" ficaria repetitivo.
+            'curto' => 'Outro',
             'descricao' => 'Sem sugestões prontas: cadastre os seus serviços.',
             'servicos' => [],
         ],
