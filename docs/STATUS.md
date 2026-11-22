@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## DEPLOY-02 — Publicação do PORTAL-06 (21/11/2026)
+
+- **Autorização do responsável (21/11/2026):** "pode publicar" para o lote do PORTAL-06 (link de cancelamento no celular e aviso de remarcação), **somente código**, sem SQL.
+- **Backup prévio:** `Documents\AgenDay-Backups\2026-11-21_200133_5aab7a74` — `BACKUP OK`, 137 arquivos, 16 tabelas, restauração local **aprovada**; `sha256_sql` `2c16d520…c4c5`, `sha256_zip` `afc6986e…1fb39`. Feito depois do DEPLOY-01, então representa o estado atual do servidor (o backup das 17:46 era anterior ao portal).
+- **SHA e destino:** `4dbf2277ea397d9776fc3c3ef02a564bcdd5c2ae` (`dev-feira-uninorte`, merge do PR #76), conferido igual no `git rev-parse` local e na ref remota antes de ativar as flags. Destino: as duas pastas (`htdocs` e `agenday-agendamentos.infinityfree.io/htdocs`). Sem migração: nenhuma alteração de banco.
+- **Publicação:** `workflow_dispatch` no run **`44965206160`**, environment `producao-agenday` aprovado pelo `gh` autenticado como `Emds96`. Os três jobs concluíram com **success** — `Validar codigo e pacote`, `Testar FTPS sem publicar arquivos` e `Enviar ao InfinityFree somente com autorizacao` — em cerca de 7 minutos.
+- **Flags:** `AGENDAY_DEPLOY_ENABLED=true` e `AGENDAY_DEPLOY_MODE=publish` ativadas às 00:08/00:09 UTC e restauradas para **`false`/`disabled`** às 00:16 UTC, depois do término do job.
+- **Conferência pós-deploy (21/11/2026, navegador):** `https://agenday-agendamentos.infinityfree.io/?e=studio` carrega "Studio Bella Vita" com as abas Agendar/Meus agendamentos; `https://agenday-sistema.infinityfree.io/` abre `agenda.php` sem erro de PHP; o link de cancelamento com token real mostra "Cancelar agendamento" e agora traz o campo oculto **`assinatura` com 64 caracteres**, comprovando que a versão publicada é a do PORTAL-06.
+- **Pendência:** clicar no botão **Confirmar cancelamento** pelo celular físico (o teste do POST no aparelho é o que fecha a correção do `Origin`) e confirmar o recebimento do aviso de remarcação.
+- **Estado real:** código publicado e página nova no ar; **fluxo do botão ainda não validado no celular**.
+
+---
+
 ## PORTAL-06 — Link de cancelamento no celular e aviso de remarcação (21/11/2026)
 
 - **Pedido do responsável (21/11/2026):** o cancelamento pelo painel e a remarcação funcionam, mas o link de cancelamento enviado no WhatsApp "não funciona"; também pediu mensagem no WhatsApp confirmando a remarcação. Tudo **somente no local**, sem publicar.
@@ -11,8 +24,8 @@
 - **Envio imediato (`lib/whatsapp.php`):** a entrega de uma mensagem foi extraída para `agenday_whatsapp_entregar()` e existe `agenday_whatsapp_enviar_agora()`, que envia a mensagem recém-enfileirada **sem esperar a trava de 1 minuto** da fila. Criação, remarcação e cancelamento usam essa via — sem cron na hospedagem, a confirmação não fica parada até a próxima página abrir. A reserva por mensagem (`pendente/erro` → `enviando`) continua evitando envio duplicado.
 - **Testes executados no local (21/11/2026):** `tests/portal-cliente.php` subiu de 84 para **93 verificações** (host local, links locais, assinatura estável e distinta por token); `agendamento-validacao` (19), `agendamento-cancelamento` (20), `configuracao-estabelecimento` (13), `alteracao-senha-validacao` (16) e `responsividade-check` (210) limpos; `php -l` limpo nos quatro arquivos alterados.
 - **Prova por HTTP local:** POST **sem** `Origin` e com assinatura correta → `200 Agendamento cancelado`; assinatura errada → `403`; `Origin` falso com assinatura correta → `403`. A mensagem de cancelamento gerada no teste saiu com `http://127.0.0.1:8080/cliente.php?e=studio` e status `enviado`. Agendamentos e mensagens de teste apagados do `agenday_local` no fim.
-- **Ainda pendente:** publicar (deploy exige autorização de SHA e destino) e clicar no link pelo **celular físico** em produção; a mensagem de remarcação já foi vista no aparelho do responsável.
-- **Estado real:** corrigido e testado **no PC local**; **não publicado**.
+- **Ainda pendente:** clicar no botão **Confirmar cancelamento** pelo celular físico em produção (o POST no aparelho é o que fecha a correção do `Origin`); a mensagem de remarcação já foi vista no aparelho do responsável.
+- **Estado real:** corrigido e testado no PC local e **publicado** em 21/11/2026 no deploy do SHA `4dbf227` (DEPLOY-02).
 
 ---
 
