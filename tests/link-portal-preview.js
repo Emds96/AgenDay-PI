@@ -44,7 +44,7 @@ function conferir(condicao, mensagem) {
  * Monta os elementos que o script usa e roda o arquivo real.
  * O DOM é falso de propósito: aqui interessa a regra, não o navegador.
  */
-function montar(slugSalvo, nomeEstabelecimento) {
+function montar(slugSalvo, nomeEstabelecimento, hash) {
     const campo = { value: '', addEventListener: (tipo, fn) => { campo.aoDigitar = fn; } };
     const previa = {
         dataset: {
@@ -87,11 +87,21 @@ function montar(slugSalvo, nomeEstabelecimento) {
         'abrir-portal-link': verPagina,
     };
 
-    const documento = { getElementById: id => mapa[id] || null };
-    const janela = { setTimeout: () => {} };
+    /* Campo do atalho "Sou eu que atendo": só registra se recebeu o foco. */
+    const campoAtalho = { focado: false, focus: () => { campoAtalho.focado = true; } };
+
+    const documento = {
+        getElementById: id => mapa[id] || null,
+        querySelector: seletor => (seletor === '[data-focar-ao-chegar="sou-eu-que-atendo"]' ? campoAtalho : null),
+    };
+    const janela = {
+        setTimeout: () => {},
+        location: { hash: hash || '' },
+        addEventListener: (tipo, fn) => { if (tipo === 'hashchange') { janela.aoMudarHash = fn; } },
+    };
     new Function('document', 'window', codigo)(documento, janela);
 
-    return { campo, previa, aviso, botao, verPagina };
+    return { campo, previa, aviso, botao, verPagina, campoAtalho, janela };
 }
 
 const digitar = (tela, valor) => {
@@ -163,5 +173,21 @@ for (const [entrada, esperado] of normalizacao) {
     const obtido = tela.previa.textContent.replace('https://portal.test/?e=', '');
     conferir(obtido === esperado, `normaliza ${JSON.stringify(entrada)} -> ${obtido} (esperado ${esperado})`);
 }
+
+/* Atalho "Sou eu que atendo": foco no campo do nome ao chegar pelo link. */
+const semHash = montar('clinica-sorriso-prime');
+conferir(semHash.campoAtalho.focado === false, 'sem hash o campo do atalho não recebe foco');
+
+const comHash = montar('clinica-sorriso-prime', undefined, '#sou-eu-que-atendo');
+conferir(comHash.campoAtalho.focado === true, 'chegando por #sou-eu-que-atendo o campo do nome recebe foco');
+
+const outroHash = montar('clinica-sorriso-prime', undefined, '#outra-coisa');
+conferir(outroHash.campoAtalho.focado === false, 'outro hash não rouba o foco');
+
+const mudouHash = montar('clinica-sorriso-prime');
+conferir(typeof mudouHash.janela.aoMudarHash === 'function', 'script escuta mudança de hash');
+mudouHash.janela.location.hash = '#sou-eu-que-atendo';
+mudouHash.janela.aoMudarHash();
+conferir(mudouHash.campoAtalho.focado === true, 'clicar no atalho já na página foca o campo');
 
 console.log('Prévia do link do portal: ' + aprovados + ' testes aprovados.');

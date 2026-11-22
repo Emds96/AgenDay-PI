@@ -28,7 +28,8 @@ $segmento = isset($_SESSION['agenday_primeiros_passos_segmento'])
     ? $_SESSION['agenday_primeiros_passos_segmento']
     : '';
 if (!agenday_primeiros_passos_segmento_valido($segmento)) {
-    $segmento = '';
+    // Sem sessão (navegador reaberto), o cookie do navegador lembra a escolha.
+    $segmento = agenday_primeiros_passos_segmento_do_cookie($idEstabelecimento);
 }
 
 /* -------------------------------------------------------------------------
@@ -75,11 +76,24 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $_SESSION['pp_erro'] = 'A sessão do formulário expirou. Atualize a página e tente novamente.';
     } elseif ($acao === 'trocar') {
         unset($_SESSION['agenday_primeiros_passos_segmento']);
+        setcookie(agenday_primeiros_passos_cookie_nome($idEstabelecimento), '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
         $_SESSION['pp_aviso'] = 'Escolha outro tipo de negócio.';
     } elseif ($acao === 'segmento') {
         $escolhido = isset($_POST['segmento']) && is_string($_POST['segmento']) ? $_POST['segmento'] : '';
         if (agenday_primeiros_passos_segmento_valido($escolhido)) {
             $_SESSION['agenday_primeiros_passos_segmento'] = $escolhido;
+            // Guarda também no navegador: a sessão expira, a escolha não precisa.
+            setcookie(agenday_primeiros_passos_cookie_nome($idEstabelecimento), $escolhido, [
+                'expires' => time() + agenday_primeiros_passos_cookie_duracao(),
+                'path' => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
             $_SESSION['pp_aviso'] = 'Sugestões atualizadas para o seu tipo de negócio.';
         } else {
             $_SESSION['pp_erro'] = 'Escolha um tipo de negócio da lista.';
@@ -289,7 +303,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
-    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp03">
+    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp04">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
@@ -371,10 +385,21 @@ $csrfToken = agenday_token_csrf();
                             </h3>
                             <p><?= agenday_config_html($item['ajuda']) ?></p>
                         </div>
-                        <a class="btn <?= $item['feito'] ? 'btn-outline-secondary' : 'btn-primary' ?> btn-sm pp-passo-acao"
-                           href="<?= agenday_config_html($item['link']) ?>">
-                            <?= agenday_config_html($item['feito'] ? 'Revisar' : $item['acao']) ?>
-                        </a>
+                        <?php if ($item['chave'] === 'equipe' && !$item['feito'] && $conexaoOk): ?>
+                            <div class="pp-passo-acoes">
+                                <a class="btn btn-primary btn-sm pp-passo-acao" href="#sou-eu-que-atendo">
+                                    Sou eu que atendo
+                                </a>
+                                <a class="btn btn-outline-secondary btn-sm pp-passo-acao" href="cad-funcionario.php">
+                                    Tenho equipe
+                                </a>
+                            </div>
+                        <?php else: ?>
+                            <a class="btn <?= $item['feito'] ? 'btn-outline-secondary' : 'btn-primary' ?> btn-sm pp-passo-acao"
+                               href="<?= agenday_config_html($item['link']) ?>">
+                                <?= agenday_config_html($item['feito'] ? 'Revisar' : $item['acao']) ?>
+                            </a>
+                        <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             </ol>
@@ -446,7 +471,7 @@ $csrfToken = agenday_token_csrf();
     <?php endif; ?>
 
     <?php if ($precisaProfissional && $conexaoOk): ?>
-        <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-profissional">
+        <section class="ag-settings-panel pp-painel" id="sou-eu-que-atendo" aria-labelledby="pp-titulo-profissional">
             <div class="ag-settings-body">
                 <div class="ag-settings-section-title">
                     <h2 id="pp-titulo-profissional">Sou eu que atendo</h2>
@@ -459,7 +484,8 @@ $csrfToken = agenday_token_csrf();
                     <div class="pp-campo">
                         <label for="pp-prof-nome">Nome de quem atende</label>
                         <input type="text" id="pp-prof-nome" name="nome" class="form-control"
-                               maxlength="120" required placeholder="Ex.: Dra. Ana Souza">
+                               maxlength="120" required placeholder="Ex.: Dra. Ana Souza"
+                               data-focar-ao-chegar="sou-eu-que-atendo">
                     </div>
                     <div class="pp-campo">
                         <label for="pp-prof-contato">Telefone com DDD</label>
@@ -559,7 +585,7 @@ $csrfToken = agenday_token_csrf();
     <?php endif; ?>
 </main>
 
-<script defer src="js/primeiros-passos.js?v=20261122-pp03"></script>
+<script defer src="js/primeiros-passos.js?v=20261122-pp04"></script>
 </body>
 
 </html>
