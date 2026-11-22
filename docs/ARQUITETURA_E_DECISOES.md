@@ -71,7 +71,7 @@ No código de agendamento, data/hora local é interpretada em `America/Manaus` p
 **Pendentes:**
 - Manter backups atuais de `htdocs` e MySQL antes de cada deploy. Rotina automática FTPS/PHP + restauração MariaDB foi comprovada em 17/11 e repetida em 20/11/2026 (ex.: `2026-11-20_192137_a1d631ca`, `BACKUP OK`, 8,8 MB + SQL 22,1 KB); ensaio de recuperação completa em outra hospedagem ainda não foi feito.
 - **Evoluir a agenda** para as visões dia/semana/mês (hoje é mensal com painel do dia); o cálculo de horário livre já existe em `lib/disponibilidade.php` e é usado pela tela de agendamento.
-- **Reagendamento com vínculo** e **lembretes ao cliente** (SMS a avaliar; e-mail pelo Brevo).
+- **Reagendamento com vínculo** e **lembretes ao cliente**: o lembrete automático de 24h por WhatsApp está implementado e testado no PC local (LEMBRETE-01, 22/11/2026), ainda não publicado; SMS/e-mail seguem como alternativa a avaliar.
 - **Modo híbrido de sessões** (PEND-01): ativar/desativar no cadastro e nas Configurações.
 - Definir a taxa de cancelamento como regra/aviso, sem gateway de pagamento.
 - Completar regressão visual da correção de menu (QA-01), já integrada e incluída nos deploys posteriores; não presumir cobertura completa apenas pelo código publicado.

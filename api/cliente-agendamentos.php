@@ -187,6 +187,13 @@ if ($acao === 'criar') {
         error_log('AgenDay portal: fila do WhatsApp falhou (' . get_class($e) . ').');
     }
 
+    // Confirmação na hora e lembrete 24h antes: dois avisos, dois momentos.
+    try {
+        agenday_whatsapp_agendar_lembrete($conexao, $empresa, $idAgendamento);
+    } catch (Throwable $e) {
+        error_log('AgenDay portal: lembrete não agendado (' . get_class($e) . ').');
+    }
+
     agenday_portal_json([
         'ok' => true,
         'agendamento' => [
@@ -390,6 +397,13 @@ if ($acao === 'remarcar') {
         agenday_whatsapp_enviar_agora($conexao, $idMensagemRemarcacao);
     } catch (Throwable $e) {
         error_log('AgenDay portal: fila do WhatsApp falhou (' . get_class($e) . ').');
+    }
+
+    // O lembrete acompanha o novo horário (o do horário antigo é descartado).
+    try {
+        agenday_whatsapp_agendar_lembrete($conexao, $empresa, $id);
+    } catch (Throwable $e) {
+        error_log('AgenDay portal: lembrete não agendado (' . get_class($e) . ').');
     }
 
     agenday_portal_json([

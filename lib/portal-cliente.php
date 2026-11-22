@@ -927,10 +927,12 @@ function agenday_portal_link_cancelamento(array $estabelecimento, string $token)
         }
     }
     $dominio = trim((string) ($estabelecimento['dominio'] ?? ''));
-    if ($dominio !== '') {
-        return 'https://' . agenday_portal_host_normalizar($dominio) . '/' . $caminho;
+    if ($dominio === '') {
+        // Sem domínio próprio, o link continua absoluto no domínio do portal:
+        // um caminho relativo não abre quando chega por WhatsApp.
+        $dominio = agenday_portal_hosts_publicos()[0];
     }
-    return $caminho;
+    return 'https://' . agenday_portal_host_normalizar($dominio) . '/' . $caminho;
 }
 
 /**

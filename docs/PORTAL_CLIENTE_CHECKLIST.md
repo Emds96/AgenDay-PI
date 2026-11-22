@@ -85,6 +85,7 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] Botão "Testar conexão" e "Enviar pendentes agora".
 - [x] Processamento da fila ao abrir a agenda/portal, depois de entregar a página (trava de 1 minuto).
 - [x] Templates: código, confirmação, lembrete, remarcação e cancelamento.
+- [x] Lembrete automático 24h antes agendado na criação (portal e painel) e refeito na remarcação; cancelamento apaga o pendente e a fila descarta lembrete de horário cancelado ou já iniciado (LEMBRETE-01, 22/11/2026, não publicado).
 
 ## Fase 6 — Guarda de host e publicação
 
@@ -98,7 +99,7 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 
 ## Fase 7 — Testes e PR
 
-- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo) - 122 verificações.
+- [x] `tests/portal-cliente.php` (telefone, slug, código, token, sessão, CSRF, origem, prazo, lembrete) - 134 verificações.
 - [x] Regressão: `tests/agendamento-validacao.php` (19) e `tests/agendamento-cancelamento.php` (20).
 - [x] `node tests/responsividade-check.js` — 210 verificações (inclui as quatro abas de Configurações).
 - [x] Fluxo completo por HTTP local: entrar com código, criar, listar, remarcar, cancelar, cancelar por link.

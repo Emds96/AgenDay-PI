@@ -18,6 +18,13 @@ try {
     require_once __DIR__ . '/lib/agendamento-gravar.php';
 
     $id = agenday_agenda_criar($conexao, $_POST);
+    // Lembrete 24h antes: o celular confirmado vale para o painel também.
+    try {
+        require_once __DIR__ . '/lib/whatsapp.php';
+        agenday_whatsapp_agendar_lembrete($conexao, agenday_agenda_estabelecimento(), $id);
+    } catch (Throwable $e) {
+        error_log('AgenDay: lembrete do agendamento não agendado (' . get_class($e) . ').');
+    }
     $_SESSION['sucesso_agendamento'] = 'Agendamento #' . $id . ' salvo com sucesso!';
     // Somente após gravar com sucesso: mostrar o mês do novo atendimento.
     $_SESSION['agenda_dia_recem_salvo'] = $_POST['data'];
