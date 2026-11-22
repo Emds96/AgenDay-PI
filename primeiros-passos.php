@@ -32,6 +32,38 @@ if (!agenday_primeiros_passos_segmento_valido($segmento)) {
 }
 
 /* -------------------------------------------------------------------------
+ * Dados do estabelecimento (usados pelas ações e pela tela)
+ * ------------------------------------------------------------------------- */
+$nomeEstabelecimento = (string) ($_SESSION['nome_estabelecimento'] ?? 'seu estabelecimento');
+$contatoEstabelecimento = '';
+$portalDisponivel = false;
+$portalSlug = '';
+$portalDominio = '';
+
+if ($conexaoOk) {
+    try {
+        $stmt = $conexao->prepare(
+            'SELECT nome_estabelecimento, contato_estabelecimento, slug, dominio
+               FROM estabelecimento WHERE id_estabelecimento = ? LIMIT 1'
+        );
+        $stmt->bind_param('i', $idEstabelecimento);
+        $stmt->execute();
+        $linha = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if ($linha !== null) {
+            $nomeEstabelecimento = (string) ($linha['nome_estabelecimento'] ?? $nomeEstabelecimento);
+            $contatoEstabelecimento = (string) ($linha['contato_estabelecimento'] ?? '');
+            $portalSlug = (string) ($linha['slug'] ?? '');
+            $portalDominio = (string) ($linha['dominio'] ?? '');
+            $portalDisponivel = true;
+        }
+    } catch (Throwable $e) {
+        error_log('AgenDay primeiros passos: dados do estabelecimento indisponíveis (' . get_class($e) . ').');
+    }
+}
+
+/* -------------------------------------------------------------------------
  * Ações do primeiro uso (POST + redirecionamento, sem reenvio ao atualizar)
  * ------------------------------------------------------------------------- */
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
@@ -135,6 +167,56 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $_SESSION['pp_erro'] = 'Não foi possível cadastrar quem atende agora.';
             }
         }
+    } elseif ($acao === 'portal') {
+        // Escolha do endereço público: é o nome que aparece no link do cliente.
+        $endereco = isset($_POST['endereco']) && is_string($_POST['endereco']) ? trim($_POST['endereco']) : '';
+        $slugNovo = $portalSlug;
+        $erroSlug = null;
+
+        if (!$portalDisponivel) {
+            $erroSlug = 'O endereço do portal não está disponível neste banco.';
+        } elseif ($endereco === '') {
+            try {
+                $slugNovo = agenday_portal_slug_disponivel($conexao, $nomeEstabelecimento, $idEstabelecimento);
+            } catch (Throwable $e) {
+                error_log('AgenDay primeiros passos: falha ao gerar o endereço do portal.');
+                $erroSlug = 'Não foi possível gerar o endereço agora. Tente novamente.';
+            }
+        } else {
+            [$slugNovo, $erroSlug] = agenday_portal_slug_analisar($endereco);
+
+            if ($erroSlug === null && $slugNovo !== $portalSlug) {
+                try {
+                    if (agenday_portal_slug_ocupado($conexao, $slugNovo, $idEstabelecimento)) {
+                        $erroSlug = 'Esse endereço já está em uso. Tente outro nome.';
+                    }
+                } catch (Throwable $e) {
+                    error_log('AgenDay primeiros passos: falha ao conferir o endereço do portal.');
+                    $erroSlug = 'Não foi possível conferir o endereço agora. Tente novamente.';
+                }
+            }
+        }
+
+        if ($erroSlug !== null) {
+            $_SESSION['pp_erro'] = $erroSlug;
+            $_SESSION['pp_endereco'] = $endereco;
+        } else {
+            try {
+                $stmt = $conexao->prepare('UPDATE estabelecimento SET slug = ? WHERE id_estabelecimento = ?');
+                $stmt->bind_param('si', $slugNovo, $idEstabelecimento);
+                $stmt->execute();
+                $stmt->close();
+                $_SESSION['pp_aviso'] = 'Endereço salvo. Seu link agora é ' . $slugNovo . '.';
+            } catch (mysqli_sql_exception $e) {
+                $_SESSION['pp_endereco'] = $endereco;
+                if ($e->getCode() === 1062) {
+                    $_SESSION['pp_erro'] = 'Esse endereço acabou de ser escolhido por outra pessoa. Tente outro nome.';
+                } else {
+                    error_log('AgenDay primeiros passos: erro ao salvar o endereço (' . $e->getCode() . ').');
+                    $_SESSION['pp_erro'] = 'Não foi possível salvar o endereço agora.';
+                }
+            }
+        }
     } else {
         $_SESSION['pp_erro'] = 'Ação não reconhecida.';
     }
@@ -147,35 +229,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
  * Dados da tela
  * ------------------------------------------------------------------------- */
 $estado = null;
-$nomeEstabelecimento = (string) ($_SESSION['nome_estabelecimento'] ?? 'seu estabelecimento');
-$contatoEstabelecimento = '';
-$portalLink = '';
 $servicosExistentes = [];
 
 if ($conexaoOk) {
     $estado = agenday_primeiros_passos_estado($conexao, $idEstabelecimento);
-
-    try {
-        $stmt = $conexao->prepare(
-            'SELECT nome_estabelecimento, contato_estabelecimento, slug, dominio
-               FROM estabelecimento WHERE id_estabelecimento = ? LIMIT 1'
-        );
-        $stmt->bind_param('i', $idEstabelecimento);
-        $stmt->execute();
-        $linha = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        if ($linha !== null) {
-            $nomeEstabelecimento = (string) ($linha['nome_estabelecimento'] ?? $nomeEstabelecimento);
-            $contatoEstabelecimento = (string) ($linha['contato_estabelecimento'] ?? '');
-            $portalLink = agenday_portal_base_url([
-                'slug' => (string) ($linha['slug'] ?? ''),
-                'dominio' => (string) ($linha['dominio'] ?? ''),
-            ]);
-        }
-    } catch (Throwable $e) {
-        error_log('AgenDay primeiros passos: dados do estabelecimento indisponíveis (' . get_class($e) . ').');
-    }
 
     try {
         $stmt = $conexao->prepare('SELECT nome_servico FROM servicos WHERE id_estabelecimento = ?');
@@ -191,6 +248,14 @@ if ($conexaoOk) {
     }
 }
 
+$portalLink = $portalDisponivel && $portalSlug !== ''
+    ? agenday_portal_base_url(['slug' => $portalSlug, 'dominio' => $portalDominio])
+    : '';
+$portalPrefixo = $portalDisponivel ? agenday_portal_url_base($portalDominio) : '';
+$enderecoDigitado = isset($_SESSION['pp_endereco']) && is_string($_SESSION['pp_endereco'])
+    ? $_SESSION['pp_endereco']
+    : $portalSlug;
+
 $progresso = $estado ?? agenday_primeiros_passos_progresso([]);
 $sugestoes = agenday_primeiros_passos_sugestoes($segmento);
 $segmentos = agenday_primeiros_passos_segmentos();
@@ -202,7 +267,7 @@ foreach ($progresso['itens'] as $itemProgresso) {
 }
 $aviso = $_SESSION['pp_aviso'] ?? null;
 $erro = $_SESSION['pp_erro'] ?? null;
-unset($_SESSION['pp_aviso'], $_SESSION['pp_erro']);
+unset($_SESSION['pp_aviso'], $_SESSION['pp_erro'], $_SESSION['pp_endereco']);
 $csrfToken = agenday_token_csrf();
 ?>
 <!DOCTYPE html>
@@ -224,7 +289,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
-    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp01">
+    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp02">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
@@ -422,26 +487,55 @@ $csrfToken = agenday_token_csrf();
         <div class="ag-settings-body">
             <div class="ag-settings-section-title">
                 <h2 id="pp-titulo-portal">Link para o cliente agendar</h2>
-                <p>É o endereço que você envia no WhatsApp, no Instagram ou coloca na bio.</p>
+                <p>Escolha o nome do seu link. É o endereço que você envia no WhatsApp, no Instagram ou coloca na bio.</p>
             </div>
 
-            <?php if ($portalLink !== ''): ?>
-                <div class="input-group pp-link">
-                    <input type="text" class="form-control" id="pp-portal-link"
-                           value="<?= agenday_config_html($portalLink) ?>" readonly
-                           aria-label="Link do portal do cliente">
-                    <button class="btn btn-outline-secondary" type="button" id="copiar-portal-link"
-                            data-link="<?= agenday_config_html($portalLink) ?>">Copiar</button>
-                </div>
+            <?php if (!$portalDisponivel): ?>
                 <p class="form-text mb-0">
-                    Também funciona em <a href="<?= agenday_config_html($portalLink) ?>" target="_blank"
-                    rel="noopener">abrir o portal</a>.
+                    O endereço público não está disponível neste banco. Use
+                    <a href="config.php">Configurações</a> para conferir.
                 </p>
             <?php else: ?>
-                <p class="form-text mb-0">
-                    Ainda não há endereço público. Defina o <strong>Endereço do portal</strong> em
-                    <a href="config.php">Configurações</a>.
-                </p>
+                <form method="post" action="primeiros-passos.php" class="pp-link-form">
+                    <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                    <input type="hidden" name="acao" value="portal">
+                    <div class="pp-campo">
+                        <label for="pp-endereco">Nome do seu link</label>
+                        <input type="text" id="pp-endereco" name="endereco" class="form-control"
+                               maxlength="60" placeholder="clinica-sorriso"
+                               autocapitalize="none" spellcheck="false" autocomplete="off"
+                               aria-describedby="pp-endereco-ajuda"
+                               value="<?= agenday_config_html($enderecoDigitado) ?>">
+                        <p class="form-text" id="pp-endereco-ajuda">
+                            Letras, números e hífen. Maiúsculas e acentos são convertidos.
+                            Deixe em branco para usar o nome do estabelecimento.
+                        </p>
+                    </div>
+
+                    <div class="pp-preview">
+                        <span class="pp-preview-rotulo">Seu link ficará assim</span>
+                        <div class="pp-preview-linha">
+                            <code id="pp-portal-preview"
+                                  data-prefixo="<?= agenday_config_html($portalPrefixo) ?>"
+                                  data-slug="<?= agenday_config_html($portalSlug) ?>"
+                                  data-nome="<?= agenday_config_html($nomeEstabelecimento) ?>"><?= agenday_config_html($portalLink !== '' ? $portalLink : $portalPrefixo) ?></code>
+                            <button type="button" class="btn btn-outline-secondary" id="copiar-portal-link"
+                                    data-link="<?= agenday_config_html($portalLink) ?>"
+                                    <?= $portalLink === '' ? 'disabled' : '' ?>>Copiar</button>
+                        </div>
+                        <p class="pp-preview-aviso" id="pp-preview-aviso" aria-live="polite"<?= $portalLink !== '' ? ' hidden' : '' ?>>
+                            Salve o endereço para ativar o link.
+                        </p>
+                    </div>
+
+                    <div class="pp-link-acoes">
+                        <button type="submit" class="btn btn-primary">Salvar endereço</button>
+                        <?php if ($portalLink !== ''): ?>
+                            <a class="btn btn-outline-secondary" href="<?= agenday_config_html($portalLink) ?>"
+                               target="_blank" rel="noopener">Abrir o portal</a>
+                        <?php endif; ?>
+                    </div>
+                </form>
             <?php endif; ?>
         </div>
     </section>
@@ -455,7 +549,7 @@ $csrfToken = agenday_token_csrf();
     <?php endif; ?>
 </main>
 
-<script defer src="js/primeiros-passos.js?v=20261122-pp01"></script>
+<script defer src="js/primeiros-passos.js?v=20261122-pp02"></script>
 </body>
 
 </html>

@@ -37,7 +37,9 @@ jobs:
           php tests/configuracao-estabelecimento.php
           php tests/alteracao-senha-validacao.php
           php tests/avatar-estabelecimento.php
+          php tests/primeiros-passos.php
           node tests/responsividade-check.js
+          node tests/link-portal-preview.js
       - name: Testar backup efemero offline
         shell: bash
         run: |

@@ -1,5 +1,20 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-02 — Link do portal escolhido pelo nome (22/11/2026)
+
+- **Pedido do responsável:** no primeiro uso, escolher só o nome do link e ver embaixo como vai ficar, com opção de copiar — como nos sites de registro de domínio.
+- **Antes:** a tela mostrava um campo somente-leitura com o endereço gerado pelo nome do estabelecimento; para trocar, só em `config.php`.
+- **Agora (`primeiros-passos.php`):** campo **Nome do seu link**, prévia ao vivo (`https://…/?e=nome`) e botão **Copiar**. O botão só libera quando a prévia é exatamente o endereço salvo, para ninguém enviar ao cliente um link que ainda não existe. Em branco volta a usar o nome do estabelecimento; acentos e maiúsculas são convertidos na hora.
+- **Servidor:** nova ação POST `portal` com CSRF. Reusa `agenday_portal_slug_analisar()` (normalização), `agenday_portal_slug_ocupado()` (colisão, ignorando o próprio registro) e grava em `estabelecimento.slug` com prepared statement. Colisão de última hora (índice único, erro 1062) vira mensagem, não erro.
+- **Sem SQL/migração:** usa a coluna `slug` que já existe.
+- **Reuso:** `agenday_portal_url_base()` novo em `lib/portal-cliente.php` (prefixo terminado em `?e=`); `agenday_portal_base_url()` passou a ser esse prefixo + slug, com o mesmo comportamento de antes.
+- **CI:** `tests/primeiros-passos.php` (criado no PR #94) e `tests/link-portal-preview.js` (novo) entraram na lista de testes do workflow existente.
+- **Testes (PC local, 22/11/2026):** `tests/portal-cliente.php` 150 → **153**; `tests/link-portal-preview.js` **27** (carrega o JS real com DOM falso: normalização idêntica ao PHP em 9 casos, copiar bloqueado/liberado, avisos); prova HTTP real com conta descartável: **24 verificações** — cadastro, campo novo, prévia no host local, nome com acento, colisão com `studio`, nome inválido, em branco pelo nome, POST sem CSRF e banco; dados apagados. Demais suítes: primeiros passos 166, agenda 19, cancelamento 20, configuração 27, responsividade 233.
+- **Conferência visual (Edge headless, 22/11/2026):** desktop 1280 e viewport real de 360 px; `scrollWidth = clientWidth = 360`, sem rolagem horizontal.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-01 — Primeiro uso de um estabelecimento novo (22/11/2026)
 
 - **Problema:** testando o primeiro uso com uma conta fictícia (Clínica Odontológica Sorriso Prime, banco local), o cadastro devolvia a pessoa para a tela de login e a conta nascia sem serviço, sem profissional e sem nenhuma indicação da ordem a seguir. O botão **Agendar** respondia "cadastre um serviço e vincule um funcionário", sem dizer onde nem em que ordem.

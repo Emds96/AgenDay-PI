@@ -544,12 +544,33 @@ function agenday_portal_estabelecimento_resolver(mysqli $conexao, ?string $slugP
 }
 
 /**
+ * Prefixo do link do portal, terminado em "?e=".
+ *
+ * A tela de primeiro uso monta a prévia com este prefixo enquanto a pessoa
+ * digita o nome do link. No local usa o host atual (para o link abrir o
+ * sistema que gerou a mensagem); fora dele usa o domínio próprio do
+ * estabelecimento e, sem domínio, o domínio público do portal.
+ */
+function agenday_portal_url_base(?string $dominio = null): string
+{
+    if (agenday_portal_host_local()) {
+        $host = agenday_portal_host_atual_completo();
+        if ($host !== '') {
+            return 'http://' . $host . '/cliente.php?e=';
+        }
+    }
+    $dominio = trim((string) $dominio);
+    if ($dominio === '') {
+        $dominio = agenday_portal_hosts_publicos()[0];
+    }
+    return 'https://' . agenday_portal_host_normalizar($dominio) . '/?e=';
+}
+
+/**
  * Base pública do estabelecimento para montar links (mensagens e QR).
  *
  * Sem slug não existe link: devolve '' para a tela mostrar "ainda não definido"
- * em vez de um endereço quebrado. No local usa o host atual (para o link abrir
- * o sistema que gerou a mensagem); fora dele usa o domínio próprio do
- * estabelecimento e, sem domínio, o domínio público do portal.
+ * em vez de um endereço quebrado. O prefixo vem de agenday_portal_url_base().
  */
 function agenday_portal_base_url(array $estabelecimento): string
 {
@@ -557,18 +578,9 @@ function agenday_portal_base_url(array $estabelecimento): string
     if ($slug === '') {
         return '';
     }
-    $slug = rawurlencode($slug);
-    if (agenday_portal_host_local()) {
-        $host = agenday_portal_host_atual_completo();
-        if ($host !== '') {
-            return 'http://' . $host . '/cliente.php?e=' . $slug;
-        }
-    }
-    $dominio = isset($estabelecimento['dominio']) ? trim((string) $estabelecimento['dominio']) : '';
-    if ($dominio === '') {
-        $dominio = agenday_portal_hosts_publicos()[0];
-    }
-    return 'https://' . agenday_portal_host_normalizar($dominio) . '/?e=' . $slug;
+    $dominio = isset($estabelecimento['dominio']) ? (string) $estabelecimento['dominio'] : '';
+
+    return agenday_portal_url_base($dominio) . rawurlencode($slug);
 }
 
 /* ---------------------------------------------------------------------------
