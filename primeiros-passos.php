@@ -3,6 +3,7 @@ require_once __DIR__ . '/verifica_login.php';
 require_once __DIR__ . '/lib/primeiros-passos.php';
 require_once __DIR__ . '/lib/portal-cliente.php';
 require_once __DIR__ . '/lib/configuracao-estabelecimento.php';
+require_once __DIR__ . '/lib/horario-funcionamento.php';
 
 /**
  * PRIMEIROS-PASSOS-01
@@ -130,22 +131,27 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $nomeProfissional = isset($_POST['nome']) && is_string($_POST['nome']) ? trim($_POST['nome']) : '';
         $contatoProfissional = isset($_POST['contato']) && is_string($_POST['contato']) ? trim($_POST['contato']) : '';
         $vincular = isset($_POST['vincular']) && $_POST['vincular'] === '1';
-        // O mesmo cadastro atende os dois caminhos: o painel "Sou eu que atendo"
-        // e o pop-up "Tenho equipe". Só o pop-up precisa reabrir quando dá erro.
-        $origemEquipe = isset($_POST['origem']) && $_POST['origem'] === 'equipe';
+        // Os dois pop-ups ("Sou eu que atendo" e "Tenho equipe") usam o mesmo
+        // cadastro. O campo "origem" só diz qual pop-up reabrir quando dá erro.
+        $origemProfissional = isset($_POST['origem']) && is_string($_POST['origem'])
+            ? $_POST['origem']
+            : '';
+        if (!in_array($origemProfissional, ['eu', 'equipe'], true)) {
+            $origemProfissional = '';
+        }
         $letras = $nomeProfissional !== '' && preg_match('//u', $nomeProfissional)
             ? preg_match_all('/./us', $nomeProfissional)
             : 0;
 
         if ($letras < 2 || $letras > 120) {
             $_SESSION['pp_erro'] = 'Informe o nome de quem atende (2 a 120 caracteres).';
-            if ($origemEquipe) {
-                $_SESSION['pp_reabrir_equipe'] = true;
+            if ($origemProfissional !== '') {
+                $_SESSION['pp_reabrir_profissional'] = $origemProfissional;
             }
         } elseif (!agenday_telefone_estabelecimento_valido($contatoProfissional, true)) {
             $_SESSION['pp_erro'] = 'Informe um telefone com DDD (8 a 15 dígitos).';
-            if ($origemEquipe) {
-                $_SESSION['pp_reabrir_equipe'] = true;
+            if ($origemProfissional !== '') {
+                $_SESSION['pp_reabrir_profissional'] = $origemProfissional;
             }
         } else {
             $transacao = false;
@@ -188,6 +194,112 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 }
                 error_log('AgenDay primeiros passos: erro ao criar profissional (' . get_class($e) . ').');
                 $_SESSION['pp_erro'] = 'Não foi possível cadastrar quem atende agora.';
+            }
+        }
+    } elseif ($acao === 'vinculo') {
+        // O pop-up mostra todos os profissionais e serviços de uma vez: aqui
+        // cada profissional tem a sua lista refeita por inteiro.
+        $marcados = isset($_POST['vinculos']) && is_array($_POST['vinculos']) ? $_POST['vinculos'] : [];
+        $erroVinculo = null;
+        $transacao = false;
+
+        try {
+            // Só valem profissionais e serviços deste estabelecimento.
+            $funcionariosValidos = [];
+            $stmt = $conexao->prepare('SELECT id_funcionario FROM funcionarios WHERE id_estabelecimento = ?');
+            $stmt->bind_param('i', $idEstabelecimento);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            while ($linha = $resultado->fetch_assoc()) {
+                $funcionariosValidos[(int) $linha['id_funcionario']] = true;
+            }
+            $stmt->close();
+
+            $servicosValidos = [];
+            $stmt = $conexao->prepare('SELECT id_servicos FROM servicos WHERE id_estabelecimento = ?');
+            $stmt->bind_param('i', $idEstabelecimento);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            while ($linha = $resultado->fetch_assoc()) {
+                $servicosValidos[(int) $linha['id_servicos']] = true;
+            }
+            $stmt->close();
+
+            if ($funcionariosValidos === [] || $servicosValidos === []) {
+                $erroVinculo = 'Cadastre um serviço e quem atende antes de vincular.';
+            } else {
+                $conexao->begin_transaction();
+                $transacao = true;
+
+                $apagar = $conexao->prepare(
+                    'DELETE FROM funcionario_servico WHERE id_estabelecimento = ? AND id_funcionario = ?'
+                );
+                $inserir = $conexao->prepare(
+                    'INSERT IGNORE INTO funcionario_servico (id_estabelecimento, id_funcionario, id_servicos)
+                     VALUES (?, ?, ?)'
+                );
+                $totalVinculos = 0;
+
+                foreach (array_keys($funcionariosValidos) as $idFuncionario) {
+                    $apagar->bind_param('ii', $idEstabelecimento, $idFuncionario);
+                    $apagar->execute();
+
+                    $escolhidos = isset($marcados[$idFuncionario]) && is_array($marcados[$idFuncionario])
+                        ? $marcados[$idFuncionario]
+                        : [];
+                    foreach ($escolhidos as $idServico) {
+                        $idServico = (int) $idServico;
+                        if (!isset($servicosValidos[$idServico])) {
+                            continue;
+                        }
+                        $inserir->bind_param('iii', $idEstabelecimento, $idFuncionario, $idServico);
+                        $inserir->execute();
+                        $totalVinculos++;
+                    }
+                }
+
+                $apagar->close();
+                $inserir->close();
+                $conexao->commit();
+                $transacao = false;
+
+                $_SESSION['pp_aviso'] = $totalVinculos === 1
+                    ? '1 vínculo salvo.'
+                    : $totalVinculos . ' vínculos salvos.';
+            }
+        } catch (Throwable $e) {
+            if ($transacao) {
+                try {
+                    $conexao->rollback();
+                } catch (Throwable $erroRollback) {
+                    error_log('AgenDay primeiros passos: falha ao reverter vínculos.');
+                }
+            }
+            error_log('AgenDay primeiros passos: erro ao salvar vínculos (' . get_class($e) . ').');
+            $erroVinculo = 'Não foi possível salvar os vínculos agora.';
+        }
+
+        if ($erroVinculo !== null) {
+            $_SESSION['pp_erro'] = $erroVinculo;
+            $_SESSION['pp_reabrir_vinculo'] = true;
+        }
+    } elseif ($acao === 'horario') {
+        // Reaproveita a validação e a gravação de Configurações. As regras
+        // (intervalo entre horários, antecedência) são preservadas como estão.
+        [$diasValidados, $errosHorario] = agenday_horario_validar($_POST);
+
+        if ($errosHorario !== []) {
+            $_SESSION['pp_erro'] = implode(' ', array_unique($errosHorario));
+            $_SESSION['pp_reabrir_horario'] = true;
+        } else {
+            try {
+                $regrasAtuais = agenday_regras_carregar($conexao, $idEstabelecimento);
+                agenday_horario_salvar($conexao, $idEstabelecimento, $diasValidados, $regrasAtuais);
+                $_SESSION['pp_aviso'] = 'Horário de funcionamento atualizado.';
+            } catch (Throwable $e) {
+                error_log('AgenDay primeiros passos: erro ao salvar horário (' . get_class($e) . ').');
+                $_SESSION['pp_erro'] = 'Não foi possível salvar o horário agora.';
+                $_SESSION['pp_reabrir_horario'] = true;
             }
         }
     } elseif ($acao === 'portal') {
@@ -253,6 +365,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
  * ------------------------------------------------------------------------- */
 $estado = null;
 $servicosExistentes = [];
+$listaServicos = [];
+$listaFuncionarios = [];
+$diasFuncionamento = agenday_horario_padrao();
+$funcionamentoDisponivel = false;
 
 if ($conexaoOk) {
     $estado = agenday_primeiros_passos_estado($conexao, $idEstabelecimento);
@@ -268,6 +384,63 @@ if ($conexaoOk) {
         $stmt->close();
     } catch (Throwable $e) {
         error_log('AgenDay primeiros passos: serviços indisponíveis (' . get_class($e) . ').');
+    }
+
+    // Listas dos pop-ups: vínculo (profissional × serviço) e horário.
+    try {
+        $stmt = $conexao->prepare(
+            'SELECT id_servicos, nome_servico FROM servicos
+              WHERE id_estabelecimento = ? ORDER BY nome_servico'
+        );
+        $stmt->bind_param('i', $idEstabelecimento);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        while ($servico = $resultado->fetch_assoc()) {
+            $listaServicos[(int) $servico['id_servicos']] = (string) $servico['nome_servico'];
+        }
+        $stmt->close();
+    } catch (Throwable $e) {
+        error_log('AgenDay primeiros passos: lista de serviços indisponível (' . get_class($e) . ').');
+    }
+
+    try {
+        $stmt = $conexao->prepare(
+            'SELECT id_funcionario, nome_funcionario FROM funcionarios
+              WHERE id_estabelecimento = ? ORDER BY nome_funcionario'
+        );
+        $stmt->bind_param('i', $idEstabelecimento);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        while ($funcionario = $resultado->fetch_assoc()) {
+            $listaFuncionarios[(int) $funcionario['id_funcionario']] = [
+                'nome' => (string) $funcionario['nome_funcionario'],
+                'servicos' => [],
+            ];
+        }
+        $stmt->close();
+
+        $stmt = $conexao->prepare(
+            'SELECT id_funcionario, id_servicos FROM funcionario_servico WHERE id_estabelecimento = ?'
+        );
+        $stmt->bind_param('i', $idEstabelecimento);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        while ($vinculo = $resultado->fetch_assoc()) {
+            $idFuncionario = (int) $vinculo['id_funcionario'];
+            if (isset($listaFuncionarios[$idFuncionario])) {
+                $listaFuncionarios[$idFuncionario]['servicos'][(int) $vinculo['id_servicos']] = true;
+            }
+        }
+        $stmt->close();
+    } catch (Throwable $e) {
+        error_log('AgenDay primeiros passos: lista de profissionais indisponível (' . get_class($e) . ').');
+    }
+
+    try {
+        $diasFuncionamento = agenday_horario_carregar($conexao, $idEstabelecimento);
+        $funcionamentoDisponivel = true;
+    } catch (Throwable $e) {
+        error_log('AgenDay primeiros passos: horário de funcionamento indisponível (' . get_class($e) . ').');
     }
 }
 
@@ -285,20 +458,27 @@ $segmentos = agenday_primeiros_passos_segmentos();
 $segmentoRotulo = $segmento !== '' && isset($segmentos[$segmento])
     ? $segmentos[$segmento]['rotulo']
     : '';
-$precisaProfissional = true;
-foreach ($progresso['itens'] as $itemProgresso) {
-    if ($itemProgresso['chave'] === 'equipe') {
-        $precisaProfissional = !$itemProgresso['feito'];
-    }
-}
 $aviso = $_SESSION['pp_aviso'] ?? null;
 $erro = $_SESSION['pp_erro'] ?? null;
-$reabrirEquipe = !empty($_SESSION['pp_reabrir_equipe']);
+
+// Qual pop-up precisa reabrir depois de um erro (um só por vez).
+$reabrirServico = !empty($_SESSION['pp_reabrir_servico']);
+$reabrirVinculo = !empty($_SESSION['pp_reabrir_vinculo']);
+$reabrirHorario = !empty($_SESSION['pp_reabrir_horario']);
+$reabrirProfissional = isset($_SESSION['pp_reabrir_profissional'])
+    && is_string($_SESSION['pp_reabrir_profissional'])
+    && in_array($_SESSION['pp_reabrir_profissional'], ['eu', 'equipe'], true)
+    ? $_SESSION['pp_reabrir_profissional']
+    : '';
+
 unset(
     $_SESSION['pp_aviso'],
     $_SESSION['pp_erro'],
     $_SESSION['pp_endereco'],
-    $_SESSION['pp_reabrir_equipe']
+    $_SESSION['pp_reabrir_servico'],
+    $_SESSION['pp_reabrir_vinculo'],
+    $_SESSION['pp_reabrir_horario'],
+    $_SESSION['pp_reabrir_profissional']
 );
 $csrfToken = agenday_token_csrf();
 ?>
@@ -321,7 +501,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
-    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp05">
+    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp06">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
@@ -396,7 +576,7 @@ $csrfToken = agenday_token_csrf();
                             ele já fica disponível para agendar.
                         <?php else: ?>
                             Um clique cria o serviço com duração e preço de exemplo.
-                            Ajuste os valores depois em <a href="cad.servicos.php">Serviços</a>.
+                            Ajuste os valores depois, na tela de Serviços.
                         <?php endif; ?>
                     </p>
                 </div>
@@ -412,7 +592,10 @@ $csrfToken = agenday_token_csrf();
 
                 <?php if ($sugestoes === []): ?>
                     <div class="pp-acoes">
-                        <a class="btn btn-primary" href="cad.servicos.php">Cadastrar meu serviço</a>
+                        <button type="button" class="btn btn-primary"
+                                data-bs-toggle="modal" data-bs-target="#pp-modal-servico">
+                            Cadastrar meu serviço
+                        </button>
                     </div>
                 <?php else: ?>
                     <form method="post" action="primeiros-passos.php" class="pp-sugestoes">
@@ -433,7 +616,11 @@ $csrfToken = agenday_token_csrf();
                         <?php endforeach; ?>
                     </form>
                     <p class="pp-outro-servico">
-                        Não está na lista? <a href="cad.servicos.php">Cadastre o seu serviço</a>.
+                        Não está na lista?
+                        <button type="button" class="pp-link-botao"
+                                data-bs-toggle="modal" data-bs-target="#pp-modal-servico">
+                            Cadastre o seu serviço
+                        </button>.
                     </p>
                 <?php endif; ?>
             </div>
@@ -481,21 +668,42 @@ $csrfToken = agenday_token_csrf();
                             </h3>
                             <p><?= agenday_config_html($item['ajuda']) ?></p>
                         </div>
-                        <?php if ($item['chave'] === 'equipe' && !$item['feito'] && $conexaoOk): ?>
-                            <div class="pp-passo-acoes">
-                                <a class="btn btn-primary btn-sm pp-passo-acao" href="#sou-eu-que-atendo">
-                                    Sou eu que atendo
-                                </a>
+                        <?php if ($item['chave'] === 'equipe' && $conexaoOk): ?>
+                            <?php if ($item['feito']): ?>
                                 <button type="button" class="btn btn-outline-secondary btn-sm pp-passo-acao"
                                         data-bs-toggle="modal" data-bs-target="#pp-modal-equipe">
-                                    Tenho equipe
+                                    Adicionar pessoa
                                 </button>
-                                <noscript>
-                                    <a class="btn btn-outline-secondary btn-sm pp-passo-acao" href="cad-funcionario.php">
+                            <?php else: ?>
+                                <div class="pp-passo-acoes">
+                                    <button type="button" class="btn btn-primary btn-sm pp-passo-acao"
+                                            data-bs-toggle="modal" data-bs-target="#pp-modal-eu">
+                                        Sou eu que atendo
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm pp-passo-acao"
+                                            data-bs-toggle="modal" data-bs-target="#pp-modal-equipe">
                                         Tenho equipe
-                                    </a>
-                                </noscript>
-                            </div>
+                                    </button>
+                                </div>
+                            <?php endif; ?>
+                        <?php elseif ($item['chave'] === 'servico' && $conexaoOk): ?>
+                            <button type="button"
+                                    class="btn <?= $item['feito'] ? 'btn-outline-secondary' : 'btn-primary' ?> btn-sm pp-passo-acao"
+                                    data-bs-toggle="modal" data-bs-target="#pp-modal-servico">
+                                <?= $item['feito'] ? 'Adicionar outro' : 'Cadastrar serviço' ?>
+                            </button>
+                        <?php elseif ($item['chave'] === 'vinculo' && $conexaoOk): ?>
+                            <button type="button"
+                                    class="btn <?= $item['feito'] ? 'btn-outline-secondary' : 'btn-primary' ?> btn-sm pp-passo-acao"
+                                    data-bs-toggle="modal" data-bs-target="#pp-modal-vinculo">
+                                <?= $item['feito'] ? 'Revisar vínculos' : 'Vincular' ?>
+                            </button>
+                        <?php elseif ($item['chave'] === 'horario' && $conexaoOk): ?>
+                            <button type="button"
+                                    class="btn <?= $item['feito'] ? 'btn-outline-secondary' : 'btn-primary' ?> btn-sm pp-passo-acao"
+                                    data-bs-toggle="modal" data-bs-target="#pp-modal-horario">
+                                <?= $item['feito'] ? 'Revisar horário' : 'Configurar horário' ?>
+                            </button>
                         <?php else: ?>
                             <a class="btn <?= $item['feito'] ? 'btn-outline-secondary' : 'btn-primary' ?> btn-sm pp-passo-acao"
                                href="<?= agenday_config_html($item['link']) ?>">
@@ -505,47 +713,17 @@ $csrfToken = agenday_token_csrf();
                     </li>
                 <?php endforeach; ?>
             </ol>
+
+            <noscript>
+                <p class="pp-sem-js">
+                    Sem JavaScript, use as páginas:
+                    <a href="cad.servicos.php">Serviços</a>,
+                    <a href="cad-funcionario.php">Funcionários</a> e
+                    <a href="config.php?aba=funcionamento">Horários</a>.
+                </p>
+            </noscript>
         </div>
     </section>
-
-    <?php if ($precisaProfissional && $conexaoOk): ?>
-        <section class="ag-settings-panel pp-painel" id="sou-eu-que-atendo" aria-labelledby="pp-titulo-profissional">
-            <div class="ag-settings-body">
-                <div class="ag-settings-section-title">
-                    <h2 id="pp-titulo-profissional">Sou eu que atendo</h2>
-                    <p>Cadastre você mesmo como profissional. Se a equipe for maior, use
-                        <strong>Tenho equipe</strong>, no item 2 da lista acima.</p>
-                </div>
-                <form method="post" action="primeiros-passos.php" class="pp-form">
-                    <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                    <input type="hidden" name="acao" value="profissional">
-                    <div class="pp-campo">
-                        <label for="pp-prof-nome">Nome de quem atende</label>
-                        <input type="text" id="pp-prof-nome" name="nome" class="form-control"
-                               maxlength="120" required placeholder="Ex.: Dra. Ana Souza"
-                               data-focar-ao-chegar="sou-eu-que-atendo">
-                    </div>
-                    <div class="pp-campo">
-                        <label for="pp-prof-contato">Telefone com DDD</label>
-                        <input type="tel" id="pp-prof-contato" name="contato" class="form-control"
-                               maxlength="20" inputmode="tel" required
-                               value="<?= agenday_config_html($contatoEstabelecimento) ?>">
-                        <p class="form-text">Já preenchemos com o telefone do estabelecimento.</p>
-                    </div>
-                    <div class="form-check pp-check">
-                        <input class="form-check-input" type="checkbox" id="pp-prof-vincular"
-                               name="vincular" value="1" checked>
-                        <label class="form-check-label" for="pp-prof-vincular">
-                            Vincular todos os serviços já cadastrados
-                        </label>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-person-plus me-1" aria-hidden="true"></i>Cadastrar e vincular
-                    </button>
-                </form>
-            </div>
-        </section>
-    <?php endif; ?>
 
     <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-portal">
         <div class="ag-settings-body">
@@ -614,46 +792,246 @@ $csrfToken = agenday_token_csrf();
         </div>
     </section>
 
-    <?php if ($precisaProfissional && $conexaoOk): ?>
-        <div class="modal fade" id="pp-modal-equipe" tabindex="-1"
-             aria-labelledby="pp-modal-equipe-titulo" aria-hidden="true"
-             data-reabrir-erro="<?= $reabrirEquipe ? 'true' : 'false' ?>">
-            <div class="modal-dialog modal-dialog-centered">
+    <?php if ($conexaoOk): ?>
+        <div class="modal fade" id="pp-modal-servico" tabindex="-1"
+             aria-labelledby="pp-modal-servico-titulo" aria-hidden="true"
+             data-reabrir-erro="<?= $reabrirServico ? 'true' : 'false' ?>">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                    <form method="post" action="primeiros-passos.php">
+                    <form method="post" action="cadastro-servicos.php">
                         <div class="modal-header">
-                            <h2 class="modal-title fs-5" id="pp-modal-equipe-titulo">Quem atende na sua equipe?</h2>
+                            <h2 class="modal-title fs-5" id="pp-modal-servico-titulo">Novo serviço</h2>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                            <input type="hidden" name="acao" value="profissional">
-                            <input type="hidden" name="origem" value="equipe">
+                            <input type="hidden" name="origem" value="primeiros-passos">
                             <div class="pp-campo">
-                                <label for="pp-equipe-nome">Nome de quem atende</label>
-                                <input type="text" id="pp-equipe-nome" name="nome" class="form-control"
-                                       maxlength="120" required placeholder="Ex.: Bia">
+                                <label for="pp-servico-nome">Nome do serviço</label>
+                                <input type="text" id="pp-servico-nome" name="nome" class="form-control"
+                                       maxlength="120" required placeholder="Ex.: Corte masculino">
+                            </div>
+                            <div class="pp-campo-duplo">
+                                <div class="pp-campo">
+                                    <label for="pp-servico-duracao">Duração (minutos)</label>
+                                    <input type="number" id="pp-servico-duracao" name="duracao_minutos"
+                                           class="form-control" min="1" max="1440" step="1" value="30" required>
+                                </div>
+                                <div class="pp-campo">
+                                    <label for="pp-servico-preco">Preço (R$)</label>
+                                    <input type="text" id="pp-servico-preco" name="preco" class="form-control"
+                                           inputmode="decimal" maxlength="11" required placeholder="35,00">
+                                </div>
                             </div>
                             <div class="pp-campo">
-                                <label for="pp-equipe-contato">Telefone com DDD</label>
-                                <input type="tel" id="pp-equipe-contato" name="contato" class="form-control"
-                                       maxlength="20" inputmode="tel" required
-                                       value="<?= agenday_config_html($contatoEstabelecimento) ?>">
-                                <p class="form-text">Já preenchemos com o telefone do estabelecimento.</p>
+                                <label for="pp-servico-descricao">Descrição (opcional)</label>
+                                <textarea id="pp-servico-descricao" name="descricao" class="form-control"
+                                          rows="2" maxlength="2000"></textarea>
                             </div>
-                            <div class="form-check pp-check">
-                                <input class="form-check-input" type="checkbox" id="pp-equipe-vincular"
-                                       name="vincular" value="1" checked>
-                                <label class="form-check-label" for="pp-equipe-vincular">
-                                    Vincular todos os serviços já cadastrados
-                                </label>
-                            </div>
-                            <p class="form-text mb-0">A pessoa já sai podendo atender. Dá para editar depois em Funcionários.</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-person-plus me-1" aria-hidden="true"></i>Adicionar à equipe
+                                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Adicionar serviço
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <?php
+        // Os dois caminhos de "quem atende" usam o mesmo cadastro; só mudam
+        // o texto e qual pop-up reabre quando o formulário volta com erro.
+        $modaisProfissional = [
+            'eu' => [
+                'id' => 'pp-modal-eu',
+                'titulo' => 'Sou eu que atendo',
+                'ajuda' => 'Cadastre você mesmo como profissional. A agenda passa a liberar os seus horários.',
+                'exemplo' => 'Ex.: Dra. Ana Souza',
+                'icone' => 'bi-person-check',
+                'botao' => 'Cadastrar e vincular',
+            ],
+            'equipe' => [
+                'id' => 'pp-modal-equipe',
+                'titulo' => 'Quem atende na sua equipe?',
+                'ajuda' => 'Cadastre mais uma pessoa da equipe. Ela já sai podendo atender.',
+                'exemplo' => 'Ex.: Bia',
+                'icone' => 'bi-person-plus',
+                'botao' => 'Adicionar à equipe',
+            ],
+        ];
+        foreach ($modaisProfissional as $origemModal => $modalProfissional):
+        ?>
+            <div class="modal fade" id="<?= agenday_config_html($modalProfissional['id']) ?>" tabindex="-1"
+                 aria-labelledby="<?= agenday_config_html($modalProfissional['id']) ?>-titulo" aria-hidden="true"
+                 data-reabrir-erro="<?= $reabrirProfissional === $origemModal ? 'true' : 'false' ?>">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <form method="post" action="primeiros-passos.php">
+                            <div class="modal-header">
+                                <h2 class="modal-title fs-5" id="<?= agenday_config_html($modalProfissional['id']) ?>-titulo">
+                                    <?= agenday_config_html($modalProfissional['titulo']) ?>
+                                </h2>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                                <input type="hidden" name="acao" value="profissional">
+                                <input type="hidden" name="origem" value="<?= agenday_config_html($origemModal) ?>">
+                                <p class="form-text mt-0"><?= agenday_config_html($modalProfissional['ajuda']) ?></p>
+                                <div class="pp-campo">
+                                    <label for="<?= agenday_config_html($modalProfissional['id']) ?>-nome">Nome de quem atende</label>
+                                    <input type="text" id="<?= agenday_config_html($modalProfissional['id']) ?>-nome"
+                                           name="nome" class="form-control"
+                                           maxlength="120" required
+                                           placeholder="<?= agenday_config_html($modalProfissional['exemplo']) ?>">
+                                </div>
+                                <div class="pp-campo">
+                                    <label for="<?= agenday_config_html($modalProfissional['id']) ?>-contato">Telefone com DDD</label>
+                                    <input type="tel" id="<?= agenday_config_html($modalProfissional['id']) ?>-contato"
+                                           name="contato" class="form-control"
+                                           maxlength="20" inputmode="tel" required
+                                           value="<?= agenday_config_html($contatoEstabelecimento) ?>">
+                                    <p class="form-text">Já preenchemos com o telefone do estabelecimento.</p>
+                                </div>
+                                <div class="form-check pp-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           id="<?= agenday_config_html($modalProfissional['id']) ?>-vincular"
+                                           name="vincular" value="1" checked>
+                                    <label class="form-check-label"
+                                           for="<?= agenday_config_html($modalProfissional['id']) ?>-vincular">
+                                        Vincular todos os serviços já cadastrados
+                                    </label>
+                                </div>
+                                <p class="form-text mb-0">Dá para editar depois em Funcionários.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi <?= agenday_config_html($modalProfissional['icone']) ?> me-1" aria-hidden="true"></i>
+                                    <?= agenday_config_html($modalProfissional['botao']) ?>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <div class="modal fade" id="pp-modal-vinculo" tabindex="-1"
+             aria-labelledby="pp-modal-vinculo-titulo" aria-hidden="true"
+             data-reabrir-erro="<?= $reabrirVinculo ? 'true' : 'false' ?>">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <form method="post" action="primeiros-passos.php">
+                        <div class="modal-header">
+                            <h2 class="modal-title fs-5" id="pp-modal-vinculo-titulo">Quem atende o quê</h2>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                            <input type="hidden" name="acao" value="vinculo">
+                            <?php if ($listaFuncionarios === [] || $listaServicos === []): ?>
+                                <p class="pp-modal-vazio">
+                                    Cadastre pelo menos um serviço e uma pessoa que atende.
+                                    Depois volte aqui para marcar quem faz o quê.
+                                </p>
+                            <?php else: ?>
+                                <p class="form-text mt-0">Marque os serviços que cada pessoa atende.</p>
+                                <?php foreach ($listaFuncionarios as $idFuncionario => $funcionario): ?>
+                                    <fieldset class="pp-vinculo-grupo">
+                                        <legend class="pp-vinculo-nome">
+                                            <i class="bi bi-person me-1" aria-hidden="true"></i><?= agenday_config_html($funcionario['nome']) ?>
+                                        </legend>
+                                        <?php foreach ($listaServicos as $idServico => $nomeServico): ?>
+                                            <?php $idCaixa = 'vinc-' . (int) $idFuncionario . '-' . (int) $idServico; ?>
+                                            <div class="form-check pp-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                       id="<?= $idCaixa ?>"
+                                                       name="vinculos[<?= (int) $idFuncionario ?>][]"
+                                                       value="<?= (int) $idServico ?>"
+                                                       <?= isset($funcionario['servicos'][$idServico]) ? 'checked' : '' ?>>
+                                                <label class="form-check-label" for="<?= $idCaixa ?>">
+                                                    <?= agenday_config_html($nomeServico) ?>
+                                                </label>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </fieldset>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary"
+                                <?= ($listaFuncionarios === [] || $listaServicos === []) ? 'disabled' : '' ?>>
+                                Salvar vínculos
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="pp-modal-horario" tabindex="-1"
+             aria-labelledby="pp-modal-horario-titulo" aria-hidden="true"
+             data-reabrir-erro="<?= $reabrirHorario ? 'true' : 'false' ?>">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <form method="post" action="primeiros-passos.php">
+                        <div class="modal-header">
+                            <h2 class="modal-title fs-5" id="pp-modal-horario-titulo">Horário de funcionamento</h2>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                            <input type="hidden" name="acao" value="horario">
+                            <?php if (!$funcionamentoDisponivel): ?>
+                                <p class="pp-modal-vazio">
+                                    O horário não está disponível neste banco. Use
+                                    <a href="config.php?aba=funcionamento">Configurações</a> para conferir.
+                                </p>
+                            <?php else: ?>
+                                <p class="form-text mt-0">
+                                    Marque os dias em que o estabelecimento atende e ajuste os horários.
+                                </p>
+                                <?php $nomesDias = agenday_dias_semana(); ?>
+                                <div class="pp-horarios">
+                                    <?php foreach ($diasFuncionamento as $numeroDia => $dia): ?>
+                                        <?php $idDia = 'pp-dia-' . (int) $numeroDia; ?>
+                                        <div class="pp-horario-linha">
+                                            <div class="form-check pp-check">
+                                                <input class="form-check-input" type="checkbox" id="<?= $idDia ?>"
+                                                       name="dias[<?= (int) $numeroDia ?>][aberto]" value="1"
+                                                       <?= !empty($dia['aberto']) ? 'checked' : '' ?>>
+                                                <label class="form-check-label" for="<?= $idDia ?>">
+                                                    <?= agenday_config_html($nomesDias[$numeroDia] ?? '') ?>
+                                                </label>
+                                            </div>
+                                            <input type="time" class="form-control form-control-sm"
+                                                   name="dias[<?= (int) $numeroDia ?>][abertura]"
+                                                   value="<?= agenday_config_html((string) ($dia['abertura'] ?? '')) ?>"
+                                                   aria-label="Abertura de <?= agenday_config_html($nomesDias[$numeroDia] ?? '') ?>">
+                                            <span class="pp-horario-ate">até</span>
+                                            <input type="time" class="form-control form-control-sm"
+                                                   name="dias[<?= (int) $numeroDia ?>][fechamento]"
+                                                   value="<?= agenday_config_html((string) ($dia['fechamento'] ?? '')) ?>"
+                                                   aria-label="Fechamento de <?= agenday_config_html($nomesDias[$numeroDia] ?? '') ?>">
+                                            <input type="hidden"
+                                                   name="dias[<?= (int) $numeroDia ?>][almoco_inicio]"
+                                                   value="<?= agenday_config_html((string) ($dia['almoco_inicio'] ?? '')) ?>">
+                                            <input type="hidden"
+                                                   name="dias[<?= (int) $numeroDia ?>][almoco_fim]"
+                                                   value="<?= agenday_config_html((string) ($dia['almoco_fim'] ?? '')) ?>">
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" <?= !$funcionamentoDisponivel ? 'disabled' : '' ?>>
+                                Salvar horário
                             </button>
                         </div>
                     </form>
@@ -671,7 +1049,7 @@ $csrfToken = agenday_token_csrf();
     <?php endif; ?>
 </main>
 
-<script defer src="js/primeiros-passos.js?v=20261122-pp05"></script>
+<script defer src="js/primeiros-passos.js?v=20261122-pp06"></script>
 </body>
 
 </html>

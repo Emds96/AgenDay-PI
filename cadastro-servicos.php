@@ -6,8 +6,25 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     exit('Método não permitido.');
 }
 
+/**
+ * O mesmo cadastro atende a tela de Serviços e o pop-up dos primeiros passos.
+ * Quando vem do pop-up, a pessoa volta para a tela de primeiro uso, com o
+ * checklist atualizado, em vez de cair na lista de serviços.
+ */
+function agenday_servico_veio_dos_primeiros_passos(): bool
+{
+    return ($_POST['origem'] ?? '') === 'primeiros-passos';
+}
+
 function agenday_erro_servico(string $mensagem): void
 {
+    if (agenday_servico_veio_dos_primeiros_passos()) {
+        $_SESSION['pp_erro'] = $mensagem;
+        $_SESSION['pp_reabrir_servico'] = true;
+        header('Location: primeiros-passos.php', true, 303);
+        exit;
+    }
+
     $_SESSION['erro_servico'] = $mensagem;
     header('Location: cad.servicos.php', true, 303);
     exit;
@@ -77,15 +94,23 @@ try {
     $stmt->execute();
     $stmt->close();
 
-    $_SESSION['sucesso_servico'] = true;
+    if (agenday_servico_veio_dos_primeiros_passos()) {
+        $_SESSION['pp_aviso'] = 'Serviço "' . $nome . '" adicionado.';
+    } else {
+        $_SESSION['sucesso_servico'] = true;
+    }
 } catch (mysqli_sql_exception $e) {
     if ($e->getCode() === 1062) {
-        $_SESSION['erro_servico'] = 'Já existe um serviço com esse nome no estabelecimento.';
-    } else {
-        error_log('AgenDay: erro SQL ao cadastrar serviço: código ' . $e->getCode());
-        $_SESSION['erro_servico'] = 'Não foi possível cadastrar o serviço agora. Tente novamente.';
+        agenday_erro_servico('Já existe um serviço com esse nome no estabelecimento.');
     }
+
+    error_log('AgenDay: erro SQL ao cadastrar serviço: código ' . $e->getCode());
+    agenday_erro_servico('Não foi possível cadastrar o serviço agora. Tente novamente.');
 }
 
-header('Location: cad.servicos.php', true, 303);
+header(
+    'Location: ' . (agenday_servico_veio_dos_primeiros_passos() ? 'primeiros-passos.php' : 'cad.servicos.php'),
+    true,
+    303
+);
 exit;

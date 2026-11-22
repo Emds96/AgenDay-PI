@@ -1,5 +1,23 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-07 — Todo cadastro do primeiro uso virou pop-up (22/11/2026)
+
+- **Pedido do responsável:** *"tira da pagina de primeiro acesso tudo que clicar ali quero que apareça um pop-up"* e *"quero que o usuario so saia da pagina de primeiro acesso quando terminar seus cadastros"*.
+- **Antes:** só o "Tenho equipe" abria pop-up. Serviço, vínculo e horário mandavam para `cad.servicos.php`, `cad-funcionario.php` e `config.php?aba=funcionamento`; "Sou eu que atendo" era um painel no meio da página, alcançado por âncora.
+- **Agora a tela tem cinco pop-ups:** **Novo serviço**, **Sou eu que atendo**, **Quem atende na sua equipe**, **Quem atende o quê** (vínculo) e **Horário de funcionamento**. Nenhum botão de cadastro tira a pessoa da página: ao salvar, ela volta para o mesmo lugar com o checklist atualizado.
+- **Serviço sem regra duplicada:** o pop-up posta no **`cadastro-servicos.php`** que já existe (nome, duração em minutos, preço e descrição, com as mesmas validações) e leva o campo oculto `origem=primeiros-passos`. Nesse caso o endpoint devolve para `primeiros-passos.php` com aviso, em vez de abrir a lista de serviços.
+- **Vínculo (novo):** ação `vinculo` regrava `funcionario_servico` em **transação**, montando a lista de profissionais e serviços **do estabelecimento da sessão** (IDs vindos do navegador só valem se existirem nessa conta). Cada profissional tem a sua lista refeita por inteiro.
+- **Horário (novo):** ação `horario` reaproveita `agenday_horario_validar()` e `agenday_horario_salvar()` de `lib/horario-funcionamento.php`. As regras já configuradas (intervalo entre horários, antecedência) são **preservadas**, não reescritas pelo pop-up.
+- **Erro não perde o preenchimento:** cada pop-up tem `data-reabrir-erro`; o `js/primeiros-passos.js` reabre **só o que falhou** (serviço, eu, equipe, vínculo ou horário), com a mensagem no topo.
+- **Sem JavaScript:** um `<noscript>` mantém os três caminhos (Serviços, Funcionários e Horários).
+- **Painel inline removido:** a seção `#sou-eu-que-atendo` e o atalho de foco `data-focar-ao-chegar` saíram da página e do JS — o mesmo cadastro agora é pop-up, com o telefone do estabelecimento já preenchido.
+- **Detalhe de estado concluído:** com "quem atende" já resolvido, o item mostra só **"Adicionar pessoa"** (evita cadastrar a mesma pessoa duas vezes); serviço, vínculo e horário mostram "Adicionar outro", "Revisar vínculos" e "Revisar horário".
+- **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php` e `cadastro-servicos.php`; prova HTTP real em conta temporária criada pelo cadastro e **apagada no fim** — **40 verificações, 0 falha**: cinco pop-ups presentes, painel antigo fora, erro do serviço voltando e reabrindo o pop-up, serviço salvo com checklist em 2 de 4, erro do "Sou eu" reabrindo só o pop-up dele, checklist em 3 de 4, vínculo salvo em 4 de 4, horário inválido reabrindo e horário válido salvo (09:00 no pop-up). Suítes: `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/responsividade-check.js` 233, `tests/link-portal-preview.js` **44 → 39** (saíram os 5 testes do atalho de foco, entraram os de reabertura dos pop-ups).
+- **Conferência visual (navegador real, 22/11/2026):** página em 1897 px e os pop-ups de serviço, horário, vínculo e "Sou eu" em **360 px** — sem corte, sem rolagem horizontal e com os campos legíveis.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## SESSÃO-CONTA-01 — Sessão de conta apagada é encerrada (22/11/2026)
 
 - **Origem:** durante o teste local do primeiro uso, a conta de análise #39 foi apagada com a sessão ainda aberta no navegador. As telas continuavam abrindo normalmente, mas o cadastro de serviço falhava com *"Não foi possível cadastrar o serviço agora"*. Causa real: `INSERT` em `servicos` para um `id_estabelecimento` inexistente, recusado pela chave estrangeira `fk_servicos_empresa` (**erro 1452**), com mensagem genérica na tela.
@@ -38,7 +56,7 @@
 - **Sem regra nova:** nenhuma ação, consulta ou gravação mudou; o checklist continua com os mesmos 4 itens e o mesmo critério de conclusão. Só apresentação (ordem, títulos e CSS um pouco mais compacto).
 - **Testes (PC local, 22/11/2026):** `php -l` limpo; prova HTTP real com a conta #35: **21 verificações, 0 falha** — pergunta antes do checklist, sugestões antes do checklist, título "O que falta", linha do tipo, "Trocar", sugestões da barbearia, saída para serviço próprio, painel "Sou eu que atendo" e link do portal preservados, estado "Outro" com título/botão/trocar, CSS `pp05`. Suítes: `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/link-portal-preview.js` 41, `tests/responsividade-check.js` 233.
 - **Conferência visual (Edge headless):** 1280 px e 360 px nas duas telas (pergunta e sugestões), sem rolagem horizontal.
-- **Decisão adiada:** pop-up para cadastrar serviço dentro da própria página — o responsável preferiu pop-up a outra tela; é código novo e fica para depois da feira.
+- **Decisão adiada:** pop-up para cadastrar serviço dentro da própria página — o responsável preferiu pop-up a outra tela; foi implementado depois, em **PRIMEIROS-PASSOS-07** (22/11/2026).
 - **Estado real:** implementado e testado **somente no PC local**; **não publicado** (pedido expresso do responsável).
 
 ---
