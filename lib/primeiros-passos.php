@@ -127,6 +127,67 @@ function agenday_primeiros_passos_segmento_do_cookie(int $idEstabelecimento, ?ar
     return agenday_primeiros_passos_segmento_valido($valor) ? $valor : '';
 }
 
+/* -------------------------------------------------------------------------
+ * Nome do negócio digitado (só para o tipo "outro")
+ *
+ * O tipo escolhido continua sendo a chave do catálogo; o nome digitado é um
+ * complemento de identidade, guardado no mesmo esquema de cookie por
+ * estabelecimento. Sem coluna nova no banco.
+ * ------------------------------------------------------------------------- */
+
+/** Nome do cookie do negócio digitado. */
+function agenday_primeiros_passos_negocio_cookie_nome(int $idEstabelecimento): string
+{
+    return 'agenday_pp_neg_' . max(0, $idEstabelecimento);
+}
+
+/**
+ * Normaliza o nome do negócio digitado.
+ *
+ * Sem tags, sem espaços repetidos, de 2 a 60 caracteres. Devolve '' quando
+ * não serve — quem chama decide o que fazer com o vazio.
+ */
+function agenday_primeiros_passos_negocio_normalizar($valor): string
+{
+    if (!is_string($valor)) {
+        return '';
+    }
+
+    $texto = strip_tags($valor);
+    $texto = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $texto) ?? '';
+    $texto = preg_replace('/\s+/u', ' ', $texto) ?? '';
+    $texto = trim($texto);
+
+    if ($texto === '' || !preg_match('//u', $texto)) {
+        return '';
+    }
+
+    $letras = preg_match_all('/./us', $texto);
+    if ($letras < 2 || $letras > 60) {
+        return '';
+    }
+
+    return $texto;
+}
+
+/**
+ * Lê o nome digitado do cookie.
+ *
+ * O setcookie() já codifica o valor e o PHP decodifica em $_COOKIE, então aqui
+ * o texto chega pronto (acento e espaço inclusive).
+ *
+ * @param array<string, mixed>|null $cookies normalmente $_COOKIE; o parâmetro
+ *        existe para o teste poder simular o navegador.
+ */
+function agenday_primeiros_passos_negocio_do_cookie(int $idEstabelecimento, ?array $cookies = null): string
+{
+    $fonte = $cookies ?? $_COOKIE;
+    $nome = agenday_primeiros_passos_negocio_cookie_nome($idEstabelecimento);
+    $valor = isset($fonte[$nome]) && is_string($fonte[$nome]) ? $fonte[$nome] : '';
+
+    return agenday_primeiros_passos_negocio_normalizar($valor);
+}
+
 /**
  * Serviços sugeridos para o tipo de negócio.
  *

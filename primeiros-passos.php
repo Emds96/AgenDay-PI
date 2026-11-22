@@ -83,10 +83,30 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
+        setcookie(agenday_primeiros_passos_negocio_cookie_nome($idEstabelecimento), '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
         $_SESSION['pp_aviso'] = 'Escolha outro tipo de negócio.';
     } elseif ($acao === 'segmento') {
         $escolhido = isset($_POST['segmento']) && is_string($_POST['segmento']) ? $_POST['segmento'] : '';
-        if (agenday_primeiros_passos_segmento_valido($escolhido)) {
+        // Só o "outro" pede o nome: os demais tipos já vêm com sugestões.
+        $negocioDigitado = $escolhido === 'outro'
+            ? agenday_primeiros_passos_negocio_normalizar($_POST['negocio'] ?? null)
+            : '';
+
+        if (!agenday_primeiros_passos_segmento_valido($escolhido)) {
+            $_SESSION['pp_erro'] = 'Escolha um tipo de negócio da lista.';
+        } elseif ($escolhido === 'outro' && $negocioDigitado === '') {
+            $_SESSION['pp_erro'] = 'Digite o nome do seu negócio para continuar (2 a 60 letras).';
+            $_SESSION['pp_reabrir_negocio'] = true;
+            // Devolve o que a pessoa digitou para ela corrigir, não recomeçar.
+            $_SESSION['pp_negocio_tentativa'] = is_string($_POST['negocio'] ?? null)
+                ? mb_substr(trim($_POST['negocio']), 0, 60)
+                : '';
+        } else {
             $_SESSION['agenday_primeiros_passos_segmento'] = $escolhido;
             // Guarda também no navegador: a sessão expira, a escolha não precisa.
             setcookie(agenday_primeiros_passos_cookie_nome($idEstabelecimento), $escolhido, [
@@ -95,9 +115,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 'httponly' => true,
                 'samesite' => 'Lax',
             ]);
-            $_SESSION['pp_aviso'] = 'Sugestões atualizadas para o seu tipo de negócio.';
-        } else {
-            $_SESSION['pp_erro'] = 'Escolha um tipo de negócio da lista.';
+            // O nome digitado vale só para o "outro"; nos outros tipos é apagado
+            // para não reaparecer velho numa próxima escolha.
+            setcookie(
+                agenday_primeiros_passos_negocio_cookie_nome($idEstabelecimento),
+                $negocioDigitado,
+                [
+                    'expires' => $negocioDigitado === ''
+                        ? time() - 3600
+                        : time() + agenday_primeiros_passos_cookie_duracao(),
+                    'path' => '/',
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]
+            );
+            $_SESSION['pp_aviso'] = $escolhido === 'outro'
+                ? 'Tudo certo, ' . $negocioDigitado . '. Agora cadastre o seu primeiro serviço.'
+                : 'Sugestões atualizadas para o seu tipo de negócio.';
         }
     } elseif ($acao === 'servico') {
         $sugestao = agenday_primeiros_passos_sugestao($segmento, $_POST['sugestao'] ?? null);
@@ -463,6 +497,17 @@ $segmentoRotulo = $segmento !== '' && isset($segmentos[$segmento])
 $segmentoCurto = $segmento !== '' && isset($segmentos[$segmento])
     ? (string) ($segmentos[$segmento]['curto'] ?? $segmentos[$segmento]['rotulo'])
     : '';
+// Para o tipo "outro", o nome que a pessoa digitou vale mais que o rótulo.
+$negocioDigitado = $segmento === 'outro'
+    ? agenday_primeiros_passos_negocio_do_cookie($idEstabelecimento)
+    : '';
+if ($negocioDigitado !== '') {
+    $segmentoCurto = $negocioDigitado;
+}
+// Texto que voltou com erro no pop-up do nome do negócio (para corrigir, não recomeçar).
+$negocioTentativa = isset($_SESSION['pp_negocio_tentativa']) && is_string($_SESSION['pp_negocio_tentativa'])
+    ? $_SESSION['pp_negocio_tentativa']
+    : '';
 $aviso = $_SESSION['pp_aviso'] ?? null;
 $erro = $_SESSION['pp_erro'] ?? null;
 
@@ -470,6 +515,7 @@ $erro = $_SESSION['pp_erro'] ?? null;
 $reabrirServico = !empty($_SESSION['pp_reabrir_servico']);
 $reabrirVinculo = !empty($_SESSION['pp_reabrir_vinculo']);
 $reabrirHorario = !empty($_SESSION['pp_reabrir_horario']);
+$reabrirNegocio = !empty($_SESSION['pp_reabrir_negocio']);
 $reabrirProfissional = isset($_SESSION['pp_reabrir_profissional'])
     && is_string($_SESSION['pp_reabrir_profissional'])
     && in_array($_SESSION['pp_reabrir_profissional'], ['eu', 'equipe'], true)
@@ -483,6 +529,8 @@ unset(
     $_SESSION['pp_reabrir_servico'],
     $_SESSION['pp_reabrir_vinculo'],
     $_SESSION['pp_reabrir_horario'],
+    $_SESSION['pp_reabrir_negocio'],
+    $_SESSION['pp_negocio_tentativa'],
     $_SESSION['pp_reabrir_profissional']
 );
 $csrfToken = agenday_token_csrf();
@@ -560,10 +608,22 @@ $csrfToken = agenday_token_csrf();
                     <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
                     <input type="hidden" name="acao" value="segmento">
                     <?php foreach ($segmentos as $chave => $dadosSegmento): ?>
-                        <button type="submit" class="pp-chip" name="segmento" value="<?= agenday_config_html($chave) ?>">
-                            <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
-                            <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
-                        </button>
+                        <?php if ($chave === 'outro'): ?>
+                            <?php
+                            // "Outro" não leva direto para as sugestões: abre o
+                            // pop-up que pergunta o nome do negócio.
+                            ?>
+                            <button type="button" class="pp-chip"
+                                    data-bs-toggle="modal" data-bs-target="#pp-modal-negocio">
+                                <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
+                                <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
+                            </button>
+                        <?php else: ?>
+                            <button type="submit" class="pp-chip" name="segmento" value="<?= agenday_config_html($chave) ?>">
+                                <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
+                                <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
+                            </button>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </form>
             </div>
@@ -806,6 +866,45 @@ $csrfToken = agenday_token_csrf();
             <?php endif; ?>
         </div>
     </section>
+
+    <div class="modal fade" id="pp-modal-negocio" tabindex="-1"
+         aria-labelledby="pp-modal-negocio-titulo" aria-hidden="true"
+         data-reabrir-erro="<?= $reabrirNegocio ? 'true' : 'false' ?>">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="primeiros-passos.php">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="pp-modal-negocio-titulo">Qual é o seu negócio?</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                        <input type="hidden" name="acao" value="segmento">
+                        <input type="hidden" name="segmento" value="outro">
+                        <p class="form-text mt-0">
+                            Como o seu negócio não está na lista, o AgenDay não tem sugestões prontas.
+                            Digite o nome dele: a tela passa a falar do seu negócio, e você cadastra
+                            o primeiro serviço em seguida.
+                        </p>
+                        <div class="pp-campo">
+                            <label for="pp-negocio-nome">Nome do negócio</label>
+                            <input type="text" id="pp-negocio-nome" name="negocio" class="form-control"
+                                   maxlength="60" required
+                                   placeholder="Ex.: Pet shop, estúdio de tatuagem"
+                                   value="<?= agenday_config_html($negocioDigitado !== '' ? $negocioDigitado : $negocioTentativa) ?>">
+                            <p class="form-text">Fica guardado neste navegador, só para esta conta.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Continuar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <?php if ($conexaoOk): ?>
         <div class="modal fade" id="pp-modal-servico" tabindex="-1"
