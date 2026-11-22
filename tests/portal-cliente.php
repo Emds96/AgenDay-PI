@@ -38,6 +38,17 @@ verificar(agenday_portal_slug_sugerir('Barbearia do João') === 'barbearia-do-jo
 verificar(agenday_portal_slug_sugerir('API') === 'api-agenda', 'sugestão evita reservado');
 verificar(strlen(agenday_portal_slug_sugerir(str_repeat('nome ', 30))) <= 60, 'sugestão respeita 60 caracteres');
 
+/* --------------------------------------- endereço digitado pelo estabelecimento */
+[$slugDigitado, $erroDigitado] = agenday_portal_slug_analisar('  Barbearia do João  ');
+verificar($slugDigitado === 'barbearia-do-joao' && $erroDigitado === null, 'endereço digitado é normalizado');
+verificar(agenday_portal_slug_analisar('barbearia-joaoo')[1] === null, 'letra repetida no endereço é aceita');
+[$slugDigitado, $erroDigitado] = agenday_portal_slug_analisar('api');
+verificar($erroDigitado !== null && str_contains($erroDigitado, 'reservado'), 'endereço reservado é recusado');
+[$slugDigitado, $erroDigitado] = agenday_portal_slug_analisar('ab');
+verificar($erroDigitado !== null, 'endereço com 2 letras é recusado');
+[$slugDigitado, $erroDigitado] = agenday_portal_slug_analisar('   ');
+verificar($erroDigitado !== null, 'endereço vazio é recusado');
+
 /* -------------------------------------------------------------- telefone */
 $casos = [
     '(92) 98111-1001' => '92981111001',
@@ -185,7 +196,24 @@ verificar(
         === 'https://agenday-agendamentos.infinityfree.io/cliente-cancelar.php?t=' . str_repeat('a', 64),
     'link de cancelamento usa o dominio do cliente'
 );
-verificar(agenday_portal_base_url(['slug' => 'studio', 'dominio' => '']) === '?e=studio', 'link relativo sem dominio');
+$hostAntesDoLinkBase = $_SERVER['HTTP_HOST'] ?? null;
+unset($_SERVER['HTTP_HOST']);
+verificar(agenday_portal_base_url(['slug' => '', 'dominio' => '']) === '', 'sem endereço não gera link');
+verificar(
+    agenday_portal_base_url(['slug' => 'studio', 'dominio' => ''])
+        === 'https://agenday-agendamentos.infinityfree.io/?e=studio',
+    'sem domínio próprio usa o domínio público do portal'
+);
+verificar(
+    agenday_portal_base_url(['slug' => 'studio', 'dominio' => 'meusalao.com.br'])
+        === 'https://meusalao.com.br/?e=studio',
+    'domínio próprio tem prioridade no link'
+);
+if ($hostAntesDoLinkBase === null) {
+    unset($_SERVER['HTTP_HOST']);
+} else {
+    $_SERVER['HTTP_HOST'] = $hostAntesDoLinkBase;
+}
 verificar(agenday_whatsapp_chat_id('92981111001') === '5592981111001@c.us', 'chatId do WhatsApp');
 
 /* ------------------------------------- assinatura: quem está falando */
