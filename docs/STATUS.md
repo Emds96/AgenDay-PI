@@ -1,5 +1,19 @@
 # STATUS — AgenDay 2.0
 
+## DEPLOY-04 — Publicação do lote até PRIMEIROS-PASSOS-04 (22/11/2026)
+
+- **Autorização:** "Pode publicar tudo" (22/11/2026), cobrindo o lote acumulado desde o DEPLOY-03 (`b6887f6`).
+- **SHA e destino:** `fd6d2d3360c4fe1577ecae04ef22fe237b4dc547` (merge do PR #97), conferido igual no `git rev-parse` local e na ref remota **antes** de ativar as flags. Destino: as duas pastas (`htdocs` e `agenday-agendamentos.infinityfree.io/htdocs`). O lote inteiro **não altera o banco** — nenhum SQL executado.
+- **Backup antes de publicar:** `2026-11-22_164620_db85b82c` — **BACKUP OK**, 137 arquivos, 16 tabelas, restauração local aprovada, `relatorio.json` conferido pelo publicador assistido.
+- **Publicação:** `workflow_dispatch` no run **`45068966986`**, environment `producao-agenday` aprovado pela API do GitHub (`gh`, conta `Emds96`) a pedido expresso do responsável. Os três jobs concluíram com **success** — `Validar codigo e pacote`, `Testar FTPS sem publicar arquivos` e `Enviar ao InfinityFree somente com autorizacao`. Log do envio: **128 arquivos no site principal, 128 no domínio do cliente, nenhum arquivo remoto apagado**.
+- **Flags:** `AGENDAY_DEPLOY_ENABLED=true` e `AGENDAY_DEPLOY_MODE=publish` só durante a janela; restauradas para **`false` / `disabled`** às 21:02 UTC e confirmadas pelo `gh variable list`.
+- **Conferência pós-deploy (22/11/2026, navegador e HTTP):** `https://agenday-sistema.infinityfree.io/` abre o login sem erro de PHP; `primeiros-passos.php` e `agenda.php` sem sessão redirecionam para `index.php` (arquivo carrega, sem fatal); `https://agenday-sistema.infinityfree.io/css/primeiros-passos.css` serve o CSS novo (contém `.pp-passo-acoes`). Para `curl`, as páginas PHP ficam atrás do desafio anti-bot do InfinityFree — por isso a conferência autenticada do checklist depende do QA do responsável.
+- **Passou a existir em produção:** PRIMEIROS-PASSOS-01 a 04, CADASTRO-TELEFONE-01, FEE-01, FEE-02, PORTAL-RAIZ-01, MENSAGENS-02, LEMBRETE-01 e o restante do lote desde `b6887f6`.
+- **Pendente:** QA do responsável na hospedagem (primeiro uso de conta nova, telefone obrigatório no cadastro, "Cancelar e cobrar taxa", lembrete sem link com telefone e o tipo de negócio lembrado no navegador).
+- **Observação:** este registro é documental e veio **depois** do deploy; o HEAD da `dev-feira-uninorte` passa a ficar à frente do SHA publicado (`fd6d2d3`).
+
+---
+
 ## PRIMEIROS-PASSOS-04 — Tipo de negócio lembrado e passo 2 sem armadilha (22/11/2026)
 
 - **Pedido do responsável:** corrigir dois incômodos do primeiro uso — o tipo de negócio escolhido sumia ao reabrir o navegador, e o passo "Cadastre quem atende" parecia exigir um cadastro de profissional mesmo para quem atende sozinho.
@@ -10,7 +24,7 @@
 - **Testes (PC local, 22/11/2026):** `tests/primeiros-passos.php` 166 → **176** (nome do cookie por estabelecimento, duração de um ano, chave inválida ignorada, valor não-texto ignorado, cookie de outro estabelecimento não vaza, cookie vazio); `tests/link-portal-preview.js` 36 → **41** (foco só com o hash certo, sem roubar foco em outro hash, `hashchange`); prova HTTP real: **19 verificações, 0 falha** — dois botões no passo 2, âncora e `data-focar-ao-chegar`, `Set-Cookie` com chave/`Max-Age=31536000`/`HttpOnly`/`SameSite=Lax`, sugestões mantidas ao recarregar, cookie apagado ao trocar, versões pp04. Demais suítes: portal 153, agenda 19, cancelamento 20, configuração 27, recuperação de senha OK, alteração de senha 16, avatar OK, responsividade 233.
 - **Limitação do ambiente local:** `tests/google-identidade-validacao.php` aborta no PC com "OpenSSL indisponível" (build local sem a extensão). Não tem relação com esta mudança e passa na CI.
 - **Conferência visual (Edge headless, 22/11/2026):** desktop 1280 (dois botões lado a lado) e 360 px (empilhados, sem rolagem horizontal).
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -24,7 +38,7 @@
 - **Sem SQL e sem mudança de regra de negócio:** só apresentação e estado do botão.
 - **Testes (PC local, 22/11/2026):** `tests/link-portal-preview.js` 27 → **36** (novo botão: `href` do endereço salvo, desativado ao digitar nome não salvo, reativado ao voltar ao nome salvo, conta sem slug sem `href`); prova HTTP real com a conta #35: **17 verificações** — botão presente, rótulo novo, rótulo antigo ausente, `href` do portal, sem `disabled`/`aria-disabled`, `target`/`rel`, versões novas, `cliente.php` respondendo 200. Demais suítes: portal 153, primeiros passos 166, agenda 19, cancelamento 20, configuração 27, responsividade 233.
 - **Conferência visual (Edge headless, 22/11/2026):** desktop 1280 e iframe de 360 px; o botão quebra em duas linhas sem estourar a largura.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -39,7 +53,7 @@
 - **CI:** `tests/primeiros-passos.php` (criado no PR #94) e `tests/link-portal-preview.js` (novo) entraram na lista de testes do workflow existente.
 - **Testes (PC local, 22/11/2026):** `tests/portal-cliente.php` 150 → **153**; `tests/link-portal-preview.js` **27** (carrega o JS real com DOM falso: normalização idêntica ao PHP em 9 casos, copiar bloqueado/liberado, avisos); prova HTTP real com conta descartável: **24 verificações** — cadastro, campo novo, prévia no host local, nome com acento, colisão com `studio`, nome inválido, em branco pelo nome, POST sem CSRF e banco; dados apagados. Demais suítes: primeiros passos 166, agenda 19, cancelamento 20, configuração 27, responsividade 233.
 - **Conferência visual (Edge headless, 22/11/2026):** desktop 1280 e viewport real de 360 px; `scrollWidth = clientWidth = 360`, sem rolagem horizontal.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -55,7 +69,7 @@
 - **Segurança:** todas as ações são POST com CSRF; `id_estabelecimento` vem da sessão; prepared statements; nome, duração e preço vêm do catálogo do sistema (o navegador manda apenas o **índice** da sugestão); cadastro do profissional em transação.
 - **Testes (PC local, 22/11/2026):** `tests/primeiros-passos.php` **novo, 166 verificações** (catálogo íntegro, segmento válido/inválido, índice fora do catálogo, preço e duração, progresso vazio/parcial/completo e valores negativos). Prova de ponta a ponta contra o PHP local + MySQL: **34 verificações** — cadastro 303 para a tela nova, tela abre logada (200), 1 de 4, sugestão criada, 2 de 4, "já cadastrado", profissional + vínculo, 4 de 4, aviso da agenda desaparece, POST sem CSRF e índice inválido recusados, banco conferido (`00:45:00` e `150.00`), dados de teste apagados. `tests/responsividade-check.js` 219 → **233** (a nova página entra na lista) e sem rolagem horizontal em 360 px (`scrollWidth = clientWidth = 360`). Demais suítes: portal 150, agenda 19, cancelamento 20, configuração 27.
 - **Não incluído:** QR code na tela nova (o projeto não tem gerador; o link com Copiar cobre), item próprio no menu lateral (o teste exige a ordem aprovada de 6 links) e sugestões a partir de endereço/CNPJ.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -67,7 +81,7 @@
 - **Por que obrigatório:** o número é o que aparece na linha *"Se não puder comparecer, avise com antecedência: (92) ..."* do lembrete aprovado (MENSAGENS-02). Sem ele, o lembrete saía sem contato.
 - **Testes (PC local, 22/11/2026):** `tests/configuracao-estabelecimento.php` 13 → **27** (13 casos do telefone obrigatório/opcional + Configurações aceitando vazio). Simulação real do POST contra o banco local: sem telefone e com telefone inválido → conta **não** criada com a mensagem certa; com `(92) 98888-7700` → conta criada e número gravado. Mesmo teste no fluxo Google (`(92) 97777-6600`). Registros de teste apagados. Demais suítes verdes: portal 150, agenda 19, cancelamento 20, senha 16, avatar ok, Google 15, recuperação de senha ok, responsividade 219.
 - **Limite conhecido:** contas antigas sem telefone continuam sem número no lembrete até o responsável executar o plano dele.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -80,7 +94,7 @@
 - **Portal do cliente:** continua **bloqueando** cancelar e remarcar dentro das 24h. Liberar exigiria mudar a mensagem já aprovada ("até 24h antes do horário") e mais código em cima da feira; o salão já fica sabendo pelo telefone.
 - **Testes (PC local, 22/11/2026):** 34 provas com banco local (marca idempotente, cancelamento comum **sem** marca, cancelamento com taxa **com** marca, observação preservada, repetição do POST sem duplicar, contadores e isolamento entre estabelecimentos) e renderização real de `cad-cliente.php` com os três selos + `agenday_agenda_listar()` devolvendo `cobrar_taxa` e a observação limpa. Suítes do CI: portal 150, agenda 19, cancelamento 20, configuração 13, senha 16, avatar ok, recuperação de senha ok, responsividade 219. (`tests/google-identidade-validacao.php`: no PC local a extensão OpenSSL está carregada, mas o PHP não achava o `openssl.cnf`; apontando `OPENSSL_CONF` para o arquivo do Git, as 15 verificações passaram. É ajuste de ambiente, não do código.)
 - **Limite conhecido:** marcar **"já cobrei"** exige coluna nova; hoje o aviso permanece até o registro sair da agenda.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -91,7 +105,7 @@
 - **Remarcação em cima da hora — análise e decisão:** o cliente **não consegue** cancelar nem remarcar dentro das 24h. O botão nem aparece e o portal responde "Cancelamentos são aceitos até 24 horas antes do atendimento." (mesma regra no link por token). Quando o cliente liga, o salão faz **cancelar + criar outro** — e esse cancelamento **já entra na contagem**. Rotular o cancelamento como "em cima da hora" exigiria coluna nova registrando o horário do cancelamento na mesma base de tempo do agendamento; fica para depois da feira.
 - **Limite:** sem SQL não existe como marcar "já cobrei"; o número permanece visível. Não há controle de pagamento.
 - **Testes (PC local, 22/11/2026):** 14 provas com banco local (contagem de faltas e cancelamentos, singular/plural, cliente zerado, isolamento entre estabelecimentos, lista vazia e ids inválidos) e renderização real de `cad-cliente.php` mostrando "2 faltas". Suítes: portal 150, agenda 19, cancelamento 20, configuração 13, senha 16, avatar ok, responsividade 219.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -109,7 +123,7 @@
 - **Sem SQL:** o dado errado do Studio continua no banco local e em produção, mas deixou de ter efeito. A limpeza de `dominio` (deixar vazio) é opcional e não foi feita.
 - **Mensagem da tela 404:** mantida como está, por decisão do responsável ("deixa do jeito que ta pra eu ver na pratica primeiro").
 - **Testes:** `tests/portal-cliente.php` **145 → 150** verificações (domínio público com e sem `www.`, com maiúsculas/porta, domínio próprio e host vazio). `php -l` limpo em `lib/portal-cliente.php` e `tests/portal-cliente.php`.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04).
 
 ---
 
@@ -149,7 +163,7 @@
   Sem telefone cadastrado, a última linha fica "Se não puder comparecer, avise com antecedência." O número é lido de `contato_estabelecimento`, normalizado e formatado; o texto é montado na hora de agendar o lembrete.
 - **Telefone obrigatório — pedido do responsável, adiado:** todo estabelecimento deverá ter um telefone de contato cadastrado. Hoje o campo é **opcional** (1 dos 24 preenchido) e a mensagem cai na versão sem número. Tornar obrigatório no cadastro e em Configurações é alteração de validação — depois da feira.
 - **Taxa de cancelamento — ideia do responsável, adiada:** cobrar uma taxa quando o cliente cancela ou remarca em cima da hora. O sistema **não tem meio de cobrança** (sem gateway, sem cartão salvo), então a taxa não pode ser aplicada automaticamente. Sem SQL, o máximo é um **aviso textual** na mensagem; registrar cancelamento tardio no painel é possível derivando `data_inicio` × `atualizado_em`, mas remarcação tardia **não** é recuperável (o horário antigo é sobrescrito). Uma configuração por estabelecimento exigiria coluna nova — depois da feira.
-- **Estado real:** confirmação e lembrete implementados e testados **somente no PC local**; telefone obrigatório e taxa em aberto; **não publicado**.
+- **Estado real:** confirmação e lembrete implementados e testados no PC local e **publicados** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04); telefone obrigatório e taxa de cancelamento seguem em aberto (a taxa virou ação manual no FEE-02).
 
 ---
 
@@ -165,8 +179,8 @@
 - **Link absoluto:** `agenday_portal_link_cancelamento()` passou a usar o **domínio público do portal** quando o estabelecimento não tem domínio próprio; antes devolvia caminho relativo, que não abre no WhatsApp. Continua valendo para a **remarcação**, que ainda leva o link de cancelar.
 - **Testes no PC local (22/11/2026):** `php -l` limpo nos cinco arquivos; `tests/portal-cliente.php` de 122 para **134** (título próprio, sem "confirmado", link, assinatura, constantes/funções e ligação nos fluxos); `responsividade-check` **219**; `agendamento-validacao` (19), `agendamento-cancelamento` (20), `configuracao-estabelecimento` (13) e `alteracao-senha-validacao` (16) limpos.
 - **Provas com banco local (`agenday_local`, estabelecimento 29), sem envio real:** lembrete enfileirado 24h antes; reagendar não acumula; remarcação troca a data; horário a menos de 24h não gera; cancelar remove o pendente (inclusive cancelamento repetido); fila descarta lembrete de horário já iniciado e de agendamento cancelado; telefone fixo não gera. Cliente, agendamentos e mensagens de teste apagados ao final.
-- **Pendências:** não publicado e sem teste na hospedagem; o **opt-out "responda SAIR"** continua adiado (exigiria coluna/tabela); agendamento criado no **painel** recebe lembrete, mas não recebe confirmação imediata — decisão para depois da feira.
-- **Estado real:** implementado e testado **somente no PC local**, **não publicado**, **sem alteração de banco**.
+- **Pendências:** publicado em 22/11/2026 (DEPLOY-04) mas **sem teste real de envio na hospedagem** — depende do WAHA ligado no PC; o **opt-out "responda SAIR"** continua adiado (exigiria coluna/tabela); agendamento criado no **painel** recebe lembrete, mas não recebe confirmação imediata — decisão para depois da feira.
+- **Estado real:** implementado, testado no PC local e **publicado** no SHA `fd6d2d3`, **sem alteração de banco**.
 
 ---
 
@@ -182,8 +196,8 @@
 - **Sem trava no atendimento:** se o WhatsApp da plataforma estiver fora do ar (`agenday_whatsapp_pronto()` falso), a confirmação deixa de ser exigida e o cadastro segue — com o número entrando como não confirmado.
 - **Provas no PC local (22/11/2026):** `php -l` limpo nos sete arquivos; `tests/portal-cliente.php` de 117 para **122** (celular com WhatsApp, fixo, 10 dígitos, vazio e nulo); `responsividade-check` de 214 para **219** (blocos e script nas duas telas).
 - **Prova real com banco local:** fixo recusado no envio; número da Mariana recusado como duplicado com o nome; salvar sem confirmar recusado; "sem WhatsApp" salvou com `telefone_digits` NULL; código errado recusado; código certo confirmou (`(92) 9****-7777`) e o cadastro salvou; cliente rápido recusou sem confirmação; edição só do nome passou, troca para celular sem confirmação foi recusada, fixo com "sem WhatsApp" passou. As contas e verificações de teste foram apagadas.
-- **Pendências:** o **lembrete automático** (lote B) foi implementado depois, no registro LEMBRETE-01; nada foi publicado e o comportamento na hospedagem não foi conferido.
-- **Estado real:** implementado e testado **somente no PC local**, **não publicado**, **sem alteração de banco**.
+- **Pendências:** o **lembrete automático** (lote B) foi implementado depois, no registro LEMBRETE-01; o comportamento na hospedagem ainda não foi conferido.
+- **Estado real:** implementado e testado no PC local, **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04) e **sem alteração de banco**.
 
 ---
 
@@ -199,7 +213,7 @@
 - **Prova por HTTP local:** `cliente.php?e=barbearia-joao` e `?e=barbearia-joaoo` responderam **200** com o nome do estabelecimento; `?e=nao-existe` respondeu **404**. A tela de Configurações passou a exibir `http://127.0.0.1:8080/cliente.php?e=barbearia-joao` e o campo preenchido.
 - **Limpeza:** as duas contas de teste e seus 14 horários foram apagados; o banco voltou a **24 estabelecimentos**, com apenas o Studio (`slug=studio`) preenchido.
 - **Pendências conhecidas:** (1) trocar o endereço invalida o link antigo — não há tabela de apelidos, e não vale criar antes da feira; (2) os outros 23 estabelecimentos continuam sem slug e passam a ter um quando salvarem a tela com o campo em branco.
-- **Estado real:** implementado e testado **somente no PC local**, **não publicado** e **sem alteração de banco**.
+- **Estado real:** implementado e testado no PC local, **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04) e **sem alteração de banco**.
 
 ---
 
@@ -215,7 +229,7 @@
 - **Testes executados no PC local (21/11/2026):** `php -l` limpo em `config.php`, `whatsapp-plataforma.php` e `lib/whatsapp.php`; `tests/portal-cliente.php` de 100 para **110 verificações** (assinatura nos cinco tipos de texto, assinatura sem estabelecimento); `responsividade-check` com **213 verificações**; `agendamento-validacao` (19) e `agendamento-cancelamento` (20) limpos.
 - **Prova funcional no banco local (`agenday_local`, estabelecimento 29):** POST em `config.php` com `salvar_estabelecimento` gravou `exigir_codigo_whatsapp` de **1 → 0** e devolveu para **1**; POST em `whatsapp-plataforma.php` com **chave errada** mostrou "Confirme a chave de API atual…" e com **chave certa** mostrou "Conexão da plataforma salva."; as duas páginas renderizaram sem `Fatal error`/`Warning` (126 KB e 24 KB).
 - **Pendências conhecidas:** (1) não existe papel de operador da plataforma no banco, então a proteção é a chave de API — criar permissão própria fica para depois da feira; (2) o **opt-out "responda SAIR"** não foi implementado (exigiria coluna/tabela nova, fora do escopo autorizado); (3) o **lembrete automático** continuava sem gatilho (item 3 da fila) e foi implementado depois, no LEMBRETE-01.
-- **Estado real:** implementado e testado **somente no PC local**, **não publicado** e **sem alteração de banco**.
+- **Estado real:** implementado e testado no PC local, **publicado** em 22/11/2026 no deploy do SHA `fd6d2d3` (DEPLOY-04) e **sem alteração de banco**.
 
 ---
 
