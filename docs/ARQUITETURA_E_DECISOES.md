@@ -40,6 +40,8 @@ O site do Gabriel pode ser comparado **somente para análise autorizada**, não 
 
 O `htdocs/conexao.php` de produção é **privado** e fora do GitHub. Cada request autenticado usa `id_estabelecimento` da sessão e consultas preparadas nas rotas adaptadas. Há `password_hash/password_verify`, CSRF, tratamento de uploads e locks/transações para reservas — **essas proteções só cobrem rotas implementadas/revisadas; não são auditoria geral de segurança**.
 
+Desde 22/11/2026 o `verifica_login.php` confere se o `id_estabelecimento` da sessão ainda existe em `estabelecimento` (uma consulta por chave primária). Se a conta foi apagada com a sessão aberta, a sessão é encerrada como no logout, em vez de deixar as telas abrirem e só as gravações falharem com mensagem genérica. Banco indisponível **não** desloga ninguém: a exceção é registrada no log e a sessão é mantida.
+
 No código de agendamento, data/hora local é interpretada em `America/Manaus` por padrão (ou `AGENDAY_TIMEZONE` na configuração privada); estabelecimentos em fusos distintos exigiriam solução adicional.
 
 ## 4. Experiência de estabelecimento × consumidor — decisão aberta
