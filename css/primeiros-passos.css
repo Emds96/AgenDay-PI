@@ -1,0 +1,312 @@
+/*
+ * PRIMEIROS-PASSOS-01
+ * Tela de primeiro uso: progresso, checklist, sugestões por tipo de negócio.
+ * Só tokens do design system (css/design-system.css); nenhuma cor solta.
+ */
+
+.agenday-app .pp-painel {
+    margin-bottom: 1.25rem;
+}
+
+.agenday-app .pp-progresso {
+    margin-bottom: 1.5rem;
+}
+
+.agenday-app .pp-progresso-topo {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .4rem;
+    color: var(--ad-text);
+    font-size: .95rem;
+}
+
+.agenday-app .pp-progresso-topo span {
+    color: var(--ad-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.agenday-app .pp-progresso .progress {
+    height: .6rem;
+    background: var(--ad-surface-muted);
+    border: 1px solid var(--ad-border);
+    border-radius: 999px;
+}
+
+.agenday-app .pp-progresso .progress-bar {
+    background: var(--ad-primary);
+}
+
+/* Checklist ---------------------------------------------------------------- */
+
+.agenday-app .pp-passos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .6rem;
+}
+
+.agenday-app .pp-passo {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .85rem;
+    padding: .85rem 1rem;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-md);
+    background: var(--ad-surface);
+}
+
+.agenday-app .pp-passo-feito {
+    background: var(--ad-surface-muted);
+    border-color: var(--ad-primary-soft);
+}
+
+.agenday-app .pp-passo-marca {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--ad-primary-soft);
+    color: var(--ad-primary);
+    font-weight: 700;
+    font-size: .9rem;
+}
+
+.agenday-app .pp-passo-feito .pp-passo-marca {
+    background: var(--ad-primary);
+    color: #fff;
+}
+
+.agenday-app .pp-passo-texto h3 {
+    margin: 0 0 .15rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ad-text);
+}
+
+.agenday-app .pp-passo-texto p {
+    margin: 0;
+    font-size: .875rem;
+    color: var(--ad-text-muted);
+}
+
+.agenday-app .pp-passo-acao {
+    white-space: nowrap;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Tipo de negócio ---------------------------------------------------------- */
+
+.agenday-app .pp-segmentos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: .75rem;
+}
+
+.agenday-app .pp-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .2rem;
+    min-height: 44px;
+    padding: .8rem 1rem;
+    text-align: left;
+    background: var(--ad-surface);
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-md);
+    color: var(--ad-text);
+    transition: border-color .15s ease, background .15s ease;
+}
+
+.agenday-app .pp-chip strong {
+    font-size: .95rem;
+}
+
+.agenday-app .pp-chip span {
+    font-size: .8rem;
+    color: var(--ad-text-muted);
+    line-height: 1.35;
+}
+
+.agenday-app .pp-chip:hover,
+.agenday-app .pp-chip:focus-visible {
+    border-color: var(--ad-primary);
+    background: var(--ad-primary-soft);
+}
+
+/* Serviços sugeridos ------------------------------------------------------- */
+
+.agenday-app .pp-sugestoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: .6rem;
+}
+
+.agenday-app .pp-sugestao {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "nome acao"
+        "meta acao";
+    align-items: center;
+    gap: .1rem .75rem;
+    min-height: 44px;
+    padding: .7rem .9rem;
+    text-align: left;
+    background: var(--ad-surface);
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-md);
+    color: var(--ad-text);
+    transition: border-color .15s ease, background .15s ease;
+}
+
+.agenday-app .pp-sugestao:hover:not(:disabled),
+.agenday-app .pp-sugestao:focus-visible:not(:disabled) {
+    border-color: var(--ad-primary);
+    background: var(--ad-primary-soft);
+}
+
+.agenday-app .pp-sugestao:disabled {
+    opacity: .65;
+    cursor: default;
+}
+
+.agenday-app .pp-sugestao-nome {
+    grid-area: nome;
+    font-weight: 600;
+    font-size: .92rem;
+}
+
+.agenday-app .pp-sugestao-meta {
+    grid-area: meta;
+    font-size: .78rem;
+    color: var(--ad-text-muted);
+}
+
+.agenday-app .pp-sugestao-aco {
+    grid-area: acao;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--ad-primary);
+    white-space: nowrap;
+}
+
+.agenday-app .pp-trocar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .35rem;
+    margin: 1rem 0 0;
+    font-size: .875rem;
+    color: var(--ad-text-muted);
+}
+
+.agenday-app .pp-trocar-form {
+    display: inline;
+}
+
+.agenday-app .pp-trocar .link-acao {
+    min-height: 44px;
+    padding: 0 .25rem;
+    border: 0;
+    background: transparent;
+    color: var(--ad-primary);
+    font-weight: 700;
+    font-size: .85rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.agenday-app .pp-trocar .link-acao:hover {
+    color: var(--ad-primary-hover);
+}
+
+/* Formulário do profissional ----------------------------------------------- */
+
+.agenday-app .pp-form {
+    display: grid;
+    gap: .9rem;
+    max-width: 32rem;
+}
+
+.agenday-app .pp-campo {
+    display: grid;
+    gap: .3rem;
+}
+
+.agenday-app .pp-campo label {
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--ad-text);
+}
+
+.agenday-app .pp-check {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    padding-left: 0;
+}
+
+.agenday-app .pp-check .form-check-input {
+    margin-left: 0;
+    flex: 0 0 auto;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: .15rem;
+}
+
+.agenday-app .pp-link {
+    max-width: 34rem;
+}
+
+.agenday-app .pp-vazio {
+    margin: 0;
+    color: var(--ad-text-muted);
+}
+
+.agenday-app .pp-rodape {
+    margin: 0 0 2rem;
+}
+
+/* Celular ------------------------------------------------------------------ */
+
+@media (max-width: 575.98px) {
+    .agenday-app .pp-passo {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+            "marca texto"
+            "acao acao";
+        align-items: start;
+        row-gap: .6rem;
+    }
+
+    .agenday-app .pp-passo-marca {
+        grid-area: marca;
+    }
+
+    .agenday-app .pp-passo-texto {
+        grid-area: texto;
+    }
+
+    .agenday-app .pp-passo-acao {
+        grid-area: acao;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .agenday-app .pp-segmentos,
+    .agenday-app .pp-sugestoes {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .agenday-app .pp-sugestao {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+}

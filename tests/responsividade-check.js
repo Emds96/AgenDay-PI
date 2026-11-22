@@ -11,7 +11,7 @@ const ler = arquivo => fs.readFileSync(path.join(raiz, arquivo), 'utf8');
 const paginas = [
     'index.php', 'agenda.php', 'agendar.php', 'cad-cliente.php', 'cad-funcionario.php',
     'cad.servicos.php', 'comandas-abertas.php', 'financeiro.php',
-    'historico-comandas.php', 'config.php'
+    'historico-comandas.php', 'config.php', 'primeiros-passos.php'
 ];
 let verificacoes = 0;
 const verificar = (condicao, mensagem) => {
