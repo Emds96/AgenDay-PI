@@ -1,5 +1,20 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-11 — O tipo de negócio virou o item 1 do checklist (22/11/2026)
+
+- **Pedido do responsável:** *"vamos ajustar esse card 'Que tipo de negócio é o seu?' vai ficar dentro do card 'O que falta', ai vai mudar de 4 pra 5 itens"*.
+- **Agora:** o cartão solto do tipo de negócio sumiu. As seis opções aparecem **dentro do item 1 do checklist**, com o título "Escolha o tipo de negócio". O checklist passa de 4 para **5 itens**: tipo de negócio, serviços, quem atende, vínculo e horário.
+- **Depois da escolha:** o item 1 fica concluído (marca de check) e mostra `Tipo de negócio: <escolha> · Trocar`. A linha saiu do item de serviços, onde estava desde o PRIMEIROS-PASSOS-10.
+- **Progresso:** "n de 5". O horário criado no próprio cadastro já conta, então a primeira visita começa em **1 de 5 (20%)** e a escolha do tipo leva a 2 de 5 (40%).
+- **Agenda:** o banner "Próximo passo" usa o mesmo checklist e agora recebe o tipo da sessão/cookie (`agenday_primeiros_passos_estado` ganhou um terceiro parâmetro). Sem isso, contas antigas veriam "escolha o tipo" mesmo já configuradas — e quem não escolheu passa a ver esse passo, o que é o comportamento correto.
+- **Biblioteca:** `agenday_primeiros_passos_progresso()` ganhou a chave `segmento` e o item novo, que só conclui com chave válida do catálogo ("outro" inclusive).
+- **CSS:** `.pp-passo-segmento` faz as opções ocuparem a largura toda do item (duas colunas no desktop, uma no celular); versão para `?v=20261122-pp09`.
+- **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php`, `lib/primeiros-passos.php` e `agenda.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **29 verificações, 0 falha**: checklist com 5 itens e "O que falta" como primeira seção, cartão solto ausente, seis opções dentro do item 1, escolha somando no progresso, tipo mostrado uma única vez no item 1, sugestões antes do checklist, "outro" com nome digitado, um único gatilho de serviço e "Trocar" devolvendo as opções ao item. Fumaça da agenda com conta real: HTTP 200, banner presente, sem erro PHP. Suítes: `tests/primeiros-passos.php` 191 → **195** (5 passos, tipo válido/inválido, ordem e percentuais), `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
+- **Conferência visual (navegador real, 22/11/2026):** 1897 px (opções em três colunas dentro do item, item concluído com a linha do tipo) e 360 px (opções empilhadas), sem rolagem horizontal.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-10 — O tipo de negócio entrou no checklist (22/11/2026)
 
 - **Pedido do responsável:** *"eu ainda nao gosto do tipo de negocio ficar engessado em cima doque falta, prefiro que tu coloque esse tipo de negocio dentro das etapas do que falta e tira esse botao de cadastrar servico de baixo do tipo de negocio por que tem nao faz sentido"*.

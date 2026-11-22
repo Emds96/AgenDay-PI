@@ -31,7 +31,15 @@ if (isset($conexao) && $conexao instanceof mysqli) {
 $primeirosPassos = null;
 $primeirosPassosProximo = '';
 if (isset($conexao) && $conexao instanceof mysqli) {
-    $primeirosPassos = agenday_primeiros_passos_estado($conexao, (int) $_SESSION['id_estabelecimento']);
+    $segmentoPrimeirosPassos = isset($_SESSION['agenday_primeiros_passos_segmento'])
+        && is_string($_SESSION['agenday_primeiros_passos_segmento'])
+        ? $_SESSION['agenday_primeiros_passos_segmento']
+        : agenday_primeiros_passos_segmento_do_cookie((int) $_SESSION['id_estabelecimento']);
+    $primeirosPassos = agenday_primeiros_passos_estado(
+        $conexao,
+        (int) $_SESSION['id_estabelecimento'],
+        $segmentoPrimeirosPassos
+    );
     if ($primeirosPassos !== null) {
         foreach ($primeirosPassos['itens'] as $passo) {
             if (!$passo['feito']) {

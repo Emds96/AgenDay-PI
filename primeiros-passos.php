@@ -405,7 +405,7 @@ $diasFuncionamento = agenday_horario_padrao();
 $funcionamentoDisponivel = false;
 
 if ($conexaoOk) {
-    $estado = agenday_primeiros_passos_estado($conexao, $idEstabelecimento);
+    $estado = agenday_primeiros_passos_estado($conexao, $idEstabelecimento, $segmento);
 
     try {
         $stmt = $conexao->prepare('SELECT nome_servico FROM servicos WHERE id_estabelecimento = ?');
@@ -486,7 +486,7 @@ $enderecoDigitado = isset($_SESSION['pp_endereco']) && is_string($_SESSION['pp_e
     ? $_SESSION['pp_endereco']
     : $portalSlug;
 
-$progresso = $estado ?? agenday_primeiros_passos_progresso([]);
+$progresso = $estado ?? agenday_primeiros_passos_progresso(['segmento' => $segmento]);
 $sugestoes = agenday_primeiros_passos_sugestoes($segmento);
 $segmentos = agenday_primeiros_passos_segmentos();
 // Rótulo curto para o passo de serviço ("Outro", em vez de "Outro tipo de
@@ -551,7 +551,7 @@ $csrfToken = agenday_token_csrf();
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
     <link rel="stylesheet" href="css/configuracoes-v2.css?v=20261120-ui16">
-    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp08">
+    <link rel="stylesheet" href="css/primeiros-passos.css?v=20261122-pp09">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
             crossorigin="anonymous"></script>
@@ -594,39 +594,7 @@ $csrfToken = agenday_token_csrf();
         </div>
     <?php endif; ?>
 
-    <?php if ($segmento === ''): ?>
-        <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-segmento">
-            <div class="ag-settings-body">
-                <div class="ag-settings-section-title">
-                    <h2 id="pp-titulo-segmento">Que tipo de negócio é o seu?</h2>
-                    <p>Escolha abaixo: o AgenDay já sugere os serviços mais comuns. Você pode editar tudo depois.</p>
-                </div>
-                <form method="post" action="primeiros-passos.php" class="pp-segmentos">
-                    <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                    <input type="hidden" name="acao" value="segmento">
-                    <?php foreach ($segmentos as $chave => $dadosSegmento): ?>
-                        <?php if ($chave === 'outro'): ?>
-                            <?php
-                            // "Outro" não leva direto para as sugestões: abre o
-                            // pop-up que pergunta o nome do negócio.
-                            ?>
-                            <button type="button" class="pp-chip"
-                                    data-bs-toggle="modal" data-bs-target="#pp-modal-negocio">
-                                <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
-                                <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
-                            </button>
-                        <?php else: ?>
-                            <button type="submit" class="pp-chip" name="segmento" value="<?= agenday_config_html($chave) ?>">
-                                <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
-                                <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
-                            </button>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </form>
-            </div>
-        </section>
-    <?php else: ?>
-        <?php if ($sugestoes !== []): ?>
+    <?php if ($segmento !== '' && $sugestoes !== []): ?>
         <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-sugestoes">
             <div class="ag-settings-body">
                 <div class="ag-settings-section-title">
@@ -663,7 +631,6 @@ $csrfToken = agenday_token_csrf();
                 </p>
             </div>
         </section>
-        <?php endif; ?>
     <?php endif; ?>
 
     <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-progresso">
@@ -672,7 +639,7 @@ $csrfToken = agenday_token_csrf();
                 <h2 id="pp-titulo-progresso">O que falta</h2>
                 <p><?= $progresso['completo']
                     ? 'Tudo pronto: sua agenda já pode receber agendamentos.'
-                    : 'Estes são os quatro itens que liberam os horários da sua agenda.' ?></p>
+                    : 'Estes são os itens que liberam os horários da sua agenda.' ?></p>
             </div>
 
             <div class="pp-progresso">
@@ -690,7 +657,7 @@ $csrfToken = agenday_token_csrf();
 
             <ol class="pp-passos">
                 <?php foreach ($progresso['itens'] as $indice => $item): ?>
-                    <li class="pp-passo<?= $item['feito'] ? ' pp-passo-feito' : '' ?>">
+                    <li class="pp-passo<?= $item['feito'] ? ' pp-passo-feito' : '' ?><?= $item['chave'] === 'segmento' ? ' pp-passo-segmento' : '' ?>">
                         <span class="pp-passo-marca" aria-hidden="true">
                             <?php if ($item['feito']): ?>
                                 <i class="bi bi-check-lg"></i>
@@ -706,11 +673,7 @@ $csrfToken = agenday_token_csrf();
                                 <?php endif; ?>
                             </h3>
                             <p><?= agenday_config_html($item['ajuda']) ?></p>
-                            <?php if ($item['chave'] === 'servico' && $segmento !== ''): ?>
-                                <?php
-                                // O tipo de negócio fica no passo que ele alimenta
-                                // (as sugestões de serviço), não num cartão solto.
-                                ?>
+                            <?php if ($item['chave'] === 'segmento' && $segmento !== ''): ?>
                                 <div class="pp-trocar pp-tipo-passo">
                                     <span>Tipo de negócio: <strong><?= agenday_config_html($segmentoCurto) ?></strong></span>
                                     <form method="post" action="primeiros-passos.php" class="pp-trocar-form">
@@ -721,7 +684,33 @@ $csrfToken = agenday_token_csrf();
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <?php if ($item['chave'] === 'equipe' && $conexaoOk): ?>
+                        <?php if ($item['chave'] === 'segmento' && $segmento === ''): ?>
+                            <form method="post" action="primeiros-passos.php" class="pp-segmentos">
+                                <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
+                                <input type="hidden" name="acao" value="segmento">
+                                <?php foreach ($segmentos as $chave => $dadosSegmento): ?>
+                                    <?php if ($chave === 'outro'): ?>
+                                        <?php
+                                        // "Outro" não leva direto para as sugestões: abre o
+                                        // pop-up que pergunta o nome do negócio.
+                                        ?>
+                                        <button type="button" class="pp-chip"
+                                                data-bs-toggle="modal" data-bs-target="#pp-modal-negocio">
+                                            <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
+                                            <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
+                                        </button>
+                                    <?php else: ?>
+                                        <button type="submit" class="pp-chip" name="segmento" value="<?= agenday_config_html($chave) ?>">
+                                            <strong><?= agenday_config_html($dadosSegmento['rotulo']) ?></strong>
+                                            <span><?= agenday_config_html($dadosSegmento['descricao']) ?></span>
+                                        </button>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </form>
+                        <?php endif; ?>
+                        <?php if ($item['chave'] === 'segmento'): ?>
+                            <?php /* As opções de tipo estão no próprio passo, acima. */ ?>
+                        <?php elseif ($item['chave'] === 'equipe' && $conexaoOk): ?>
                             <?php if ($item['feito']): ?>
                                 <button type="button" class="btn btn-outline-secondary btn-sm pp-passo-acao"
                                         data-bs-toggle="modal" data-bs-target="#pp-modal-equipe">

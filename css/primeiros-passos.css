@@ -246,6 +246,28 @@
     min-height: 32px;
 }
 
+/* Passo do tipo de negócio: as opções ocupam a largura toda do item. */
+.agenday-app .pp-passo-segmento {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+        "marca texto"
+        "segmentos segmentos";
+    align-items: start;
+}
+
+.agenday-app .pp-passo-segmento .pp-passo-marca {
+    grid-area: marca;
+}
+
+.agenday-app .pp-passo-segmento .pp-passo-texto {
+    grid-area: texto;
+}
+
+.agenday-app .pp-passo-segmento .pp-segmentos {
+    grid-area: segmentos;
+    margin-top: .7rem;
+}
+
 .agenday-app .pp-outro-servico {
     margin: .9rem 0 0;
     font-size: .875rem;
@@ -478,6 +500,12 @@
             "acao acao";
         align-items: start;
         row-gap: .6rem;
+    }
+
+    .agenday-app .pp-passo-segmento {
+        grid-template-areas:
+            "marca texto"
+            "segmentos segmentos";
     }
 
     .agenday-app .pp-passo-marca {

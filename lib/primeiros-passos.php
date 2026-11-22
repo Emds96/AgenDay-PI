@@ -254,7 +254,7 @@ function agenday_primeiros_passos_duracao(int $minutos): ?string
  * Monta o checklist a partir dos números já apurados. Função pura: serve à
  * tela e aos testes sem tocar no banco.
  *
- * @param array{servicos: int, funcionarios: int, vinculos: int, dias_abertos: int} $dados
+ * @param array{servicos: int, funcionarios: int, vinculos: int, dias_abertos: int, segmento?: string} $dados
  * @return array{total: int, concluidos: int, percentual: int, completo: bool, itens: array<int, array{chave: string, titulo: string, ajuda: string, feito: bool, link: string, acao: string}>}
  */
 function agenday_primeiros_passos_progresso(array $dados): array
@@ -263,8 +263,18 @@ function agenday_primeiros_passos_progresso(array $dados): array
     $funcionarios = max(0, (int) ($dados['funcionarios'] ?? 0));
     $vinculos = max(0, (int) ($dados['vinculos'] ?? 0));
     $diasAbertos = max(0, (int) ($dados['dias_abertos'] ?? 0));
+    // O tipo de negócio é o primeiro passo: ele decide as sugestões de serviço.
+    $segmento = isset($dados['segmento']) && is_string($dados['segmento']) ? $dados['segmento'] : '';
 
     $itens = [
+        [
+            'chave' => 'segmento',
+            'titulo' => 'Escolha o tipo de negócio',
+            'ajuda' => 'O AgenDay usa isso para sugerir os serviços mais comuns.',
+            'feito' => agenday_primeiros_passos_segmento_valido($segmento),
+            'link' => '',
+            'acao' => '',
+        ],
         [
             'chave' => 'servico',
             'titulo' => 'Cadastre seus serviços',
@@ -352,11 +362,14 @@ function agenday_primeiros_passos_contar(mysqli $conexao, int $idEstabelecimento
  *
  * @return array{total: int, concluidos: int, percentual: int, completo: bool, itens: array<int, array<string, mixed>>}|null
  */
-function agenday_primeiros_passos_estado(mysqli $conexao, int $idEstabelecimento): ?array
+function agenday_primeiros_passos_estado(mysqli $conexao, int $idEstabelecimento, string $segmento = ''): ?array
 {
     try {
         return agenday_primeiros_passos_progresso(
-            agenday_primeiros_passos_contar($conexao, $idEstabelecimento)
+            array_merge(
+                agenday_primeiros_passos_contar($conexao, $idEstabelecimento),
+                ['segmento' => $segmento]
+            )
         );
     } catch (Throwable $e) {
         error_log('AgenDay primeiros passos: ' . get_class($e));
