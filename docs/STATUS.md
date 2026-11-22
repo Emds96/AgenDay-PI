@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-10 — O tipo de negócio entrou no checklist (22/11/2026)
+
+- **Pedido do responsável:** *"eu ainda nao gosto do tipo de negocio ficar engessado em cima doque falta, prefiro que tu coloque esse tipo de negocio dentro das etapas do que falta e tira esse botao de cadastrar servico de baixo do tipo de negocio por que tem nao faz sentido"*.
+- **Agora:** não existe mais faixa nem cartão solto acima do checklist. A linha `Tipo de negócio: <escolha> · Trocar` fica **dentro do item 1 ("Cadastre seus serviços")**, logo abaixo da explicação do passo — o tipo aparece onde ele realmente alimenta as sugestões. Com sugestões, a linha também saiu do topo do cartão "Escolha os seus serviços".
+- **Um botão só:** o botão duplicado "Cadastrar serviço" saiu. Quem cadastra é o botão do próprio item 1 do checklist; no tipo sem sugestões a página abre direto em "O que falta", sem bloco vazio e sem ação repetida.
+- **Sem lógica nova:** "Trocar" continua o mesmo POST, o pop-up de serviço é o mesmo e o pop-up do nome do negócio ("Outro") não mudou. Só mudou o lugar da linha e a remoção do botão extra.
+- **Limpeza:** o CSS da faixa (`.pp-faixa*` e a regra mobile correspondente) foi removido; entrou `.pp-tipo-passo`, discreto, dentro do item. Versão do CSS atualizada para `?v=20261122-pp08`.
+- **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **20 verificações, 0 falha**: sem tipo não há linha no passo, linha aparece uma única vez e dentro de "O que falta", cartão de sugestões continua antes do checklist, faixa antiga ausente, tipo com sugestões e nome digitado ("Pet shop da Ana") aparecendo no item 1, **um único** gatilho de `#pp-modal-servico`, checklist como primeira seção da página e "Trocar" voltando para a pergunta de tipo. Suítes: `tests/primeiros-passos.php` 191, `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
+- **Conferência visual (navegador real, 22/11/2026):** 1897 px (linha do tipo à esquerda do item, botão à direita) e 360 px (linha e botão empilhados dentro do item), sem rolagem horizontal.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-09 — "Outro" agora pergunta o nome do negócio (22/11/2026)
 
 - **Pedido do responsável:** *"acho que nao esta ideal colocar outro como qual estabelecimento ou negocio a ser cadastrado; o ideal seria colocar pra pessoa digitar qual negocio dela"* — e, depois, que isso acontecesse **em pop-up**, com uma breve explicação.
