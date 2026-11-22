@@ -114,3 +114,15 @@ const focarCampoDoAtalho = () => {
 
 focarCampoDoAtalho();
 window.addEventListener('hashchange', focarCampoDoAtalho);
+
+/*
+ * Pop-up "Tenho equipe": se o cadastro voltou com erro, o formulário reabre
+ * sozinho para a pessoa corrigir sem procurar onde clicar de novo.
+ */
+const modalEquipe = document.getElementById('pp-modal-equipe');
+if (modalEquipe
+    && modalEquipe.dataset
+    && modalEquipe.dataset.reabrirErro === 'true'
+    && typeof bootstrap !== 'undefined') {
+    bootstrap.Modal.getOrCreateInstance(modalEquipe).show();
+}

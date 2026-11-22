@@ -1,5 +1,20 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-06 — "Tenho equipe" virou pop-up (22/11/2026)
+
+- **Relato do responsável:** *"esse 'tenho equipe' não está legal… se eu clico, ele sai da tela primária de cadastro; prefiro um pop-up ou um menu"*. O botão mandava para `cad-funcionario.php` no meio do primeiro uso.
+- **Agora:** **"Tenho equipe" abre um pop-up na própria tela**, com nome de quem atende, telefone (já preenchido com o do estabelecimento) e a opção "vincular todos os serviços". Ao salvar, a página volta com o checklist atualizado — **ninguém sai da tela**.
+- **Zero regra nova no servidor:** o pop-up envia a **mesma ação `profissional`** que já existia (transação, nome de 2 a 120 caracteres, telefone com DDD e vínculo com os serviços). O único acréscimo é o campo oculto `origem=equipe`.
+- **Erro não perde o trabalho:** se o cadastro voltar com erro, o pop-up **reabre sozinho** (`data-reabrir-erro` + `bootstrap.Modal.getOrCreateInstance` no `js/primeiros-passos.js`), com a mensagem no topo da página.
+- **Sem JavaScript:** um `<noscript>` mantém o caminho para `cad-funcionario.php`, para ninguém ficar sem saída.
+- **Painel "Sou eu que atendo":** o texto deixou de mandar para Funcionários e passou a apontar para o **"Tenho equipe"** da lista.
+- **Testes (PC local, 22/11/2026):** `tests/link-portal-preview.js` 41 → **44** (pop-up reabre no erro, não abre sem erro e não quebra quando o Bootstrap não está carregado); prova HTTP real na conta nova `feira@demonstracao.com`: **17 verificações, 0 falha** — botão (não link) abrindo o pop-up, `<noscript>`, ação reaproveitada, erro reabrindo o pop-up, cadastro válido com aviso, checklist chegando a 4 de 4 e voltando a 2 de 4 após a limpeza. `php -l` limpo; `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/responsividade-check.js` 233.
+- **Conferência visual (Edge headless):** pop-up aberto em 1280 px e 360 px, sem corte nem rolagem horizontal.
+- **Cuidado registrado:** durante a prova, o profissional de teste "Teste Equipe" foi criado na conta de análise e **removido em seguida** (vínculo + funcionário). O serviço que o responsável já tinha cadastrado ficou intacto.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-05 — A página abre nas sugestões, checklist desce (22/11/2026)
 
 - **Pedido do responsável:** "esse fluxo de cadastro está errado — as sugestões devem vir primeiro, para ficar mais simples e fácil de preencher". Depois de conversar sobre o cadastro, o escopo ficou fechado em **reorganizar só a tela de primeiro uso**, sem tocar em `index.php`/`cadastrar.php`.
