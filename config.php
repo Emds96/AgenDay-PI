@@ -6,7 +6,6 @@ require_once __DIR__ . '/lib/avatar-estabelecimento.php';
 require_once __DIR__ . '/lib/horario-funcionamento.php';
 require_once __DIR__ . '/lib/bloqueios.php';
 require_once __DIR__ . '/lib/portal-cliente.php';
-require_once __DIR__ . '/lib/whatsapp.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($metodo, ['GET', 'POST'], true)) {
@@ -16,26 +15,17 @@ if (!in_array($metodo, ['GET', 'POST'], true)) {
 }
 
 $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
-$abasPermitidas = ['estabelecimento', 'funcionamento', 'whatsapp', 'conta'];
+$abasPermitidas = ['estabelecimento', 'funcionamento', 'conta'];
 $abaSolicitada = isset($_GET['aba']) && is_string($_GET['aba']) ? $_GET['aba'] : '';
 $abaSelecionada = in_array($abaSolicitada, $abasPermitidas, true) ? $abaSolicitada : 'estabelecimento';
 $alertaEstabelecimento = null;
 $alertaConta = null;
 $alertaSenha = null;
 $alertaFuncionamento = null;
-$alertaWhatsapp = null;
 $reabrirModalSenha = false;
 $dadosCarregados = false;
 $funcionamentoDisponivel = false;
 $whatsappDisponivel = false;
-$whatsappConfig = [
-    'ativo' => false,
-    'base_url' => '',
-    'api_key' => '',
-    'sessao' => 'default',
-    'ultima_execucao' => null,
-];
-$whatsappPendentes = 0;
 $portalSlug = '';
 $portalDominio = '';
 $portalLink = '';
@@ -79,13 +69,6 @@ if (isset($_SESSION['feedback_alteracao_senha'])
     $reabrirModalSenha = ($alertaSenha['tipo'] ?? '') !== 'success';
 }
 
-if (isset($_SESSION['feedback_config_whatsapp'])
-    && is_string($_SESSION['feedback_config_whatsapp'])) {
-    $alertaWhatsapp = ['tipo' => 'success', 'texto' => $_SESSION['feedback_config_whatsapp']];
-    unset($_SESSION['feedback_config_whatsapp']);
-    $abaSelecionada = 'whatsapp';
-}
-
 try {
     require_once __DIR__ . '/conexao.php';
     $consulta = $conexao->prepare(
@@ -126,8 +109,9 @@ if (isset($conexao) && $conexao instanceof mysqli) {
         $funcionamentoDisponivel = false;
     }
 
-    // Portal do cliente e WhatsApp: se a migração ainda não foi aplicada,
-    // só a aba do WhatsApp fica sem os dados; o restante da tela segue igual.
+    // Portal do cliente: a conexão do WhatsApp é única da plataforma e fica em
+    // whatsapp-plataforma.php; aqui só carregamos o link público e a exigência
+    // de código de acesso do estabelecimento.
     try {
         $stmtPortal = $conexao->prepare(
             'SELECT slug, dominio, exigir_codigo_whatsapp
@@ -148,9 +132,6 @@ if (isset($conexao) && $conexao instanceof mysqli) {
         error_log('AgenDay: portal do cliente indisponível (' . get_class($e) . ').');
         $whatsappDisponivel = false;
     }
-
-    $whatsappConfig = agenday_whatsapp_config($conexao);
-    $whatsappPendentes = agenday_whatsapp_pendentes($conexao);
 }
 
 $nomeAtual = (string) $nomeAtual;
@@ -165,8 +146,6 @@ if ($metodo === 'POST') {
         $abaSelecionada = 'conta';
     } elseif (in_array($acao, ['salvar_funcionamento', 'criar_bloqueio', 'excluir_bloqueio'], true)) {
         $abaSelecionada = 'funcionamento';
-    } elseif (in_array($acao, ['salvar_whatsapp', 'testar_whatsapp', 'enviar_pendentes'], true)) {
-        $abaSelecionada = 'whatsapp';
     } else {
         $abaSelecionada = 'estabelecimento';
     }
@@ -178,8 +157,6 @@ if ($metodo === 'POST') {
             $alertaConta = $erro;
         } elseif ($abaSelecionada === 'funcionamento') {
             $alertaFuncionamento = $erro;
-        } elseif ($abaSelecionada === 'whatsapp') {
-            $alertaWhatsapp = $erro;
         } else {
             $alertaEstabelecimento = $erro;
         }
@@ -189,8 +166,6 @@ if ($metodo === 'POST') {
             $alertaConta = $erro;
         } elseif ($abaSelecionada === 'funcionamento') {
             $alertaFuncionamento = $erro;
-        } elseif ($abaSelecionada === 'whatsapp') {
-            $alertaWhatsapp = $erro;
         } else {
             $alertaEstabelecimento = $erro;
         }
@@ -200,20 +175,33 @@ if ($metodo === 'POST') {
         $contatoFormulario = isset($_POST['contato_estabelecimento']) && is_string($_POST['contato_estabelecimento'])
             ? trim($_POST['contato_estabelecimento']) : '';
         $erroValidacao = agenday_config_validar($nomeFormulario, $contatoFormulario);
+        $exigirNovo = isset($_POST['exigir_codigo']) && $_POST['exigir_codigo'] === '1';
 
         if ($erroValidacao !== null) {
             $alertaEstabelecimento = ['tipo' => 'danger', 'texto' => $erroValidacao];
         } else {
             try {
-                $atualizacao = $conexao->prepare(
-                    'UPDATE estabelecimento
-                     SET nome_estabelecimento = ?, contato_estabelecimento = ?
-                     WHERE id_estabelecimento = ?'
-                );
-                $atualizacao->bind_param('ssi', $nomeFormulario, $contatoFormulario, $idEstabelecimento);
+                if ($whatsappDisponivel) {
+                    $atualizacao = $conexao->prepare(
+                        'UPDATE estabelecimento
+                         SET nome_estabelecimento = ?, contato_estabelecimento = ?,
+                             exigir_codigo_whatsapp = ?
+                         WHERE id_estabelecimento = ?'
+                    );
+                    $exigirInt = $exigirNovo ? 1 : 0;
+                    $atualizacao->bind_param('ssii', $nomeFormulario, $contatoFormulario, $exigirInt, $idEstabelecimento);
+                } else {
+                    $atualizacao = $conexao->prepare(
+                        'UPDATE estabelecimento
+                         SET nome_estabelecimento = ?, contato_estabelecimento = ?
+                         WHERE id_estabelecimento = ?'
+                    );
+                    $atualizacao->bind_param('ssi', $nomeFormulario, $contatoFormulario, $idEstabelecimento);
+                }
                 $atualizacao->execute();
                 $alterados = $atualizacao->affected_rows;
                 $atualizacao->close();
+                $exigirCodigo = $exigirNovo;
 
                 if ($alterados === 1
                     || ($nomeFormulario === $nomeAtual && $contatoFormulario === $contatoAtual)) {
@@ -328,101 +316,6 @@ if ($metodo === 'POST') {
                 ];
             }
         }
-    } elseif ($acao === 'salvar_whatsapp') {
-        $ativoNovo = isset($_POST['whatsapp_ativo']) && $_POST['whatsapp_ativo'] === '1';
-        $baseNova = isset($_POST['whatsapp_base_url']) && is_string($_POST['whatsapp_base_url'])
-            ? trim($_POST['whatsapp_base_url'])
-            : '';
-        $chaveNova = isset($_POST['whatsapp_api_key']) && is_string($_POST['whatsapp_api_key'])
-            ? trim($_POST['whatsapp_api_key'])
-            : '';
-        $sessaoNova = isset($_POST['whatsapp_sessao']) && is_string($_POST['whatsapp_sessao'])
-            ? trim($_POST['whatsapp_sessao'])
-            : 'default';
-        $exigirNovo = isset($_POST['exigir_codigo']) && $_POST['exigir_codigo'] === '1';
-
-        $errosWhatsapp = [];
-        if ($baseNova !== '' && !preg_match('~\Ahttps?://[^\s/]+\z~i', $baseNova)) {
-            $errosWhatsapp[] = 'O endereço do WAHA deve começar com https:// e não ter caminho no final.';
-        }
-        if ($sessaoNova === '' || !preg_match('/\A[A-Za-z0-9._-]{1,40}\z/', $sessaoNova)) {
-            $errosWhatsapp[] = 'O nome da sessão deve ter até 40 caracteres (letras, números, ponto, hífen).';
-        }
-        if ($ativoNovo && $baseNova === '') {
-            $errosWhatsapp[] = 'Informe o endereço do WAHA para ativar o envio.';
-        }
-        if ($ativoNovo && $chaveNova === '' && (string) ($whatsappConfig['api_key'] ?? '') === '') {
-            $errosWhatsapp[] = 'Informe a chave de API do WAHA para ativar o envio.';
-        }
-        if (!$whatsappDisponivel) {
-            $errosWhatsapp[] = 'A estrutura do portal ainda não existe neste banco. '
-                . 'Aplique sql/migracao-portal-cliente.sql antes de salvar.';
-        }
-
-        if ($errosWhatsapp !== []) {
-            $alertaWhatsapp = ['tipo' => 'danger', 'texto' => implode(' ', $errosWhatsapp)];
-        } else {
-            try {
-                agenday_whatsapp_salvar_config($conexao, $ativoNovo, $baseNova, $chaveNova, $sessaoNova);
-                $stmtExigir = $conexao->prepare(
-                    'UPDATE estabelecimento SET exigir_codigo_whatsapp = ? WHERE id_estabelecimento = ?'
-                );
-                $exigirInt = $exigirNovo ? 1 : 0;
-                $stmtExigir->bind_param('ii', $exigirInt, $idEstabelecimento);
-                $stmtExigir->execute();
-                $stmtExigir->close();
-                $_SESSION['feedback_config_whatsapp'] = 'Configuração do WhatsApp salva.';
-                header('Location: config.php?aba=whatsapp', true, 303);
-                exit;
-            } catch (Throwable $e) {
-                error_log('AgenDay: falha ao salvar configuração do WhatsApp (' . get_class($e) . ').');
-                $alertaWhatsapp = [
-                    'tipo' => 'danger',
-                    'texto' => 'Não foi possível salvar a configuração agora. Tente novamente.',
-                ];
-            }
-        }
-    } elseif ($acao === 'testar_whatsapp') {
-        if (!$whatsappDisponivel) {
-            $alertaWhatsapp = ['tipo' => 'danger', 'texto' => 'A estrutura do portal ainda não existe neste banco.'];
-        } else {
-            try {
-                $teste = agenday_whatsapp_testar($whatsappConfig);
-                if ($teste['ok']) {
-                    $alertaWhatsapp = ['tipo' => 'success', 'texto' => 'Conexão com o WhatsApp funcionando.'];
-                } else {
-                    $alertaWhatsapp = ['tipo' => 'danger', 'texto' => $teste['erro']];
-                }
-            } catch (Throwable $e) {
-                error_log('AgenDay: falha ao testar WhatsApp (' . get_class($e) . ').');
-                $alertaWhatsapp = ['tipo' => 'danger', 'texto' => 'Não foi possível testar agora.'];
-            }
-        }
-    } elseif ($acao === 'enviar_pendentes') {
-        if (!$whatsappDisponivel) {
-            $alertaWhatsapp = ['tipo' => 'danger', 'texto' => 'A estrutura do portal ainda não existe neste banco.'];
-        } else {
-            try {
-                $resultado = agenday_whatsapp_processar_fila($conexao, 5);
-                if (!$resultado['ok']) {
-                    $alertaWhatsapp = ['tipo' => 'danger', 'texto' => 'O WhatsApp não está configurado ou ativo.'];
-                } elseif ($resultado['motivo'] === 'aguardando') {
-                    $alertaWhatsapp = [
-                        'tipo' => 'warning',
-                        'texto' => 'A fila foi processada há menos de um minuto. Aguarde e tente novamente.',
-                    ];
-                } else {
-                    $alertaWhatsapp = [
-                        'tipo' => 'success',
-                        'texto' => 'Mensagens enviadas: ' . (int) $resultado['enviadas']
-                            . '. Falhas: ' . (int) $resultado['falhas'] . '.',
-                    ];
-                }
-            } catch (Throwable $e) {
-                error_log('AgenDay: falha ao enviar pendentes (' . get_class($e) . ').');
-                $alertaWhatsapp = ['tipo' => 'danger', 'texto' => 'Não foi possível processar a fila agora.'];
-            }
-        }
     } else {
         http_response_code(400);
         $alertaEstabelecimento = ['tipo' => 'danger', 'texto' => 'Ação desconhecida.'];
@@ -433,8 +326,7 @@ $csrfToken = agenday_token_csrf();
 $avatarContaUrl = agenday_avatar_url($idEstabelecimento);
 $abaContaAtiva = $abaSelecionada === 'conta';
 $abaFuncionamentoAtiva = $abaSelecionada === 'funcionamento';
-$abaWhatsappAtiva = $abaSelecionada === 'whatsapp';
-$abaEstabelecimentoAtiva = !$abaContaAtiva && !$abaFuncionamentoAtiva && !$abaWhatsappAtiva;
+$abaEstabelecimentoAtiva = !$abaContaAtiva && !$abaFuncionamentoAtiva;
 $nomesDias = agenday_dias_semana();
 ?>
 <!DOCTYPE html>
@@ -490,10 +382,6 @@ $nomesDias = agenday_dias_semana();
                         type="button" role="tab" data-bs-toggle="tab" data-bs-target="#painel-horarios"
                         aria-controls="painel-horarios" aria-selected="<?= $abaFuncionamentoAtiva ? 'true' : 'false' ?>"
                         tabindex="<?= $abaFuncionamentoAtiva ? '0' : '-1' ?>">Horários</button>
-                <button class="nav-link <?= $abaWhatsappAtiva ? 'active' : '' ?>" id="aba-whatsapp"
-                        type="button" role="tab" data-bs-toggle="tab" data-bs-target="#painel-whatsapp"
-                        aria-controls="painel-whatsapp" aria-selected="<?= $abaWhatsappAtiva ? 'true' : 'false' ?>"
-                        tabindex="<?= $abaWhatsappAtiva ? '0' : '-1' ?>">WhatsApp</button>
                 <button class="nav-link <?= $abaContaAtiva ? 'active' : '' ?>" id="aba-minha-conta"
                         type="button" role="tab" data-bs-toggle="tab" data-bs-target="#painel-minha-conta"
                         aria-controls="painel-minha-conta" aria-selected="<?= $abaContaAtiva ? 'true' : 'false' ?>"
@@ -537,12 +425,52 @@ $nomesDias = agenday_dias_semana();
                                    <?= !$dadosCarregados ? 'disabled' : '' ?>>
                             <div class="form-text" id="telefoneAjuda">Opcional. Informe de 8 a 15 dígitos. Números brasileiros com DDD são formatados automaticamente.</div>
                         </div>
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="exigir-codigo" name="exigir_codigo" value="1"
+                                       <?= $exigirCodigo ? 'checked' : '' ?>
+                                       <?= !$dadosCarregados || !$whatsappDisponivel ? 'disabled' : '' ?>>
+                                <label class="form-check-label" for="exigir-codigo">
+                                    Exigir código de 6 dígitos enviado pelo WhatsApp para entrar
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                Com esta opção desligada, o cliente entra apenas informando o celular.
+                                Use somente como contingência se o envio de mensagens estiver fora do ar.
+                                <?php if (!$whatsappDisponivel): ?>
+                                    A estrutura do portal ainda não existe neste banco.
+                                <?php endif; ?>
+                            </div>
+                        </div>
                         <div class="ag-settings-actions">
                             <button class="btn btn-primary" type="submit" <?= !$dadosCarregados ? 'disabled' : '' ?>>
                                 <i class="bi bi-check2 me-1" aria-hidden="true"></i>Salvar alterações
                             </button>
                         </div>
                     </form>
+
+                    <div class="mt-4">
+                        <h3 class="h6 fw-bold">Link do portal</h3>
+                        <?php if ($portalLink !== ''): ?>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="portal-link"
+                                       value="<?= agenday_config_html($portalLink) ?>" readonly>
+                                <button class="btn btn-outline-secondary" type="button" id="copiar-portal-link"
+                                        data-link="<?= agenday_config_html($portalLink) ?>">Copiar</button>
+                            </div>
+                            <p class="form-text mb-0">
+                                Envie este link ou o QR code para o cliente. O endereço curto
+                                <code>?e=<?= agenday_config_html($portalSlug) ?></code> também funciona.
+                            </p>
+                        <?php else: ?>
+                            <p class="form-text mb-0">O identificador público ainda não foi definido para esta conta.</p>
+                        <?php endif; ?>
+                        <p class="form-text mb-0">
+                            A conexão do WhatsApp é única da plataforma (número da AgenDay). As mensagens
+                            saem com o nome do estabelecimento na assinatura.
+                        </p>
+                    </div>
                 </div>
             </section>
 
@@ -787,139 +715,6 @@ $nomesDias = agenday_dias_semana();
                 </div>
             </section>
 
-            <section class="tab-pane fade <?= $abaWhatsappAtiva ? 'show active' : '' ?>" id="painel-whatsapp"
-                     role="tabpanel" aria-labelledby="aba-whatsapp" tabindex="0">
-                <div class="ag-settings-body">
-                    <div class="ag-settings-section-title">
-                        <h2>Portal do cliente e WhatsApp</h2>
-                        <p>Link para o cliente agendar e envio automático das mensagens.</p>
-                    </div>
-
-                    <?php if ($alertaWhatsapp !== null): ?>
-                        <div class="alert alert-<?= $alertaWhatsapp['tipo'] === 'success' ? 'success' : 'danger' ?>"
-                             role="alert">
-                            <?= agenday_config_html($alertaWhatsapp['texto']) ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (!$whatsappDisponivel): ?>
-                        <div class="alert alert-warning" role="alert">
-                            A estrutura do portal ainda não existe neste banco. Aplique
-                            <code>sql/migracao-portal-cliente.sql</code> no phpMyAdmin antes de configurar.
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="mb-4">
-                        <h3 class="h6 fw-bold">Link do portal</h3>
-                        <?php if ($portalLink !== ''): ?>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="portal-link"
-                                       value="<?= agenday_config_html($portalLink) ?>" readonly>
-                                <button class="btn btn-outline-secondary" type="button" id="copiar-portal-link"
-                                        data-link="<?= agenday_config_html($portalLink) ?>">Copiar</button>
-                            </div>
-                            <p class="form-text mb-0">
-                                Envie este link ou o QR code para o cliente. O endereço curto
-                                <code>?e=<?= agenday_config_html($portalSlug) ?></code> também funciona.
-                            </p>
-                        <?php else: ?>
-                            <p class="form-text mb-0">O identificador público ainda não foi definido para esta conta.</p>
-                        <?php endif; ?>
-                    </div>
-
-                    <form method="post" action="config.php?aba=whatsapp" class="row g-3">
-                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                        <input type="hidden" name="acao" value="salvar_whatsapp">
-
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch"
-                                       id="whatsapp-ativo" name="whatsapp_ativo" value="1"
-                                       <?= !empty($whatsappConfig['ativo']) ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="whatsapp-ativo">
-                                    Enviar mensagens pelo WhatsApp
-                                </label>
-                            </div>
-                            <p class="form-text">
-                                Enquanto estiver desligado, os agendamentos continuam funcionando normalmente,
-                                mas nenhuma mensagem é enviada.
-                            </p>
-                        </div>
-
-                        <div class="col-12 col-md-8">
-                            <label class="form-label" for="whatsapp-base-url">Endereço do WAHA</label>
-                            <input type="url" class="form-control" id="whatsapp-base-url" name="whatsapp_base_url"
-                                   placeholder="https://exemplo.ngrok-free.app"
-                                   value="<?= agenday_config_html($whatsappConfig['base_url']) ?>">
-                            <p class="form-text">Endereço HTTPS do túnel, sem barra no final.</p>
-                        </div>
-
-                        <div class="col-12 col-md-4">
-                            <label class="form-label" for="whatsapp-sessao">Sessão</label>
-                            <input type="text" class="form-control" id="whatsapp-sessao" name="whatsapp_sessao"
-                                   maxlength="40" value="<?= agenday_config_html($whatsappConfig['sessao']) ?>">
-                            <p class="form-text">Normalmente <code>default</code>.</p>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label" for="whatsapp-api-key">Chave de API</label>
-                            <input type="password" class="form-control" id="whatsapp-api-key" name="whatsapp_api_key"
-                                   autocomplete="new-password" placeholder="Deixe em branco para manter a atual">
-                            <p class="form-text">
-                                A chave fica guardada no banco e nunca é exibida novamente.
-                                <?= !empty($whatsappConfig['api_key']) ? 'Já existe uma chave salva.' : 'Nenhuma chave salva ainda.' ?>
-                            </p>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch"
-                                       id="exigir-codigo" name="exigir_codigo" value="1"
-                                       <?= $exigirCodigo ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="exigir-codigo">
-                                    Exigir código de 6 dígitos enviado pelo WhatsApp para entrar
-                                </label>
-                            </div>
-                            <p class="form-text">
-                                Com esta opção desligada, o cliente entra apenas informando o celular.
-                                Use somente como contingência se o envio de mensagens estiver fora do ar.
-                            </p>
-                        </div>
-
-                        <div class="col-12 d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn-primary">Salvar configuração</button>
-                        </div>
-                    </form>
-
-                    <hr class="my-4">
-
-                    <form method="post" action="config.php?aba=whatsapp" class="d-flex flex-wrap align-items-center gap-2">
-                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                        <input type="hidden" name="acao" value="testar_whatsapp">
-                        <button type="submit" class="btn btn-outline-primary">Testar conexão</button>
-                        <span class="text-muted small">
-                            Mensagens na fila: <?= (int) $whatsappPendentes ?>
-                        </span>
-                    </form>
-
-                    <form method="post" action="config.php?aba=whatsapp" class="mt-2">
-                        <input type="hidden" name="csrf_token" value="<?= agenday_config_html($csrfToken) ?>">
-                        <input type="hidden" name="acao" value="enviar_pendentes">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">Enviar pendentes agora</button>
-                    </form>
-
-                    <details class="mt-4">
-                        <summary class="fw-bold">Como preparar o envio (uma vez)</summary>
-                        <ol class="mt-2 small text-muted">
-                            <li>Instale o Docker Desktop e rode o WAHA no computador do estabelecimento.</li>
-                            <li>Abra o painel do WAHA e conecte o número em <em>Aparelhos conectados</em>
-                                do WhatsApp.</li>
-                            <li>Crie o túnel HTTPS com o ngrok e copie o endereço gerado.</li>
-                            <li>Cole o endereço e a chave de API acima, ative e clique em Testar conexão.</li>
-                        </ol>
-                    </details>
-                </div>
-            </section>
 
             <section class="tab-pane fade <?= $abaContaAtiva ? 'show active' : '' ?>" id="painel-minha-conta"
                      role="tabpanel" aria-labelledby="aba-minha-conta" tabindex="0">

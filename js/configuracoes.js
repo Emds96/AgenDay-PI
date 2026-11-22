@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mapa = {
                     'aba-estabelecimento': 'estabelecimento',
                     'aba-horarios': 'funcionamento',
-                    'aba-whatsapp': 'whatsapp',
                     'aba-minha-conta': 'conta'
                 };
                 url.searchParams.set('aba', mapa[tab.id] || 'estabelecimento');
@@ -114,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sincronizarBloqueio();
     }
 
-    // Aba WhatsApp: copiar o link público do portal.
+    // Aba Estabelecimento: copiar o link público do portal.
     const botaoCopiar = document.getElementById('copiar-portal-link');
     if (botaoCopiar) {
         const textoOriginal = botaoCopiar.textContent;

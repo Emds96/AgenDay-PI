@@ -79,8 +79,8 @@ Nada aqui significa publicado: o deploy é um passo separado, com autorização 
 - [x] Instalar Docker Desktop + WSL2 (com reinício autorizado) — guia: `docs/WHATSAPP_WAHA_GUIA.md`. Dados do Docker em `E:\Docker\wsl\disk`.
 - [x] Subir o WAHA (motor **GOWS**, `devlikeapro/waha:gows` 2026.10.1) e parear o número: sessão `default` **WORKING**, conta `559294331267@c.us`.
 - [x] Publicar o endereço HTTPS do túnel (ngrok dev domain `additionally-nondeluded-elane.ngrok-free.dev`) e testar de fora — envio real HTTP 201.
-- [x] Aba "WhatsApp" em Configurações (URL, chave, sessão, ativo, exigir código, link do portal).
-- [x] Salvamento com CSRF e validação dentro de `config.php` (`acao=salvar_whatsapp`) — não foi criado `salvar-whatsapp.php`; a tela já concentra os formulários das outras abas.
+- [x] Configuração do WhatsApp **global da plataforma** (URL, chave, sessão, ativo): aba "WhatsApp" em Configurações até 21/11/2026 e, desde o **WA-01**, página separada `whatsapp-plataforma.php`, fora da tela do estabelecimento.
+- [x] Salvamento com CSRF e validação — antes em `config.php` (`acao=salvar_whatsapp`), agora em `whatsapp-plataforma.php` (`acao=salvar`) exigindo a **chave de API atual** para alterar a conexão de todos.
 - [x] Botão "Testar conexão" e "Enviar pendentes agora".
 - [x] Processamento da fila ao abrir a agenda/portal, depois de entregar a página (trava de 1 minuto).
 - [x] Templates: código, confirmação, lembrete, remarcação e cancelamento.

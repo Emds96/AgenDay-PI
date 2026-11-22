@@ -188,6 +188,41 @@ verificar(
 verificar(agenday_portal_base_url(['slug' => 'studio', 'dominio' => '']) === '?e=studio', 'link relativo sem dominio');
 verificar(agenday_whatsapp_chat_id('92981111001') === '5592981111001@c.us', 'chatId do WhatsApp');
 
+/* ------------------------------------- assinatura: quem está falando */
+$assinaturaEstab = agenday_whatsapp_assinatura('Studio Bella Vita');
+verificar($assinaturaEstab === 'Enviado pela AgenDay em nome de Studio Bella Vita.', 'assinatura nomeia a plataforma e o estabelecimento');
+verificar(agenday_whatsapp_assinatura('  ') === 'Enviado pela AgenDay.', 'assinatura sem estabelecimento');
+
+$dadosConfirmacao = [
+    'estabelecimento' => 'Studio Bella Vita',
+    'nome' => 'Ana',
+    'servico' => 'Corte',
+    'profissional' => 'Bia',
+    'data_inicio' => '2026-12-01 10:00:00',
+    'link_cancelar' => 'https://exemplo.test/cliente-cancelar.php?t=abc',
+];
+$textoConfirmacao = agenday_whatsapp_texto('confirmacao', $dadosConfirmacao);
+verificar(str_contains($textoConfirmacao, 'Enviado pela AgenDay em nome de Studio Bella Vita.'), 'confirmação diz em nome de quem envia');
+verificar(str_contains($textoConfirmacao, 'Precisa cancelar?'), 'confirmação mantém o link de cancelamento');
+verificar(str_contains(agenday_whatsapp_texto('remarcacao', $dadosConfirmacao), 'Agendamento remarcado'), 'remarcação tem título próprio');
+verificar(str_contains(agenday_whatsapp_texto('remarcacao', $dadosConfirmacao), $assinaturaEstab), 'remarcação também assina');
+
+$textoCancelamento = agenday_whatsapp_texto('cancelamento', [
+    'estabelecimento' => 'Studio Bella Vita',
+    'data_inicio' => '2026-12-01 10:00:00',
+    'link_agendar' => 'https://exemplo.test/?e=studio',
+]);
+verificar(str_contains($textoCancelamento, 'foi cancelado'), 'cancelamento avisa o cliente');
+verificar(str_contains($textoCancelamento, $assinaturaEstab), 'cancelamento também assina');
+
+$textoCodigo = agenday_whatsapp_texto('codigo', [
+    'estabelecimento' => 'Studio Bella Vita',
+    'codigo' => '123456',
+    'minutos' => 10,
+]);
+verificar(str_contains($textoCodigo, 'Seu código de acesso é: 123456'), 'código mantém o texto');
+verificar(str_contains($textoCodigo, $assinaturaEstab), 'código também assina');
+
 /* ------------------------------------------------------ links no host local */
 $hostAntesDosLinks = $_SERVER['HTTP_HOST'] ?? null;
 $_SERVER['HTTP_HOST'] = '127.0.0.1:8080';

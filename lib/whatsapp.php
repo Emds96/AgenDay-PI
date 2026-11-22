@@ -23,6 +23,15 @@ const AGENDAY_WHATSAPP_TRAVA_SEGUNDOS = 60;
 /** Limite de pendências processadas por execução automática. */
 const AGENDAY_WHATSAPP_LOTE_PADRAO = 2;
 
+/**
+ * Nome da plataforma que aparece como remetente.
+ *
+ * O número é único da AgenDay (um "canal" para todos os estabelecimentos), então
+ * cada mensagem precisa dizer em nome de quem está falando — o cliente vê o
+ * nome da plataforma no aparelho, não o do estabelecimento.
+ */
+const AGENDAY_WHATSAPP_REMETENTE = 'AgenDay';
+
 /* ---------------------------------------------------------------------------
  * Configuração
  * ------------------------------------------------------------------------- */
@@ -188,6 +197,21 @@ function agenday_whatsapp_data_hora(string $dataHora): array
 }
 
 /**
+ * Linha que identifica quem envia.
+ *
+ * Como o número é da plataforma, o cliente recebe de "AgenDay" mesmo quando a
+ * mensagem é do Studio Bella Vita. Esta linha deixa a origem explícita.
+ */
+function agenday_whatsapp_assinatura(string $estabelecimento): string
+{
+    $nome = trim($estabelecimento);
+    if ($nome === '') {
+        return 'Enviado pela ' . AGENDAY_WHATSAPP_REMETENTE . '.';
+    }
+    return 'Enviado pela ' . AGENDAY_WHATSAPP_REMETENTE . ' em nome de ' . $nome . '.';
+}
+
+/**
  * Texto das mensagens. Mantém as mensagens curtas e com um único link.
  *
  * Dados esperados por tipo:
@@ -208,9 +232,15 @@ function agenday_whatsapp_texto(string $tipo, array $dados): string
             $codigo = (string) ($dados['codigo'] ?? '');
             $minutos = (int) ($dados['minutos']
                 ?? (defined('AGENDAY_PORTAL_CODIGO_MINUTOS') ? AGENDAY_PORTAL_CODIGO_MINUTOS : 10));
-            return $estab . "\n\nSeu código de acesso é: " . $codigo
-                . "\nEle vale por " . $minutos . " minutos e só pode ser usado uma vez."
-                . "\nSe não foi você, ignore esta mensagem.";
+            return implode("\n", [
+                $estab,
+                '',
+                'Seu código de acesso é: ' . $codigo,
+                'Ele vale por ' . $minutos . ' minutos e só pode ser usado uma vez.',
+                'Se não foi você, ignore esta mensagem.',
+                '',
+                agenday_whatsapp_assinatura($estab),
+            ]);
 
         case 'confirmacao':
         case 'lembrete':
@@ -230,6 +260,8 @@ function agenday_whatsapp_texto(string $tipo, array $dados): string
                 $linhas[] = '';
                 $linhas[] = 'Precisa cancelar? ' . $link;
             }
+            $linhas[] = '';
+            $linhas[] = agenday_whatsapp_assinatura($estab);
             return implode("\n", $linhas);
 
         case 'cancelamento':
@@ -244,6 +276,8 @@ function agenday_whatsapp_texto(string $tipo, array $dados): string
             if ($link !== '') {
                 $linhas[] = 'Para escolher outro horário: ' . $link;
             }
+            $linhas[] = '';
+            $linhas[] = agenday_whatsapp_assinatura($estab);
             return implode("\n", $linhas);
     }
 
