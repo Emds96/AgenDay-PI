@@ -102,6 +102,14 @@
     align-items: center;
 }
 
+/* Dois caminhos no mesmo passo ("sou eu" x "tenho equipe"). */
+.agenday-app .pp-passo-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: flex-end;
+}
+
 /* Tipo de negócio ---------------------------------------------------------- */
 
 .agenday-app .pp-segmentos {
@@ -377,6 +385,11 @@
         grid-area: acao;
         justify-content: center;
         width: 100%;
+    }
+
+    .agenday-app .pp-passo-acoes {
+        grid-area: acao;
+        flex-direction: column;
     }
 
     .agenday-app .pp-segmentos,

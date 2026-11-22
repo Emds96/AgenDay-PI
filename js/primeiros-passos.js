@@ -95,3 +95,22 @@ if (botaoCopiar) {
         avisar('Selecione e copie o endereço');
     });
 }
+
+/*
+ * Atalho "Sou eu que atendo": quando a pessoa chega pelo link do checklist
+ * (#sou-eu-que-atendo), o campo do nome já fica pronto para digitar — ela não
+ * precisa procurar onde escrever.
+ */
+const focarCampoDoAtalho = () => {
+    if (window.location.hash !== '#sou-eu-que-atendo') {
+        return;
+    }
+
+    const alvo = document.querySelector('[data-focar-ao-chegar="sou-eu-que-atendo"]');
+    if (alvo) {
+        alvo.focus({ preventScroll: true });
+    }
+};
+
+focarCampoDoAtalho();
+window.addEventListener('hashchange', focarCampoDoAtalho);

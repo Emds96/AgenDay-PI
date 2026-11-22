@@ -118,8 +118,39 @@ foreach ([0, -10, 1441] as $invalida) {
     conferir(agenday_primeiros_passos_duracao($invalida) === null, "duração inválida aceita: {$invalida}");
 }
 
-/* Progresso --------------------------------------------------------------- */
+/* Tipo de negócio lembrado no navegador ----------------------------------- */
 
+conferir(agenday_primeiros_passos_cookie_nome(35) === 'agenday_pp_seg_35', 'nome do cookie por estabelecimento');
+conferir(agenday_primeiros_passos_cookie_nome(0) === 'agenday_pp_seg_0', 'id zero gera cookie previsível');
+conferir(agenday_primeiros_passos_cookie_nome(-7) === 'agenday_pp_seg_0', 'id negativo não gera nome estranho');
+conferir(agenday_primeiros_passos_cookie_duracao() === 31536000, 'cookie deveria durar um ano');
+
+conferir(
+    agenday_primeiros_passos_segmento_do_cookie(35, ['agenday_pp_seg_35' => 'barbearia']) === 'barbearia',
+    'cookie válido deveria devolver o tipo de negócio'
+);
+conferir(
+    agenday_primeiros_passos_segmento_do_cookie(35, ['agenday_pp_seg_35' => 'nao-existe']) === '',
+    'chave fora do catálogo deveria ser ignorada'
+);
+conferir(
+    agenday_primeiros_passos_segmento_do_cookie(35, ['agenday_pp_seg_35' => ['barbearia']]) === '',
+    'valor que não é texto deveria ser ignorado'
+);
+conferir(
+    agenday_primeiros_passos_segmento_do_cookie(35, []) === '',
+    'sem cookie deveria devolver vazio'
+);
+conferir(
+    agenday_primeiros_passos_segmento_do_cookie(35, ['agenday_pp_seg_36' => 'barbearia']) === '',
+    'escolha de outro estabelecimento não pode vazar'
+);
+conferir(
+    agenday_primeiros_passos_segmento_do_cookie(35, ['agenday_pp_seg_35' => '']) === '',
+    'cookie apagado (vazio) deveria devolver vazio'
+);
+
+/* Progresso --------------------------------------------------------------- */
 $vazio = agenday_primeiros_passos_progresso([]);
 conferir($vazio['total'] === 4, 'o checklist deveria ter 4 passos');
 conferir($vazio['concluidos'] === 0 && $vazio['percentual'] === 0, 'estado vazio deveria ser 0%');

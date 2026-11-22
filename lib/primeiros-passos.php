@@ -90,6 +90,40 @@ function agenday_primeiros_passos_segmento_valido(?string $chave): bool
     return is_string($chave) && $chave !== '' && array_key_exists($chave, agenday_primeiros_passos_segmentos());
 }
 
+/* -------------------------------------------------------------------------
+ * Tipo de negócio guardado no navegador (PRIMEIROS-PASSOS-04)
+ *
+ * Sem coluna nova no banco: o cookie guarda só a chave do catálogo, presa ao
+ * estabelecimento para uma conta não herdar a escolha de outra no mesmo PC.
+ * ------------------------------------------------------------------------- */
+
+/** Nome do cookie de um estabelecimento. */
+function agenday_primeiros_passos_cookie_nome(int $idEstabelecimento): string
+{
+    return 'agenday_pp_seg_' . max(0, $idEstabelecimento);
+}
+
+/** Duração do cookie: um ano. */
+function agenday_primeiros_passos_cookie_duracao(): int
+{
+    return 60 * 60 * 24 * 365;
+}
+
+/**
+ * Lê o tipo de negócio do cookie, validando contra o catálogo.
+ *
+ * @param array<string, mixed>|null $cookies normalemente $_COOKIE; o parâmetro
+ *        existe para o teste poder simular o navegador.
+ */
+function agenday_primeiros_passos_segmento_do_cookie(int $idEstabelecimento, ?array $cookies = null): string
+{
+    $fonte = $cookies ?? $_COOKIE;
+    $nome = agenday_primeiros_passos_cookie_nome($idEstabelecimento);
+    $valor = isset($fonte[$nome]) && is_string($fonte[$nome]) ? $fonte[$nome] : '';
+
+    return agenday_primeiros_passos_segmento_valido($valor) ? $valor : '';
+}
+
 /**
  * Serviços sugeridos para o tipo de negócio.
  *
@@ -178,7 +212,7 @@ function agenday_primeiros_passos_progresso(array $dados): array
         [
             'chave' => 'equipe',
             'titulo' => 'Cadastre quem atende',
-            'ajuda' => 'Se for você mesmo, use o atalho "Sou eu que atendo".',
+            'ajuda' => 'Você mesmo ou sua equipe? Se for só você, use "Sou eu que atendo".',
             'feito' => $funcionarios > 0,
             'link' => 'cad-funcionario.php',
             'acao' => 'Cadastrar profissional',

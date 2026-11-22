@@ -1,5 +1,19 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-04 — Tipo de negócio lembrado e passo 2 sem armadilha (22/11/2026)
+
+- **Pedido do responsável:** corrigir dois incômodos do primeiro uso — o tipo de negócio escolhido sumia ao reabrir o navegador, e o passo "Cadastre quem atende" parecia exigir um cadastro de profissional mesmo para quem atende sozinho.
+- **Tipo de negócio agora fica no navegador:** cookie `agenday_pp_seg_<id_estabelecimento>`, um ano, `HttpOnly`, `SameSite=Lax`, só com a chave do catálogo (validada por `agenday_primeiros_passos_segmento_valido()`). A leitura é sessão → cookie → vazio; "Trocar o tipo de negócio" apaga o cookie. **Sem coluna nova e sem SQL.** O nome preso ao ID evita que a escolha de uma conta apareça em outra no mesmo computador.
+- **Passo 2 com dois caminhos:** no próprio cartão do checklist aparecem **"Sou eu que atendo"** (principal, leva ao painel `#sou-eu-que-atendo`) e **"Tenho equipe"** (secundário, `cad-funcionario.php`). A ajuda virou "Você mesmo ou sua equipe? Se for só você, use 'Sou eu que atendo'." Quem chega pelo atalho já encontra o campo do nome com foco (`data-focar-ao-chegar`, tratado no JS, inclusive em `hashchange`).
+- **Sem mudança de regra:** o checklist continua com os mesmos 4 passos e o mesmo critério de conclusão; só mudaram rótulos, atalhos e a persistência da preferência.
+- **Arquivos:** `lib/primeiros-passos.php` (helpers de cookie e texto do passo 2), `primeiros-passos.php` (leitura/gravação do cookie, dois botões, id do painel), `js/primeiros-passos.js` (foco pelo atalho), `css/primeiros-passos.css` (`.pp-passo-acoes`). Estáticos em `?v=20261122-pp04`.
+- **Testes (PC local, 22/11/2026):** `tests/primeiros-passos.php` 166 → **176** (nome do cookie por estabelecimento, duração de um ano, chave inválida ignorada, valor não-texto ignorado, cookie de outro estabelecimento não vaza, cookie vazio); `tests/link-portal-preview.js` 36 → **41** (foco só com o hash certo, sem roubar foco em outro hash, `hashchange`); prova HTTP real: **19 verificações, 0 falha** — dois botões no passo 2, âncora e `data-focar-ao-chegar`, `Set-Cookie` com chave/`Max-Age=31536000`/`HttpOnly`/`SameSite=Lax`, sugestões mantidas ao recarregar, cookie apagado ao trocar, versões pp04. Demais suítes: portal 153, agenda 19, cancelamento 20, configuração 27, recuperação de senha OK, alteração de senha 16, avatar OK, responsividade 233.
+- **Limitação do ambiente local:** `tests/google-identidade-validacao.php` aborta no PC com "OpenSSL indisponível" (build local sem a extensão). Não tem relação com esta mudança e passa na CI.
+- **Conferência visual (Edge headless, 22/11/2026):** desktop 1280 (dois botões lado a lado) e 360 px (empilhados, sem rolagem horizontal).
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PRIMEIROS-PASSOS-03 — Botão para ver a página do cliente (22/11/2026)
 
 - **Pedido do responsável:** repor o botão que abria o link criado e trocar o nome "Abrir o portal" por algo mais direto, do tipo "clique aqui para ver a página de agendamentos do seu cliente".
