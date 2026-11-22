@@ -518,6 +518,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 nome: nome,
                 telefone: el.novoTel.value.trim()
             });
+            const blocoTelefone = document.getElementById('confirmarTelefoneNovo');
+            if (window.AgendayTelefone && window.AgendayTelefone.semWhatsapp(blocoTelefone)) {
+                corpo.append('sem_whatsapp', '1');
+            }
             const resposta = await fetch('criar-cliente-rapido.php', {
                 method: 'POST',
                 credentials: 'same-origin',
@@ -538,6 +542,21 @@ document.addEventListener('DOMContentLoaded', () => {
             el.novoNome.value = '';
             el.novoTel.value = '';
             el.avisoNovo.textContent = '';
+            if (blocoTelefone) {
+                blocoTelefone.dataset.confirmado = '';
+                const caixaSem = blocoTelefone.querySelector('[data-sem-whatsapp]');
+                if (caixaSem) {
+                    caixaSem.checked = false;
+                }
+                const statusTelefone = blocoTelefone.querySelector('[data-status]');
+                if (statusTelefone) {
+                    statusTelefone.textContent = '';
+                }
+                const areaCodigo = blocoTelefone.querySelector('[data-codigo-area]');
+                if (areaCodigo) {
+                    areaCodigo.hidden = true;
+                }
+            }
             renderCamposOcultos();
             atualizarResumo();
         } catch (_) {

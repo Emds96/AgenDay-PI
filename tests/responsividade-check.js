@@ -109,6 +109,27 @@ verificar(config.includes('name="exigir_codigo"'),
     'WA-01: exigência de código saiu da tela sem ir para o estabelecimento');
 verificar(config.includes('name="slug"') && config.includes('id="slugEstabelecimento"'),
     'SLUG-01: endereço do portal editável na tela do estabelecimento');
+
+/* -------------------------------- celular confirmado por código (TEL-01) */
+const cadCliente = ler('cad-cliente.php');
+const agendarPagina = ler('agendar.php');
+const agendarJsTel = ler('js/agendar.js');
+const confirmarTelefoneJs = ler('js/confirmar-telefone.js');
+verificar(cadCliente.includes('data-confirmar-telefone')
+    && cadCliente.includes('data-enviar-codigo')
+    && cadCliente.includes('data-codigo-campo')
+    && cadCliente.includes('name="sem_whatsapp"'),
+    'TEL-01: cadastro de cliente sem confirmação do celular');
+verificar(cadCliente.includes('js/confirmar-telefone.js'),
+    'TEL-01: cadastro de cliente não carrega o script de confirmação');
+verificar(agendarPagina.includes('data-confirmar-telefone')
+    && agendarPagina.includes('js/confirmar-telefone.js'),
+    'TEL-01: cliente rápido do agendamento sem confirmação do celular');
+verificar(agendarJsTel.includes('sem_whatsapp'),
+    'TEL-01: cliente rápido não envia a opção sem WhatsApp');
+verificar(confirmarTelefoneJs.includes('api/painel-telefone.php')
+    && confirmarTelefoneJs.includes('permitir_duplicado'),
+    'TEL-01: script de confirmação não trata número repetido');
 verificar(config.includes('id="formFuncionamento"')
     && config.includes('name="dias[')
     && config.includes('name="regras[intervalo]"')

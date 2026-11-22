@@ -29,6 +29,7 @@ if (!agenday_valida_csrf()) {
 $nome = isset($_POST['nome']) && is_string($_POST['nome']) ? trim($_POST['nome']) : '';
 $telefone = isset($_POST['telefone']) && is_string($_POST['telefone']) ? trim($_POST['telefone']) : '';
 $telefone = preg_replace('/\D+/', '', $telefone) ?? '';
+$semWhatsapp = isset($_POST['sem_whatsapp']) && $_POST['sem_whatsapp'] === '1';
 
 if (mb_strlen($nome) < 2 || mb_strlen($nome) > 120) {
     agenday_cliente_rapido_erro('Informe o nome do cliente (2 a 120 caracteres).');
@@ -36,12 +37,36 @@ if (mb_strlen($nome) < 2 || mb_strlen($nome) > 120) {
 if ($telefone !== '' && (strlen($telefone) < 8 || strlen($telefone) > 15)) {
     agenday_cliente_rapido_erro('O telefone deve ter de 8 a 15 dígitos, ou ficar vazio.');
 }
-// Identidade do portal: DDD + número (10 ou 11 dígitos). Null se não se encaixa.
-$telefoneDigits = agenday_portal_telefone_normalizar($telefone);
+// Identidade do portal: DDD + número (10 ou 11 dígitos). Null sem WhatsApp.
+$telefoneDigits = $semWhatsapp ? null : agenday_portal_telefone_normalizar($telefone);
+if (!$semWhatsapp && $telefone !== '' && !agenday_portal_telefone_whatsapp_ok($telefoneDigits)) {
+    agenday_cliente_rapido_erro(
+        'Informe um celular com DDD e o 9 (11 dígitos), ou marque que o cliente não tem WhatsApp.'
+    );
+}
 
 try {
     require_once __DIR__ . '/conexao.php';
     $idEstabelecimento = (int) $_SESSION['id_estabelecimento'];
+
+    // Celular só vale depois de confirmado por código. Sem WhatsApp pronto na
+    // plataforma, o cadastro continua para não travar o atendimento.
+    if (!$semWhatsapp && $telefoneDigits !== null) {
+        require_once __DIR__ . '/lib/whatsapp.php';
+        try {
+            $configWhats = agenday_whatsapp_config($conexao);
+            $exigirConfirmacao = agenday_whatsapp_pronto($configWhats);
+        } catch (Throwable $e) {
+            $exigirConfirmacao = false;
+        }
+        if ($exigirConfirmacao
+            && !agenday_portal_confirmacao_ler($idEstabelecimento, (string) $telefoneDigits)) {
+            agenday_cliente_rapido_erro(
+                'Confirme o celular pelo código do WhatsApp antes de salvar, '
+                . 'ou marque que o cliente não tem WhatsApp.'
+            );
+        }
+    }
 
     // Telefone repetido reaproveita o cadastro existente.
     if ($telefone !== '') {

@@ -100,8 +100,33 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-4 mb-3">
-                                            <input type="tel" class="form-control rounded-3 shadow" placeholder="Contato" name="contato" maxlength="20" required>
+                                        <div class="col-6 mb-3">
+                                            <div data-confirmar-telefone>
+                                                <input type="tel" class="form-control rounded-3 shadow" placeholder="Celular com WhatsApp"
+                                                       name="contato" id="contatoCliente" maxlength="20" required
+                                                       data-telefone-campo aria-describedby="contatoAjuda">
+                                                <div class="form-text" id="contatoAjuda">Confirmamos o número por código no WhatsApp.</div>
+                                                <div class="d-flex gap-2 mt-1">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" data-enviar-codigo>
+                                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Confirmar no WhatsApp
+                                                    </button>
+                                                </div>
+                                                <div class="mt-2" data-codigo-area hidden>
+                                                    <label class="form-label small" for="codigoTelefone">Código recebido</label>
+                                                    <div class="d-flex gap-2">
+                                                        <input type="text" class="form-control form-control-sm" id="codigoTelefone"
+                                                               maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                                                               data-codigo-campo aria-label="Código recebido no WhatsApp">
+                                                        <button type="button" class="btn btn-primary btn-sm" data-confirmar-codigo>Confirmar</button>
+                                                    </div>
+                                                </div>
+                                                <p class="form-text" data-status role="status" aria-live="polite"></p>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="sem_whatsapp" value="1"
+                                                           id="semWhatsapp" data-sem-whatsapp>
+                                                    <label class="form-check-label small" for="semWhatsapp">Este cliente não tem WhatsApp</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="input-group">
@@ -142,8 +167,32 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-4 mb-3">
-                                            <input type="tel" class="form-control rounded-3 shadow" placeholder="Contato" id="editar-contato" name="contato" maxlength="20" aria-label="Contato do cliente" required>
+                                        <div class="col-6 mb-3">
+                                            <div data-confirmar-telefone>
+                                                <input type="tel" class="form-control rounded-3 shadow" placeholder="Celular com WhatsApp"
+                                                       id="editar-contato" name="contato" maxlength="20"
+                                                       aria-label="Contato do cliente" required data-telefone-campo>
+                                                <div class="d-flex gap-2 mt-1">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" data-enviar-codigo>
+                                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Confirmar no WhatsApp
+                                                    </button>
+                                                </div>
+                                                <div class="mt-2" data-codigo-area hidden>
+                                                    <label class="form-label small" for="editar-codigo">Código recebido</label>
+                                                    <div class="d-flex gap-2">
+                                                        <input type="text" class="form-control form-control-sm" id="editar-codigo"
+                                                               maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                                                               data-codigo-campo aria-label="Código recebido no WhatsApp">
+                                                        <button type="button" class="btn btn-primary btn-sm" data-confirmar-codigo>Confirmar</button>
+                                                    </div>
+                                                </div>
+                                                <p class="form-text" data-status role="status" aria-live="polite"></p>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="sem_whatsapp" value="1"
+                                                           id="editar-sem-whatsapp" data-sem-whatsapp>
+                                                    <label class="form-check-label small" for="editar-sem-whatsapp">Este cliente não tem WhatsApp</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="input-group">
@@ -196,6 +245,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                             data-nome="<?= htmlspecialchars((string) $cliente['nome_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
                                             data-email="<?= htmlspecialchars((string) ($cliente['email_cliente'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
                                             data-contato="<?= htmlspecialchars((string) $cliente['contato_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                                        data-sem-whatsapp="<?= empty($cliente['telefone_digits']) ? '1' : '0' ?>"
                                             data-foto="<?= htmlspecialchars((string) ($cliente['arquivo_cliente'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
                                             aria-label="Editar cliente <?= htmlspecialchars((string) $cliente['nome_cliente'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
                                             <i class="bi bi-pencil-square" aria-hidden="true"></i>
@@ -263,6 +313,12 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                 document.getElementById('editar-nome').value = botao.getAttribute('data-nome') || '';
                 document.getElementById('editar-email').value = botao.getAttribute('data-email') || '';
                 document.getElementById('editar-contato').value = botao.getAttribute('data-contato') || '';
+                var caixaSemWhatsapp = document.getElementById('editar-sem-whatsapp');
+                if (caixaSemWhatsapp) {
+                    caixaSemWhatsapp.checked = botao.getAttribute('data-sem-whatsapp') === '1';
+                    caixaSemWhatsapp.dispatchEvent(new Event('change'));
+                }
+                document.getElementById('editar-contato').dispatchEvent(new Event('input'));
                 document.getElementById('editar-arquivo').value = '';
                 document.getElementById('editar-foto-atual').textContent = botao.getAttribute('data-foto')
                     ? 'A foto atual será mantida se você não escolher outra.'
@@ -270,6 +326,8 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
             });
         });
     </script>
+
+    <script src="js/confirmar-telefone.js"></script>
 
     <footer>
         <div class="rodape">

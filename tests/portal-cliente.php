@@ -76,6 +76,13 @@ verificar(agenday_portal_telefone_normalizar('0000000000') === null, 'telefone t
 verificar(agenday_portal_telefone_normalizar(null) === null, 'telefone nulo');
 verificar(agenday_portal_telefone_formatar('92981111001') === '(92) 98111-1001', 'formato celular');
 verificar(agenday_portal_telefone_formatar('9233334444') === '(92) 3333-4444', 'formato fixo');
+
+/* ------------------------------------------- celular com WhatsApp (painel) */
+verificar(agenday_portal_telefone_whatsapp_ok('92981111001'), 'celular com 9 recebe WhatsApp');
+verificar(!agenday_portal_telefone_whatsapp_ok('9233334444'), 'fixo não recebe WhatsApp');
+verificar(!agenday_portal_telefone_whatsapp_ok('9298111100'), 'celular com 10 dígitos não passa');
+verificar(!agenday_portal_telefone_whatsapp_ok(''), 'número vazio não recebe WhatsApp');
+verificar(!agenday_portal_telefone_whatsapp_ok(null), 'número nulo não recebe WhatsApp');
 verificar(agenday_portal_telefone_mascarado('92981111001') === '(92) 9****-1001', 'máscara celular');
 verificar(agenday_portal_telefone_whatsapp('92981111001') === '5592981111001', 'whatsapp com país');
 
