@@ -208,6 +208,9 @@
             if (registro.sugere_faltou) {
                 topo.appendChild(criarElemento('span', 'agenda-pendencia', 'Confirmar presença'));
             }
+            if (registro.cobrar_taxa) {
+                topo.appendChild(criarElemento('span', 'agenda-pendencia', 'Taxa a cobrar'));
+            }
             cartao.appendChild(topo);
 
             cartao.appendChild(criarElemento('h3', 'agenda-atendimento-cliente',
@@ -286,40 +289,53 @@
                     adicionarAcao('Concluir atendimento', 'concluir');
                 }
 
-                const itemCancelar = criarElemento('li');
-                const formCancelamento = criarElemento('form');
-                formCancelamento.method = 'post';
-                formCancelamento.action = 'cancelar-agendamento.php';
+                const montarCancelamento = cobrarTaxa => {
+                    const itemCancelar = criarElemento('li');
+                    const formCancelamento = criarElemento('form');
+                    formCancelamento.method = 'post';
+                    formCancelamento.action = 'cancelar-agendamento.php';
 
-                const campoId = criarElemento('input');
-                campoId.type = 'hidden';
-                campoId.name = 'id_agendamento';
-                campoId.value = String(registro.id_agendamento);
-                formCancelamento.appendChild(campoId);
+                    const campoId = criarElemento('input');
+                    campoId.type = 'hidden';
+                    campoId.name = 'id_agendamento';
+                    campoId.value = String(registro.id_agendamento);
+                    formCancelamento.appendChild(campoId);
 
-                const campoCsrf = criarElemento('input');
-                campoCsrf.type = 'hidden';
-                campoCsrf.name = 'csrf_token';
-                campoCsrf.value = tokenCancelamento;
-                formCancelamento.appendChild(campoCsrf);
+                    const campoCsrf = criarElemento('input');
+                    campoCsrf.type = 'hidden';
+                    campoCsrf.name = 'csrf_token';
+                    campoCsrf.value = tokenCancelamento;
+                    formCancelamento.appendChild(campoCsrf);
 
-                const botaoCancelar = criarElemento('button', 'dropdown-item text-danger',
-                    'Cancelar agendamento');
-                botaoCancelar.type = 'submit';
-                formCancelamento.appendChild(botaoCancelar);
-                formCancelamento.addEventListener('submit', evento => {
-                    const confirmou = window.confirm(
-                        'Deseja cancelar este agendamento? Esta ação libera o horário e mantém o histórico.'
-                    );
-                    if (!confirmou) {
-                        evento.preventDefault();
-                        return;
+                    if (cobrarTaxa) {
+                        const campoTaxa = criarElemento('input');
+                        campoTaxa.type = 'hidden';
+                        campoTaxa.name = 'cobrar_taxa';
+                        campoTaxa.value = '1';
+                        formCancelamento.appendChild(campoTaxa);
                     }
-                    botaoCancelar.disabled = true;
-                    botaoCancelar.textContent = 'Cancelando...';
-                });
-                itemCancelar.appendChild(formCancelamento);
-                menu.appendChild(itemCancelar);
+
+                    const botaoCancelar = criarElemento('button',
+                        cobrarTaxa ? 'dropdown-item text-warning-emphasis' : 'dropdown-item text-danger',
+                        cobrarTaxa ? 'Cancelar e cobrar taxa' : 'Cancelar agendamento');
+                    botaoCancelar.type = 'submit';
+                    formCancelamento.appendChild(botaoCancelar);
+                    formCancelamento.addEventListener('submit', evento => {
+                        const confirmou = window.confirm(cobrarTaxa
+                            ? 'Cancelar este agendamento e registrar que a taxa será cobrada? O horário será liberado e o cliente ficará marcado como "em cima da hora".'
+                            : 'Deseja cancelar este agendamento? Esta ação libera o horário e mantém o histórico.');
+                        if (!confirmou) {
+                            evento.preventDefault();
+                            return;
+                        }
+                        botaoCancelar.disabled = true;
+                        botaoCancelar.textContent = 'Cancelando...';
+                    });
+                    itemCancelar.appendChild(formCancelamento);
+                    return itemCancelar;
+                };
+                menu.appendChild(montarCancelamento(false));
+                menu.appendChild(montarCancelamento(true));
 
                 grupo.appendChild(menu);
                 cartao.appendChild(grupo);

@@ -17,11 +17,19 @@ try {
     require_once __DIR__ . '/conexao.php';
     require_once __DIR__ . '/lib/agendamento-cancelar.php';
     $id = agenday_agenda_validar_id_cancelamento($_POST['id_agendamento'] ?? null);
-    $resultado = agenday_agenda_cancelar($conexao, $id);
+    // Ação "Cancelar e cobrar taxa": o salão decide; o sistema só registra (FEE-01).
+    $cobrarTaxa = isset($_POST['cobrar_taxa']) && $_POST['cobrar_taxa'] === '1';
+    $resultado = agenday_agenda_cancelar($conexao, $id, $cobrarTaxa);
 
-    $_SESSION['sucesso_cancelamento'] = $resultado['ja_cancelado']
-        ? 'Este agendamento já estava cancelado.'
-        : 'Agendamento #' . $id . ' cancelado com sucesso. O horário foi liberado.';
+    if ($resultado['ja_cancelado']) {
+        $_SESSION['sucesso_cancelamento'] = 'Este agendamento já estava cancelado.';
+    } elseif ($cobrarTaxa) {
+        $_SESSION['sucesso_cancelamento'] = 'Agendamento #' . $id
+            . ' cancelado e registrado para cobrar a taxa. O horário foi liberado.';
+    } else {
+        $_SESSION['sucesso_cancelamento'] = 'Agendamento #' . $id
+            . ' cancelado com sucesso. O horário foi liberado.';
+    }
 
     // Reabre o mês do atendimento após o redirecionamento.
     $_SESSION['agenda_dia_recem_salvo'] = substr($resultado['data_inicio'], 0, 10);

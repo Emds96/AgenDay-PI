@@ -1,5 +1,18 @@
 # STATUS — AgenDay 2.0
 
+## FEE-02 — Ação "Cancelar e cobrar taxa" na agenda (22/11/2026)
+
+- **Decisão do responsável:** quem sabe se é caso de taxa é o **salão**, no momento do cancelamento — não o sistema. Marca automática foi descartada porque hoje **só o salão cancela dentro das 24h** (o cliente é bloqueado no portal), então o automático marcaria até cancelamentos feitos por conta própria (profissional doente, por exemplo).
+- **Implementado (sem SQL):** no menu **Ações** de cada agendamento ativo há duas opções: **"Cancelar agendamento"** e **"Cancelar e cobrar taxa"**. A segunda é o mesmo cancelamento com `cobrar_taxa=1`.
+- **Onde fica a marca:** em `agendamentos.observacoes`, com o texto técnico `[AgenDay: cobrar taxa]` (`lib/clientes-ausencias.php`). A marca é **removida** ao listar a agenda e vira o aviso **"Taxa a cobrar"** no cartão; a observação do cliente continua intacta. Criar coluna própria é mudança de banco — depois da feira.
+- **Lista de clientes:** ganhou o terceiro selo — `[2 faltas] [1 cancelamento] [1 em cima da hora]`.
+- **Portal do cliente:** continua **bloqueando** cancelar e remarcar dentro das 24h. Liberar exigiria mudar a mensagem já aprovada ("até 24h antes do horário") e mais código em cima da feira; o salão já fica sabendo pelo telefone.
+- **Testes (PC local, 22/11/2026):** 34 provas com banco local (marca idempotente, cancelamento comum **sem** marca, cancelamento com taxa **com** marca, observação preservada, repetição do POST sem duplicar, contadores e isolamento entre estabelecimentos) e renderização real de `cad-cliente.php` com os três selos + `agenday_agenda_listar()` devolvendo `cobrar_taxa` e a observação limpa. Suítes do CI: portal 150, agenda 19, cancelamento 20, configuração 13, senha 16, avatar ok, recuperação de senha ok, responsividade 219. (`tests/google-identidade-validacao.php` não roda neste PC: a build local do PHP está sem OpenSSL — limitação de ambiente, não do código.)
+- **Limite conhecido:** marcar **"já cobrei"** exige coluna nova; hoje o aviso permanece até o registro sair da agenda.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## FEE-01 — Histórico de faltas e cancelamentos na lista de clientes (22/11/2026)
 
 - **Pedido do responsável:** o salão precisa ver quem cancelou ou faltou para cobrar pessoalmente. O sistema **não cobra taxa automaticamente** (sem gateway e sem cartão salvo).

@@ -239,16 +239,22 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                         <?php endif; ?>
                                         <?php $faltasCliente = (int) ($cliente['faltas'] ?? 0); ?>
                                         <?php $cancelamentosCliente = (int) ($cliente['cancelamentos'] ?? 0); ?>
-                                        <?php if ($faltasCliente > 0 || $cancelamentosCliente > 0): ?>
+                                        <?php $taxaCliente = (int) ($cliente['taxa'] ?? 0); ?>
+                                        <?php if ($faltasCliente > 0 || $cancelamentosCliente > 0 || $taxaCliente > 0): ?>
                                             <div class="mt-1 d-flex flex-wrap gap-1" data-historico-ausencias>
                                                 <?php if ($faltasCliente > 0): ?>
                                                     <span class="badge text-bg-danger">
-                                                        <?= $faltasCliente ?> <?= $faltasCliente === 1 ? 'falta' : 'faltas' ?>
+                                                        <?= htmlspecialchars(agenday_clientes_ausencia_rotulo('falta', $faltasCliente), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                                                     </span>
                                                 <?php endif; ?>
                                                 <?php if ($cancelamentosCliente > 0): ?>
                                                     <span class="badge text-bg-secondary">
-                                                        <?= $cancelamentosCliente ?> <?= $cancelamentosCliente === 1 ? 'cancelamento' : 'cancelamentos' ?>
+                                                        <?= htmlspecialchars(agenday_clientes_ausencia_rotulo('cancelamento', $cancelamentosCliente), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                                <?php if ($taxaCliente > 0): ?>
+                                                    <span class="badge text-bg-warning">
+                                                        <?= htmlspecialchars(agenday_clientes_ausencia_rotulo('taxa', $taxaCliente), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                                                     </span>
                                                 <?php endif; ?>
                                             </div>
