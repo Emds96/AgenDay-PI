@@ -36,6 +36,27 @@ while ($stmt->fetch()) {
         'email_cliente' => $emailCliente,
         'contato_cliente' => $contatoCliente,
         'arquivo_cliente' => $arquivoCliente,
+        'faltas' => 0,
+        'cancelamentos' => 0,
     ];
 }
 $stmt->close();
+
+/*
+ * Histórico de ausências (FEE-01): quantas vezes o cliente faltou e quantas
+ * cancelou. Serve para o salão cobrar a taxa pessoalmente, sem cobrança
+ * automática (o sistema não tem meio de pagamento).
+ *
+ * Uma consulta só para a página inteira; o id do estabelecimento vem da
+ * sessão e os clientes são os da lista atual.
+ */
+if ($clientes !== []) {
+    require_once __DIR__ . '/lib/clientes-ausencias.php';
+    $ids = array_map(static fn(array $cliente): int => (int) $cliente['id_cliente'], $clientes);
+    $ausencias = agenday_clientes_ausencias($conexao, $idEstabelecimento, $ids);
+    foreach ($clientes as $indice => $cliente) {
+        $conta = $ausencias[(int) $cliente['id_cliente']] ?? [];
+        $clientes[$indice]['faltas'] = (int) ($conta['faltas'] ?? 0);
+        $clientes[$indice]['cancelamentos'] = (int) ($conta['cancelamentos'] ?? 0);
+    }
+}

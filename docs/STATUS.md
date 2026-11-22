@@ -1,5 +1,16 @@
 # STATUS — AgenDay 2.0
 
+## FEE-01 — Histórico de faltas e cancelamentos na lista de clientes (22/11/2026)
+
+- **Pedido do responsável:** o salão precisa ver quem cancelou ou faltou para cobrar pessoalmente. O sistema **não cobra taxa automaticamente** (sem gateway e sem cartão salvo).
+- **Implementado (sem SQL):** em **Clientes**, cada cliente passa a mostrar selos **"2 faltas"** e **"1 cancelamento"**, contando os agendamentos com status `faltou` e `cancelado`. Uma consulta por página (`agenday_clientes_ausencias()` em `lib/clientes-ausencias.php`), sempre filtrada pelo `id_estabelecimento` da sessão. Cliente sem histórico não mostra selo.
+- **Remarcação em cima da hora — análise e decisão:** o cliente **não consegue** cancelar nem remarcar dentro das 24h. O botão nem aparece e o portal responde "Cancelamentos são aceitos até 24 horas antes do atendimento." (mesma regra no link por token). Quando o cliente liga, o salão faz **cancelar + criar outro** — e esse cancelamento **já entra na contagem**. Rotular o cancelamento como "em cima da hora" exigiria coluna nova registrando o horário do cancelamento na mesma base de tempo do agendamento; fica para depois da feira.
+- **Limite:** sem SQL não existe como marcar "já cobrei"; o número permanece visível. Não há controle de pagamento.
+- **Testes (PC local, 22/11/2026):** 14 provas com banco local (contagem de faltas e cancelamentos, singular/plural, cliente zerado, isolamento entre estabelecimentos, lista vazia e ids inválidos) e renderização real de `cad-cliente.php` mostrando "2 faltas". Suítes: portal 150, agenda 19, cancelamento 20, configuração 13, senha 16, avatar ok, responsividade 219.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+
+---
+
 ## PORTAL-RAIZ-01 — Domínio compartilhado não abre mais a agenda de um salão (22/11/2026)
 
 - **Problema relatado:** abrir só `https://agenday-agendamentos.infinityfree.io/` (sem `?e=`) abria a agenda do Studio Bella Vita. Não deveria.
