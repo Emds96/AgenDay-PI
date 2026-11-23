@@ -41,6 +41,8 @@ if (isset($conexao) && $conexao instanceof mysqli) {
         $segmentoPrimeirosPassos
     );
     if ($primeirosPassos !== null) {
+        $linkConfirmado = ($_COOKIE['agenday_pp_pronto_' . (int) $_SESSION['id_estabelecimento']] ?? '') === '1';
+        $primeirosPassosProximo = 'Confirme o link dos clientes';
         foreach ($primeirosPassos['itens'] as $passo) {
             if (!$passo['feito']) {
                 $primeirosPassosProximo = (string) $passo['titulo'];
@@ -98,18 +100,16 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
         </div>
     </header>
     <main>
-        <?php if ($primeirosPassos !== null && !$primeirosPassos['completo']): ?>
+        <?php if ($primeirosPassos !== null && (!$primeirosPassos['completo'] || !$linkConfirmado)): ?>
             <section class="container-fluid pt-4 pb-0" aria-labelledby="primeiros-passos-titulo">
                 <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-3 mb-0"
                      role="status">
                     <div>
                         <h2 id="primeiros-passos-titulo" class="h6 mb-1">
-                            Sua agenda ainda não está pronta
-                            (<?= (int) $primeirosPassos['concluidos'] ?> de <?= (int) $primeirosPassos['total'] ?>)
+                            Continue os primeiros passos
                         </h2>
                         <p class="mb-0 small">
                             Próximo passo: <strong><?= htmlspecialchars($primeirosPassosProximo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>.
-                            Leva uns 5 minutos e destrava os agendamentos.
                         </p>
                     </div>
                     <a class="btn btn-primary" href="primeiros-passos.php">

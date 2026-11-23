@@ -74,15 +74,15 @@ if (campoEndereco && previaLink && avisoPrevia && botaoCopiar) {
     atualizarPrevia();
 }
 
-if (botaoCopiar) {
-    const textoOriginal = botaoCopiar.textContent;
+for (const botao of [botaoCopiar, document.getElementById('pp-copiar-final')].filter(Boolean)) {
+    const textoOriginal = botao.textContent;
     const avisar = texto => {
-        botaoCopiar.textContent = texto;
-        window.setTimeout(() => { botaoCopiar.textContent = textoOriginal; }, 2000);
+        botao.textContent = texto;
+        window.setTimeout(() => { botao.textContent = textoOriginal; }, 2000);
     };
 
-    botaoCopiar.addEventListener('click', () => {
-        const link = botaoCopiar.dataset.link || '';
+    botao.addEventListener('click', () => {
+        const link = botao.dataset.link || '';
         if (!link) {
             return;
         }
