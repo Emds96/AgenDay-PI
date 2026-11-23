@@ -1,5 +1,14 @@
 # STATUS — AgenDay 2.0
 
+## LOGIN-ROLAGEM-01 — cadastro travado em telas pequenas (23/11/2026)
+
+- **Relato do responsável:** no celular e em um monitor pequeno, a tela de criar conta não desce até o botão **Cadastrar-se**; a rolagem fica travada.
+- **Causa 1 (celular):** `css/google-auth.css` deixava o formulário com `overflow-y: auto` e `overscroll-behavior: contain`. No toque, o gesto ficava preso no formulário e não chegava à página — a página tinha 955 px num viewport de 640 px, mas o arrasto não saía do lugar.
+- **Causa 2 (monitor pequeno):** o formulário tem altura fixa dentro do cartão e `justify-content: center`. Quando o conteúdo passa da altura, o topo fica acima da área visível e não pode ser alcançado — mesmo com a rolagem interna em zero.
+- **Correção:** `justify-content: safe center` e `overflow-y: auto` no formulário (centraliza quando cabe e alinha ao topo quando transborda, mantendo a rolagem interna no desktop); no celular, `overflow-y: visible` e `overscroll-behavior: auto` para a rolagem ser da página. Padding vertical de 20 px para o título não encostar na borda.
+- **Testes (23/11/2026, PC local, Chrome com emulação de toque):** arrasto real em 320×568, 360×640, 390×844 e 412×915 — em todos a página desce e o botão **Cadastrar-se** fica visível; roda do mouse em 1024×600, 1280×720, 1366×650 e 1366×768 — topo visível na abertura e botão alcançável após rolar. Sem rolagem horizontal em nenhum tamanho. `tests/responsividade-check.js` **233**.
+- **Estado real:** implementado e testado no PC local; **não publicado** até o próximo deploy.
+
 ## CONFIRMACAO-AGENDAMENTO-01 — confirmação pelo lembrete de 24h (22/11/2026)
 
 - **Pedido do responsável:** incluir no lembrete de 24h o link para o cliente confirmar presença e permitir a confirmação manual no menu **Ações** da agenda.
