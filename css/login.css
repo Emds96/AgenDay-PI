@@ -69,9 +69,13 @@ form {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* safe center: mantem o conteudo centralizado quando cabe e evita que o topo
+     do formulario fique inacessivel quando ele e maior que o cartao. */
+  justify-content: safe center;
   flex-direction: column;
-  padding: 0 50px;
+  padding: 20px 50px;
   height: 100%;
+  overflow-y: auto;
   text-align: center;
 }
 
