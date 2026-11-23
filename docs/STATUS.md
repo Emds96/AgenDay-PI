@@ -13,6 +13,19 @@
 - **Produção (22/11/2026, horário de Manaus):** [PR #110](https://github.com/Emds96/AgenDay-PI/pull/110), SHA `6a9b48fdee34454f611e77889734ae1d9876d06a`. Backup integral do painel e de 16 tabelas, com restauração local aprovada; backup complementar do portal (129 arquivos, ZIP verificado). O esquema necessário já existia; nenhum SQL de migração foi executado.
 - **Publicação e QA:** os três jobs da [execução 45096761768](https://github.com/Emds96/AgenDay-PI/actions/runs/45096761768) passaram: 130 arquivos enviados a cada domínio, sem exclusão remota; flags conferidas em `false`/`disabled`. No navegador, o painel exibiu a tela de acesso e a página pública de confirmação sem token exibiu “Link inválido”, como esperado. Confirmação pelo lembrete com agendamento real validada localmente; ainda não testada de ponta a ponta em produção.
 
+## PRIMEIROS-PASSOS-13 — o primeiro acesso para de pedir o que a conta já tem (22/11/2026)
+
+- **Pedido do responsável:** depois de percorrer a conta demo como usuário final, corrigir os atritos apontados na tela de primeiro acesso (*"pode fazer"*), sem mexer em mais nada.
+- **Tipo de negócio na conta:** a escolha deixa de existir só na sessão/cookie. `estabelecimento.segmento` guarda a chave do catálogo (`sql/migracao-segmento-estabelecimento.sql`), então outra aba, outro navegador ou aba anônima já abrem a conta como configurada. Sem a coluna aplicada o código continua lendo o cookie e nada quebra.
+- **Link confirmado pela conta:** a agenda não cobra mais "Confirme o link" quando o estabelecimento já tem endereço salvo — o `slug` nasce no cadastro. A marca no cookie continua valendo como atalho.
+- **Conta pronta:** o cartão troca "Etapa n de 6" por **"Tudo pronto"**, com a barra cheia e o texto "Sua agenda está pronta. Revise o que quiser: nada aqui apaga o que já foi salvo." Some a promessa de "leva uns 5 minutos".
+- **Etapa 2 de revisão:** quem já tem serviços vê **"Seus serviços"** (em vez de "Quais serviços você oferece?"), o botão vira **"Adicionar outro"** e o avanço é **"Continuar"**, não "Concluir seleção".
+- **Etapa 5 com almoço:** o resumo mostra as duas janelas do dia, ex. `09:00 – 12:00 e 13:00 – 19:00`, em vez de esconder a pausa.
+- **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php`, `lib/primeiros-passos.php` e `agenda.php`; prova HTTP na conta demo #70 — **17 verificações, 0 falha**: agenda sem banner, "Seus serviços"/"Continuar", almoço visível, "Tudo pronto" sem "Etapa 6 de 6", "Trocar" limpando a coluna e o banner voltando, escolha regravando `estetica`, e **navegador novo** (cookie jar vazio) sem banner e com o tipo já escolhido. Suítes: `tests/primeiros-passos.php` 195, `tests/portal-cliente.php` **159**, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
+- **Rebase e nova rodada (23/11/2026):** a branch foi rebaseada sobre a `dev-feira-uninorte` (`15204e6`, depois do DEPLOY-05). Conflito só em `docs/STATUS.md`, resolvido mantendo as duas entradas; `agenda.php` aplicou sem conflito. `php -l` limpo e as mesmas suítes verdes (195 / 159 / 27 / 39 / 233). A prova HTTP na conta demo #70 foi repetida: **17 verificações, 0 falha**, e a conferência visual no navegador não encontrou divergência.
+- **Conferência visual (navegador real, 22/11/2026):** agenda sem banner; etapa 2 com "Tudo pronto"/"Seus serviços"; etapa 5 com as duas janelas de horário.
+- **Estado real:** implementado e testado **somente no PC local**; **não publicado**. A migração da coluna **não** foi aplicada na hospedagem.
+
 ## PRIMEIROS-PASSOS-12 — primeiro acesso em seis etapas guiadas (22/11/2026)
 
 - **Pedido do responsável:** transformar a tela de primeiro acesso em um passo a passo tipo quiz, com uma etapa por vez e pop-up de parabéns no fim (*"ok faz"*, *"ok pode fazer"*).

@@ -33,6 +33,10 @@ if (!agenday_primeiros_passos_segmento_valido($segmento)) {
     // Sem sessão (navegador reaberto), o cookie do navegador lembra a escolha.
     $segmento = agenday_primeiros_passos_segmento_do_cookie($idEstabelecimento);
 }
+if (!agenday_primeiros_passos_segmento_valido($segmento) && $conexaoOk) {
+    // Outro navegador ou aba anônima: a conta também guarda o tipo escolhido.
+    $segmento = agenday_primeiros_passos_segmento_da_conta($conexao, $idEstabelecimento);
+}
 
 /* -------------------------------------------------------------------------
  * Dados do estabelecimento (usados pelas ações e pela tela)
@@ -78,6 +82,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $_SESSION['pp_erro'] = 'A sessão do formulário expirou. Atualize a página e tente novamente.';
     } elseif ($acao === 'trocar') {
         unset($_SESSION['agenday_primeiros_passos_segmento']);
+        agenday_primeiros_passos_segmento_gravar($conexao, $idEstabelecimento, null);
         setcookie(agenday_primeiros_passos_cookie_nome($idEstabelecimento), '', [
             'expires' => time() - 3600,
             'path' => '/',
@@ -109,6 +114,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 : '';
         } else {
             $_SESSION['agenday_primeiros_passos_segmento'] = $escolhido;
+            agenday_primeiros_passos_segmento_gravar($conexao, $idEstabelecimento, $escolhido);
             $_SESSION[$chaveEtapa] = 2;
             // Guarda também no navegador: a sessão expira, a escolha não precisa.
             setcookie(agenday_primeiros_passos_cookie_nome($idEstabelecimento), $escolhido, [
@@ -545,6 +551,15 @@ $perguntas = [
     5 => 'Em quais horários você atende?',
     6 => 'Qual link você quer enviar aos clientes?',
 ];
+// Conta já configurada: a tela deixa de falar em "etapa" e de prometer 5 minutos.
+$tudoPronto = !empty($progresso['completo']);
+$perguntaAtual = $perguntas[$etapa];
+$ajudaEtapa = $etapa < 6 ? (string) $progresso['itens'][$etapa - 1]['ajuda'] : '';
+if ($etapa === 2 && $listaServicos !== []) {
+    // Quem já tem serviços revisa, não "escolhe do zero".
+    $perguntaAtual = 'Seus serviços';
+    $ajudaEtapa = 'Estes são os serviços que o cliente escolhe no portal. Para incluir outro, use o botão abaixo.';
+}
 $celebrar = $etapa === 6 && $portalLink !== '' && ($_SESSION['pp_link_concluido'] ?? null) === $idEstabelecimento;
 unset($_SESSION['pp_link_concluido']);
 $sugestoes = agenday_primeiros_passos_sugestoes($segmento);
@@ -637,9 +652,11 @@ unset($_SESSION['pp_pessoa_tentativa']);
 <main class="container ag-settings">
     <div class="ag-settings-heading">
         <h1 class="fw-bold">Primeiros passos</h1>
-        <p><?= $segmento === ''
-            ? 'Escolha o seu tipo de negócio: o AgenDay já sugere os serviços. Leva uns 5 minutos.'
-            : 'Escolha os serviços, diga quem atende e confira os horários. Leva uns 5 minutos.' ?></p>
+        <p><?= $tudoPronto
+            ? 'Sua agenda está pronta. Revise o que quiser: nada aqui apaga o que já foi salvo.'
+            : ($segmento === ''
+                ? 'Escolha o seu tipo de negócio: o AgenDay já sugere os serviços. Leva uns 5 minutos.'
+                : 'Escolha os serviços, diga quem atende e confira os horários. Leva uns 5 minutos.') ?></p>
     </div>
 
     <?php if ($aviso !== null): ?>
@@ -703,7 +720,7 @@ unset($_SESSION['pp_pessoa_tentativa']);
                 </div>
                 <div class="modal-footer">
                     <?php if ($listaServicos !== []): ?>
-                        <a class="btn btn-primary" href="primeiros-passos.php?etapa=3">Concluir seleção</a>
+                        <a class="btn btn-primary" href="primeiros-passos.php?etapa=3">Continuar</a>
                     <?php else: ?>
                         <span class="form-text">Adicione pelo menos um serviço para continuar.</span>
                     <?php endif; ?>
@@ -716,15 +733,15 @@ unset($_SESSION['pp_pessoa_tentativa']);
     <section class="ag-settings-panel pp-painel" aria-labelledby="pp-titulo-progresso">
         <div class="ag-settings-body">
             <div class="ag-settings-section-title">
-                <p>Etapa <?= $etapa ?> de 6</p>
-                <h2 id="pp-titulo-progresso"><?= $perguntas[$etapa] ?></h2>
+                <p><?= $tudoPronto ? 'Tudo pronto' : 'Etapa ' . $etapa . ' de 6' ?></p>
+                <h2 id="pp-titulo-progresso"><?= agenday_config_html($perguntaAtual) ?></h2>
             </div>
 
             <div class="pp-progresso">
                 <div class="progress" role="progressbar"
-                     aria-valuenow="<?= $etapa ?>" aria-valuemin="1" aria-valuemax="6"
+                     aria-valuenow="<?= $tudoPronto ? 6 : $etapa ?>" aria-valuemin="1" aria-valuemax="6"
                      aria-label="Etapa atual">
-                    <div class="progress-bar" style="width: <?= round($etapa / 6 * 100) ?>%"></div>
+                    <div class="progress-bar" style="width: <?= $tudoPronto ? 100 : round($etapa / 6 * 100) ?>%"></div>
                 </div>
             </div>
 
@@ -732,7 +749,7 @@ unset($_SESSION['pp_pessoa_tentativa']);
                 <?php $item = $progresso['itens'][$etapa - 1]; ?>
                     <div class="pp-etapa">
                         <div class="pp-passo-texto">
-                            <p><?= agenday_config_html($item['ajuda']) ?></p>
+                            <p><?= agenday_config_html($ajudaEtapa) ?></p>
                             <?php if ($etapa === 2 && $listaServicos): ?>
                                 <p class="mt-2">Serviços cadastrados: <?= agenday_config_html(implode(', ', $listaServicos)) ?>.</p>
                             <?php elseif ($etapa === 3 && $listaFuncionarios): ?>
@@ -748,9 +765,17 @@ unset($_SESSION['pp_pessoa_tentativa']);
                             <?php elseif ($etapa === 5 && $funcionamentoDisponivel): ?>
                                 <ul class="mt-2">
                                     <?php foreach ($diasFuncionamento as $numero => $dia): ?>
-                                        <?php if (!empty($dia['aberto'])): ?>
-                                            <li><?= agenday_config_html($nomesDias[$numero] . ': ' . $dia['abertura'] . ' – ' . $dia['fechamento']) ?></li>
+                                        <?php if (empty($dia['aberto'])): ?>
+                                            <?php continue; ?>
                                         <?php endif; ?>
+                                        <?php
+                                        // Com almoço, o dia tem duas janelas: "09:00 – 12:00 e 13:00 – 19:00".
+                                        $janelasDia = array_map(
+                                            static fn (array $janela): string => $janela['inicio'] . ' – ' . $janela['fim'],
+                                            agenday_horario_janelas($dia)
+                                        );
+                                        ?>
+                                        <li><?= agenday_config_html($nomesDias[$numero] . ': ' . implode(' e ', $janelasDia)) ?></li>
                                     <?php endforeach; ?>
                                 </ul>
                             <?php endif; ?>
@@ -813,7 +838,7 @@ unset($_SESSION['pp_pessoa_tentativa']);
                             <button type="button"
                                     class="btn <?= $item['feito'] ? 'btn-outline-secondary' : 'btn-primary' ?> btn-sm pp-passo-acao"
                                     data-bs-toggle="modal" data-bs-target="<?= $sugestoes !== [] ? '#pp-modal-sugestoes' : '#pp-modal-servico' ?>">
-                                <?= $sugestoes !== [] ? 'Escolher serviços' : ($item['feito'] ? 'Adicionar outro' : 'Cadastrar serviço') ?>
+                                <?= $item['feito'] ? 'Adicionar outro' : ($sugestoes !== [] ? 'Escolher serviços' : 'Cadastrar serviço') ?>
                             </button>
                         <?php elseif ($item['chave'] === 'vinculo' && $conexaoOk): ?>
                             <button type="button"
@@ -835,7 +860,7 @@ unset($_SESSION['pp_pessoa_tentativa']);
                         <?php endif; ?>
                     </div>
                 <?php if ($item['feito']): ?>
-                    <a class="btn btn-primary mt-3" href="primeiros-passos.php?etapa=<?= $etapa + 1 ?>"><?= $etapa === 2 ? 'Concluir seleção' : 'Continuar' ?></a>
+                    <a class="btn btn-primary mt-3" href="primeiros-passos.php?etapa=<?= $etapa + 1 ?>">Continuar</a>
                 <?php endif; ?>
 
             <noscript>

@@ -35,13 +35,23 @@ if (isset($conexao) && $conexao instanceof mysqli) {
         && is_string($_SESSION['agenday_primeiros_passos_segmento'])
         ? $_SESSION['agenday_primeiros_passos_segmento']
         : agenday_primeiros_passos_segmento_do_cookie((int) $_SESSION['id_estabelecimento']);
+    if (!agenday_primeiros_passos_segmento_valido($segmentoPrimeirosPassos)) {
+        // Outro navegador: o tipo fica na conta, não só no cookie.
+        $segmentoPrimeirosPassos = agenday_primeiros_passos_segmento_da_conta(
+            $conexao,
+            (int) $_SESSION['id_estabelecimento']
+        );
+    }
     $primeirosPassos = agenday_primeiros_passos_estado(
         $conexao,
         (int) $_SESSION['id_estabelecimento'],
         $segmentoPrimeirosPassos
     );
     if ($primeirosPassos !== null) {
-        $linkConfirmado = ($_COOKIE['agenday_pp_pronto_' . (int) $_SESSION['id_estabelecimento']] ?? '') === '1';
+        $linkConfirmado = agenday_primeiros_passos_link_confirmado(
+            $conexao,
+            (int) $_SESSION['id_estabelecimento']
+        );
         $primeirosPassosProximo = 'Confirme o link dos clientes';
         foreach ($primeirosPassos['itens'] as $passo) {
             if (!$passo['feito']) {
