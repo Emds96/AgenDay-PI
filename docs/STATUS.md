@@ -19,13 +19,13 @@
 - **Entregue:** cartão central com uma das seis etapas (tipo de negócio, serviços, quem atende, vínculos, horários, link). Avançar exige os dados da etapa; voltar para revisar continua liberado. A etapa 3 grava pessoa e vínculos na mesma transação; a etapa 6 valida e salva o endereço antes de abrir a confirmação, com confetes, copiar link e ir para a agenda. A agenda deixa de cobrar o link depois de salvo.
 - **Correções no mesmo lote:** cartão do link e sugestões de serviço absorvidos pelo cartão único (pop-up em vez de cartão solto), opções do tipo de negócio em largura total no celular, remoção do botão "Fazer o primeiro agendamento" do rodapé.
 - **PR:** #107 — merge `de34d93`, CI verde (`PHP syntax check` e `AgenDay 2.0 - Validacao e publicacao controlada`).
-- **Estado real:** implementado e testado **somente no PC local**; **nada publicado**. Variáveis de deploy seguem desativadas.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`; as variáveis de deploy foram desligadas ao final.
 
 Detalhes por ajuste deste lote:
 
 **Conclusão do primeiro acesso:** 42 confetes caem brevemente sobre o pop-up, sem bloquear os botões. A mensagem indica onde editar o link: Configurações, campo “Endereço do portal”. A animação respeita a preferência por movimento reduzido. Sintaxe PHP e 233 verificações estruturais aprovadas localmente.
 
-**Etapa 3 — pessoa e serviços:** no mesmo pop-up, “Continuar” leva dos dados pessoais à seleção dos serviços. Para o responsável, todos vêm pré-selecionados e podem ser desmarcados; para a equipe, a seleção começa vazia. O servidor grava pessoa e vínculos na mesma transação e exige ao menos um serviço do estabelecimento. O quiz continua com seis etapas. Teste HTTP local com conta temporária: responsável e funcionário com vínculos, seleção vazia recusada e transação revertida com serviço indisponível. Interação conferida a 360 px: seleção habilita salvar e voltar preserva o nome. Sem deploy.
+**Etapa 3 — pessoa e serviços:** no mesmo pop-up, “Continuar” leva dos dados pessoais à seleção dos serviços. Para o responsável, todos vêm pré-selecionados e podem ser desmarcados; para a equipe, a seleção começa vazia. O servidor grava pessoa e vínculos na mesma transação e exige ao menos um serviço do estabelecimento. O quiz continua com seis etapas. Teste HTTP local com conta temporária: responsável e funcionário com vínculos, seleção vazia recusada e transação revertida com serviço indisponível. Interação conferida a 360 px: seleção habilita salvar e voltar preserva o nome. Sem deploy naquele momento.
 
 **Quiz no celular (22/11/2026):** a etapa usa um fluxo vertical para impedir que as regras de grade do checklist antigo espremam as opções. Na primeira pergunta, os seis botões ocupam a largura útil em 320, 360 e 390 px, com altura mínima observada de 74 px. Conferido no navegador local também em 1024 px, sem rolagem horizontal. Sintaxe PHP e 233 verificações estruturais aprovadas.
 
@@ -33,11 +33,11 @@ Detalhes por ajuste deste lote:
 
 O cartão mostra uma das seis etapas por vez. A navegação permite revisar respostas e limita o avanço à primeira etapa sem dados. Serviços podem ser adicionados antes de concluir a seleção. A etapa final valida e salva o endereço antes de exibir a confirmação, com cópia do link e acesso à agenda. Sem migração. A sessão guarda a etapa atual; em nova sessão o fluxo consulta os dados existentes. A confirmação do link é lembrada no navegador por estabelecimento.
 
-Local: prova HTTP com conta temporária cobrindo as seis etapas, tentativa de salto, retomada, endereço inválido e confirmação de sucesso sem repetição ao recarregar. Pop-up final aberto no navegador a 1912 e 360 px, sem transbordamento horizontal. Suítes de primeiros passos (195), prévia do link (39) e responsividade (233) aprovadas. Sem deploy.
+Local: prova HTTP com conta temporária cobrindo as seis etapas, tentativa de salto, retomada, endereço inválido e confirmação de sucesso sem repetição ao recarregar. Pop-up final aberto no navegador a 1912 e 360 px, sem transbordamento horizontal. Suítes de primeiros passos (195), prévia do link (39) e responsividade (233) aprovadas. Sem deploy naquele momento.
 
 ## Primeiro acesso — sugestões em pop-up (22/11/2026)
 
-Ao escolher um tipo com sugestões, a lista de serviços abre em pop-up sobre “O que falta”. Após adicionar um serviço, a lista reabre para permitir outras escolhas. O passo de serviços permite voltar à lista ou cadastrar um serviço próprio. Validação local: sintaxe PHP e suítes de primeiros passos, prévia do link e responsividade aprovadas. Sem deploy.
+Ao escolher um tipo com sugestões, a lista de serviços abre em pop-up sobre “O que falta”. Após adicionar um serviço, a lista reabre para permitir outras escolhas. O passo de serviços permite voltar à lista ou cadastrar um serviço próprio. Validação local: sintaxe PHP e suítes de primeiros passos, prévia do link e responsividade aprovadas. Sem deploy naquele momento.
 
 ## Primeiro acesso — link dentro de “O que falta” (22/11/2026)
 
@@ -45,7 +45,7 @@ O formulário do link do cliente passou para o final do mesmo cartão, após as 
 
 ## Primeiro acesso — rodapé (22/11/2026)
 
-Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os cinco itens. Validação local: sintaxe PHP e 233 verificações estruturais aprovadas. Sem deploy.
+Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os cinco itens. Validação local: sintaxe PHP e 233 verificações estruturais aprovadas. Sem deploy naquele momento.
 
 ## PRIMEIROS-PASSOS-11 — O tipo de negócio virou o item 1 do checklist (22/11/2026)
 
@@ -58,7 +58,7 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **CSS:** `.pp-passo-segmento` faz as opções ocuparem a largura toda do item (duas colunas no desktop, uma no celular); versão para `?v=20261122-pp09`.
 - **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php`, `lib/primeiros-passos.php` e `agenda.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **29 verificações, 0 falha**: checklist com 5 itens e "O que falta" como primeira seção, cartão solto ausente, seis opções dentro do item 1, escolha somando no progresso, tipo mostrado uma única vez no item 1, sugestões antes do checklist, "outro" com nome digitado, um único gatilho de serviço e "Trocar" devolvendo as opções ao item. Fumaça da agenda com conta real: HTTP 200, banner presente, sem erro PHP. Suítes: `tests/primeiros-passos.php` 191 → **195** (5 passos, tipo válido/inválido, ordem e percentuais), `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
 - **Conferência visual (navegador real, 22/11/2026):** 1897 px (opções em três colunas dentro do item, item concluído com a linha do tipo) e 360 px (opções empilhadas), sem rolagem horizontal.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
 
@@ -71,7 +71,7 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **Limpeza:** o CSS da faixa (`.pp-faixa*` e a regra mobile correspondente) foi removido; entrou `.pp-tipo-passo`, discreto, dentro do item. Versão do CSS atualizada para `?v=20261122-pp08`.
 - **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **20 verificações, 0 falha**: sem tipo não há linha no passo, linha aparece uma única vez e dentro de "O que falta", cartão de sugestões continua antes do checklist, faixa antiga ausente, tipo com sugestões e nome digitado ("Pet shop da Ana") aparecendo no item 1, **um único** gatilho de `#pp-modal-servico`, checklist como primeira seção da página e "Trocar" voltando para a pergunta de tipo. Suítes: `tests/primeiros-passos.php` 191, `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
 - **Conferência visual (navegador real, 22/11/2026):** 1897 px (linha do tipo à esquerda do item, botão à direita) e 360 px (linha e botão empilhados dentro do item), sem rolagem horizontal.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
 
@@ -85,7 +85,7 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **Limite conhecido e aceito:** por ser cookie, o nome vale para aquele navegador e aquela conta — não acompanha outro aparelho. Se um dia precisar aparecer em relatórios ou em outro computador, aí sim vira coluna no banco, com autorização própria.
 - **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php` e `lib/primeiros-passos.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **28 verificações, 0 falha**: pop-up presente, cartão abrindo o pop-up, tipos com sugestões ainda em um clique, erro de nome vazio reabrindo e sem gravar o tipo, texto devolvido no campo, nome normalizado no cookie, faixa e aviso com o nome, persistência ao recarregar, tag removida, "Trocar" apagando o cookie e tipo novo limpando o nome. Suítes: `tests/primeiros-passos.php` 177 → **191** (nome do cookie separado, normalização, tags, limites, cookie de outra conta, valor que não é texto), `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
 - **Conferência visual (navegador real, 22/11/2026):** pop-up em 1912 px e 360 px, sem corte nem rolagem horizontal.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
 
@@ -98,7 +98,7 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **Com sugestões nada muda:** o cartão com os atalhos de um clique continua igual.
 - **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php` e `lib/primeiros-passos.php`; prova HTTP real em conta temporária (criada e apagada no fim) — **17 verificações, 0 falha**: faixa presente, grade de sugestões ausente, tipo curto, "Trocar", pop-up de serviço, rótulo novo, faixa antes do checklist, checklist com 4 itens e "Trocar" voltando para a pergunta de tipo. Suítes: `tests/primeiros-passos.php` 176 → **177** (rótulo curto do "outro"), `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
 - **Conferência visual (navegador real, 22/11/2026):** 1897 px (faixa em uma linha) e 360 px (botão em largura cheia), sem rolagem horizontal.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
 
@@ -116,7 +116,7 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **Detalhe de estado concluído:** com "quem atende" já resolvido, o item mostra só **"Adicionar pessoa"** (evita cadastrar a mesma pessoa duas vezes); serviço, vínculo e horário mostram "Adicionar outro", "Revisar vínculos" e "Revisar horário".
 - **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php` e `cadastro-servicos.php`; prova HTTP real em conta temporária criada pelo cadastro e **apagada no fim** — **40 verificações, 0 falha**: cinco pop-ups presentes, painel antigo fora, erro do serviço voltando e reabrindo o pop-up, serviço salvo com checklist em 2 de 4, erro do "Sou eu" reabrindo só o pop-up dele, checklist em 3 de 4, vínculo salvo em 4 de 4, horário inválido reabrindo e horário válido salvo (09:00 no pop-up). Suítes: `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/responsividade-check.js` 233, `tests/link-portal-preview.js` **44 → 39** (saíram os 5 testes do atalho de foco, entraram os de reabertura dos pop-ups).
 - **Conferência visual (navegador real, 22/11/2026):** página em 1897 px e os pop-ups de serviço, horário, vínculo e "Sou eu" em **360 px** — sem corte, sem rolagem horizontal e com os campos legíveis.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
 
@@ -128,7 +128,7 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **Custo:** uma consulta por chave primária em cada request autenticado.
 - **Efeito colateral aceito:** se a conexão falhar, `conexao.php` responde 503 como antes — as páginas protegidas já dependiam do banco.
 - **Testes (PC local, 22/11/2026):** prova HTTP real com sessões forjadas apontando para a conta 999 (inexistente): `cad.servicos.php`, `agenda.php`, `primeiros-passos.php` e `config.php` encerram a sessão (302 → `index.php`, arquivo de sessão com 0 byte). Com a conta real (#40) logada, as mesmas quatro páginas abrem 200. **10 verificações, 0 falha**, repetidas duas vezes. Suítes: `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 44, `tests/responsividade-check.js` 233.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
 
@@ -143,7 +143,7 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **Testes (PC local, 22/11/2026):** `tests/link-portal-preview.js` 41 → **44** (pop-up reabre no erro, não abre sem erro e não quebra quando o Bootstrap não está carregado); prova HTTP real na conta nova `feira@demonstracao.com`: **17 verificações, 0 falha** — botão (não link) abrindo o pop-up, `<noscript>`, ação reaproveitada, erro reabrindo o pop-up, cadastro válido com aviso, checklist chegando a 4 de 4 e voltando a 2 de 4 após a limpeza. `php -l` limpo; `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/responsividade-check.js` 233.
 - **Conferência visual (Edge headless):** pop-up aberto em 1280 px e 360 px, sem corte nem rolagem horizontal.
 - **Cuidado registrado:** durante a prova, o profissional de teste "Teste Equipe" foi criado na conta de análise e **removido em seguida** (vínculo + funcionário). O serviço que o responsável já tinha cadastrado ficou intacto.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**.
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
 
@@ -159,9 +159,20 @@ Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os
 - **Testes (PC local, 22/11/2026):** `php -l` limpo; prova HTTP real com a conta #35: **21 verificações, 0 falha** — pergunta antes do checklist, sugestões antes do checklist, título "O que falta", linha do tipo, "Trocar", sugestões da barbearia, saída para serviço próprio, painel "Sou eu que atendo" e link do portal preservados, estado "Outro" com título/botão/trocar, CSS `pp05`. Suítes: `tests/primeiros-passos.php` 176, `tests/portal-cliente.php` 153, `tests/link-portal-preview.js` 41, `tests/responsividade-check.js` 233.
 - **Conferência visual (Edge headless):** 1280 px e 360 px nas duas telas (pergunta e sugestões), sem rolagem horizontal.
 - **Decisão adiada:** pop-up para cadastrar serviço dentro da própria página — o responsável preferiu pop-up a outra tela; foi implementado depois, em **PRIMEIROS-PASSOS-07** (22/11/2026).
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado** (pedido expresso do responsável).
+- **Estado real:** implementado e testado no PC local e **publicado** em 22/11/2026 no deploy do SHA `6a9b48f`.
 
 ---
+
+## DEPLOY-05 — Publicação do lote até o PR #110 (22/11/2026)
+
+- **Autorização:** "Pode fechar o lote e publicar tudo" (22/11/2026), cobrindo o lote acumulado desde o DEPLOY-04 (`fd6d2d3`). O SHA e o destino foram apresentados e confirmados antes de ativar as flags.
+- **SHA e destino:** `6a9b48fdee34454f611e77889734ae1d9876d06a` (merge do PR #110), conferido igual no `git rev-parse` local e na ref remota **antes** de ativar as flags. Destino: as duas pastas (`htdocs` e `agenday-agendamentos.infinityfree.io/htdocs`). **Nenhum SQL executado:** a estrutura necessária já existia em produção, conferida no dump do backup.
+- **Backup antes de publicar:** `2026-11-22_211520_236d1e91` — **BACKUP OK**, 145 arquivos, 16 tabelas, restauração local aprovada. Complemento do portal em `portal_20261122_211652`: 129 arquivos, ZIP e hash conferidos.
+- **Publicação:** `workflow_dispatch` no run [45096761768](https://github.com/Emds96/AgenDay-PI/actions/runs/45096761768), environment `producao-agenday` aprovado pela API do `gh` (conta `Emds96`) a pedido do responsável. Os três jobs concluíram com **success** — `Validar codigo e pacote`, `Testar FTPS sem publicar arquivos` e `Enviar ao InfinityFree somente com autorizacao`. Log do envio: **130 arquivos no site principal, 130 no domínio do cliente, nenhum arquivo remoto apagado** e configuração privada protegida.
+- **Flags:** `AGENDAY_DEPLOY_ENABLED=true` e `AGENDAY_DEPLOY_MODE=publish` somente durante a janela; restauradas para **`false` / `disabled`** e confirmadas por `gh variable get`.
+- **Passou a existir em produção:** SESSÃO-CONTA-01, PRIMEIROS-PASSOS-05 a 12 e CONFIRMACAO-AGENDAMENTO-01 (PR #110), além dos registros documentais dos PRs #98 e #108.
+- **Conferência pós-deploy:** o painel abre a tela de acesso; `cliente-confirmar.php` sem token responde "Link inválido", como esperado. A confirmação por link com agendamento real foi validada no PC local, mas **ainda não de ponta a ponta em produção**.
+- **Pendente:** teste no celular com lembrete real (link público), cancelamento pelo link e QA do responsável na hospedagem.
 
 ## DEPLOY-04 — Publicação do lote até PRIMEIROS-PASSOS-04 (22/11/2026)
 

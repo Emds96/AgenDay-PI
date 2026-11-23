@@ -12,7 +12,7 @@
 6. [`ARQUITETURA_E_DECISOES.md`](ARQUITETURA_E_DECISOES.md): módulos, limites, decisões tomadas e opções pendentes.
 7. [`README.md`](../README.md): visão geral e como executar em desenvolvimento.
 
-**Fluxo rapido (piloto):** a classificacao simples/media/complexa e a regra de autorizacao unica estao em [AGENTS.md](../AGENTS.md) e [GUIA_DE_CONTINUIDADE.md](GUIA_DE_CONTINUIDADE.md). Para o assistente de deploy (simulacao por padrao e publicacao real ainda nao validada), consultar [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) e `scripts/publicacao_assistida.py`. A aprovacao de PR e a documentacao nao equivalem a autorizacao de deploy.
+**Fluxo rapido (piloto):** a classificacao simples/media/complexa e a regra de autorizacao unica estao em [AGENTS.md](../AGENTS.md) e [GUIA_DE_CONTINUIDADE.md](GUIA_DE_CONTINUIDADE.md). Para o assistente de deploy (simulacao por padrao; a execucao real ja foi usada com autorizacao especifica para SHA e destino), consultar [PUBLICACAO_AUTOMATICA.md](PUBLICACAO_AUTOMATICA.md) e `scripts/publicacao_assistida.py`. A aprovacao de PR e a documentacao nao equivalem a autorizacao de deploy.
 
 ## Escolher o manual específico
 
@@ -28,6 +28,9 @@
 | Nova funcionalidade/bug | [`STATUS.md`](STATUS.md) + código atual | Branch curta, testes, PR direcionado à dev, merge autorizado, registro de resultados |
 | Portal do cliente (**publicado em 21/11/2026**, SHA `4bd707a`) | [`PORTAL_CLIENTE_PLANO.md`](PORTAL_CLIENTE_PLANO.md) e [`PORTAL_CLIENTE_CHECKLIST.md`](PORTAL_CLIENTE_CHECKLIST.md) | Página pública em `agenday-agendamentos.infinityfree.io/?e=slug`, login por celular (código só no primeiro acesso), agendamento, remarcação, cancelamento, WhatsApp (WAHA) e publicação nas duas pastas |
 | Instalar/operar o WhatsApp (WAHA + ngrok) | [`WHATSAPP_WAHA_GUIA.md`](WHATSAPP_WAHA_GUIA.md) | Docker Desktop, credenciais, QR do número, túnel, configuração no AgenDay, rotina da feira, falhas comuns e plano B |
+| Login com Google | [`GOOGLE_LOGIN_SETUP.md`](GOOGLE_LOGIN_SETUP.md) e [`LOGIN_GOOGLE_CHECKLIST.md`](LOGIN_GOOGLE_CHECKLIST.md) | Configuração do OAuth, checklist de publicação e limites do fluxo |
+| Recuperação de senha (QA-03) | [`QA03_RECUPERACAO_SENHA_BREVO.md`](QA03_RECUPERACAO_SENHA_BREVO.md) | Brevo, remetente, telas padronizadas e validação em produção |
+| Backup efêmero (histórico) | [`BACKUP_EFEMERO_POC.md`](BACKUP_EFEMERO_POC.md) | Prova de conceito do exportador PHP temporário, hoje integrado ao script de backup |
 | Configurações do estabelecimento (QA-04) | [`QA04_CONFIG_ESTABELECIMENTO.md`](QA04_CONFIG_ESTABELECIMENTO.md) | Histórico da configuração básica publicada |
 | Nova central Configurações (UI-08) | [`CONFIGURACOES_UI08.md`](CONFIGURACOES_UI08.md) | Duas abas, avatar sem migração, senha em modal, Space Grotesk e QA pendente |
 | Banco/esquema | [`MODELO_BANCO_V2.md`](MODELO_BANCO_V2.md) e [`REVISAO_BANCO.md`](REVISAO_BANCO.md) | História da modelagem, **não** autorização para importar SQL |
