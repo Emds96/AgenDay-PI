@@ -151,3 +151,12 @@ Documento específico: [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md). **Não co
 - **Relato:** depois do deploy do PORTAL-06 o botão continuava devolvendo `403 Pedido não reconhecido` no aparelho. Em produção a assinatura do formulário conferia com o `sha256` esperado, então o 403 vinha da exigência de `Origin`/`Referer` (navegador embutido manda `Origin: null` ou nada).
 - **Correção:** `agenday_portal_cancelamento_autorizado()` aceita a **assinatura** sozinha **ou** um `Origin`/`Referer` do próprio site; `Referrer-Policy` passou a `same-origin`, que devolve o `Referer` ao próprio site sem vazar o token para o CDN.
 - **Verificações:** `tests/portal-cliente.php` de 93 para **100**; demais 19 + 20 + 13 + 16 + 210; `php -l` limpo. HTTP local: sem `Origin` + assinatura → `200`; `Origin: null` + assinatura → `200`; sem nada → `403`; assinatura errada → `403`. **Publicado** em 21/11/2026 no deploy do SHA `b6887f6` (run `44967236148`) e **validado pelo responsável** no celular.
+
+## 12. CONFIRMACAO-AGENDAMENTO-01 — confirmação de presença por link (22/11/2026)
+
+- **Escopo:** link no lembrete de 24h e ação **Confirmar** no menu Ações do painel; página `cliente-confirmar.php?t=<token>`, sem login. Abrir a página não altera nada; só o POST assinado muda `agendado` para `confirmado`.
+- **Testes automatizados:** `tests/portal-cliente.php` **159** (lembrete com link, assinatura e link de confirmação), `agendamento-validacao` 19, `agendamento-cancelamento` 20, `responsividade-check` 233; `php -l` limpo.
+- **Prova HTTP local:** **7 verificações, 0 falha** — GET, assinatura inválida recusada com 403, confirmação real, repetição idempotente e confirmação pelo painel.
+- **Teste com WhatsApp real (22/11/2026, PC local):** lembrete enviado pelo WAHA para o número do responsável, que abriu o link e confirmou; o banco passou a `confirmado`. Registro honesto: houve **dois envios**, embora só um estivesse autorizado — o primeiro saiu com o domínio público e um token que só existia no banco local. Os dados temporários foram removidos.
+- **Publicado:** DEPLOY-05, SHA `6a9b48f` (22/11/2026).
+- **Ainda pendente:** teste de ponta a ponta no celular em produção (lembrete real com link público), cancelamento por link no celular e leitores de tela.
