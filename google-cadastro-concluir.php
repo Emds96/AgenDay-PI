@@ -50,7 +50,7 @@ if ($nome === '' || mb_strlen($nome) > 120
 // lembrete ao cliente. Contas antigas continuam podendo ficar sem número.
 require_once __DIR__ . '/lib/configuracao-estabelecimento.php';
 if (!agenday_telefone_estabelecimento_valido($contato, true)) {
-    agenday_google_erro_cadastro('Informe o telefone do estabelecimento com DDD (8 a 15 dígitos).');
+    agenday_google_erro_cadastro('Informe o telefone do estabelecimento com DDD (11 dígitos).');
 }
 
 $hash = null;

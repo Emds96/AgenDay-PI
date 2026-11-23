@@ -148,7 +148,7 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
                     <label for="campo-telefone">Celular com DDD</label>
                     <input type="tel" class="form-control" id="campo-telefone" name="telefone"
                            inputmode="tel" autocomplete="tel" placeholder="(92) 99999-9999"
-                           maxlength="20" required>
+                           maxlength="20" data-permitir-fixo required>
                 </div>
                 <button type="submit" class="btn btn-primary cliente-botao-largo">
                     <span class="cliente-botao-texto">Entrar</span>
@@ -344,6 +344,7 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/telefone-celular.js"></script>
 <script defer src="js/cliente.js?v=20261121-cl14"></script>
 </body>
 </html>

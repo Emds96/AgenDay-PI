@@ -38,8 +38,8 @@ if ($nome === '' || $letrasNome === 0 || $letrasNome > 120) {
     agenday_erro_funcionario('Informe o nome do funcionário (até 120 caracteres).');
 }
 if (strlen($contato) > 20 || !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato)
-    || strlen($digitos) < 8 || strlen($digitos) > 15) {
-    agenday_erro_funcionario('Informe um telefone válido (8 a 15 dígitos).');
+    || strlen($digitos) !== 11) {
+    agenday_erro_funcionario('Informe o contato com DDD (11 dígitos).');
 }
 
 // Valida todos os IDs recebidos. Um serviço de outra empresa nunca será aceito.

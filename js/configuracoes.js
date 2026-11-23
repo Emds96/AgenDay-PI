@@ -52,28 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const telefone = document.getElementById('contatoEstabelecimento');
-    if (telefone) {
-        const atualizarValidade = () => {
-            const quantidade = telefone.value.replace(/\D/g, '').length;
-            telefone.setCustomValidity(quantidade !== 0 && (quantidade < 8 || quantidade > 15)
-                ? 'Informe de 8 a 15 dígitos ou deixe o campo vazio.' : '');
-        };
-        const formatarTelefone = () => {
-            const digitos = telefone.value.replace(/\D/g, '');
-            // Máscara brasileira apenas para número com DDD (10/11 dígitos).
-            if (digitos.length === 10 || digitos.length === 11) {
-                const tamanhoLocal = digitos.length - 2;
-                const prefixo = tamanhoLocal === 9 ? 5 : 4;
-                telefone.value = '(' + digitos.slice(0, 2) + ') '
-                    + digitos.slice(2, 2 + prefixo) + '-' + digitos.slice(2 + prefixo);
-            }
-            atualizarValidade();
-        };
-        telefone.addEventListener('input', atualizarValidade);
-        telefone.addEventListener('blur', formatarTelefone);
-        atualizarValidade();
-    }
+    // O telefone é tratado pela máscara compartilhada js/telefone-celular.js.
 
     // Aba Horários: dia fechado desabilita os campos de hora daquela linha.
     const linhasHorario = [...document.querySelectorAll('#formFuncionamento .ag-horario-linha')];

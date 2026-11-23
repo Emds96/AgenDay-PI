@@ -42,11 +42,12 @@ if ($email !== '' && (strlen($email) > 190 || !filter_var($email, FILTER_VALIDAT
     agenday_erro_cliente('Informe um e-mail válido ou deixe esse campo vazio.');
 }
 if (strlen($contato) > 20
-    || ($contato !== '' && !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato))) {
-    agenday_erro_cliente('Informe um telefone válido (de 8 a 15 dígitos).');
+    || ($contato !== '' && !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato))
+    || strlen($digitos) > 11) {
+    agenday_erro_cliente('Informe um telefone válido (de 8 a 11 dígitos).');
 }
 if (!$semWhatsapp) {
-    if ($contato === '' || strlen($digitos) < 8 || strlen($digitos) > 15) {
+    if ($contato === '' || strlen($digitos) < 8 || strlen($digitos) > 11) {
         agenday_erro_cliente('Informe o celular do cliente ou marque "não tem WhatsApp".');
     }
     if (!agenday_portal_telefone_whatsapp_ok($telefoneDigits)) {

@@ -465,7 +465,7 @@ $nomesDias = agenday_dias_semana();
                                    placeholder="(92) 99999-9999" aria-describedby="telefoneAjuda"
                                    value="<?= agenday_config_html($contatoFormulario) ?>"
                                    <?= !$dadosCarregados ? 'disabled' : '' ?>>
-                            <div class="form-text" id="telefoneAjuda">Opcional. Informe de 8 a 15 dígitos. Números brasileiros com DDD são formatados automaticamente.</div>
+                            <div class="form-text" id="telefoneAjuda">Opcional. Informe os 11 dígitos com DDD. O número é formatado automaticamente.</div>
                         </div>
                         <div class="mb-4">
                             <div class="form-check form-switch">
@@ -912,6 +912,7 @@ $nomesDias = agenday_dias_semana();
     </div>
 </div>
 
+<script src="js/telefone-celular.js"></script>
 <script src="js/menu-lateral.js"></script>
 </body>
 </html>

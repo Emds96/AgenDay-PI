@@ -204,7 +204,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $_SESSION['pp_reabrir_profissional'] = $origemProfissional;
             }
         } elseif (!agenday_telefone_estabelecimento_valido($contatoProfissional, true)) {
-            $_SESSION['pp_erro'] = 'Informe um telefone com DDD (8 a 15 dígitos).';
+            $_SESSION['pp_erro'] = 'Informe um telefone com DDD (11 dígitos).';
             if ($origemProfissional !== '') {
                 $_SESSION['pp_reabrir_profissional'] = $origemProfissional;
             }
@@ -1265,6 +1265,7 @@ unset($_SESSION['pp_pessoa_tentativa']);
 
 </main>
 
+<script defer src="js/telefone-celular.js"></script>
 <script defer src="js/primeiros-passos.js?v=20261122-quiz"></script>
 <script defer src="js/pessoa-servicos.js?v=20261122-1"></script>
 </body>
