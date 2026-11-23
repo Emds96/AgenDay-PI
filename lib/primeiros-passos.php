@@ -96,8 +96,10 @@ function agenday_primeiros_passos_segmento_valido(?string $chave): bool
 /* -------------------------------------------------------------------------
  * Tipo de negócio guardado no navegador (PRIMEIROS-PASSOS-04)
  *
- * Sem coluna nova no banco: o cookie guarda só a chave do catálogo, presa ao
- * estabelecimento para uma conta não herdar a escolha de outra no mesmo PC.
+ * O cookie guarda só a chave do catálogo, presa ao estabelecimento para uma
+ * conta não herdar a escolha de outra no mesmo PC. Serve de reserva: a conta
+ * também guarda a escolha (PRIMEIROS-PASSOS-13), para outro navegador não
+ * receber a conta como se ela ainda não tivesse tipo definido.
  * ------------------------------------------------------------------------- */
 
 /** Nome do cookie de um estabelecimento. */
@@ -125,6 +127,92 @@ function agenday_primeiros_passos_segmento_do_cookie(int $idEstabelecimento, ?ar
     $valor = isset($fonte[$nome]) && is_string($fonte[$nome]) ? $fonte[$nome] : '';
 
     return agenday_primeiros_passos_segmento_valido($valor) ? $valor : '';
+}
+
+/* -------------------------------------------------------------------------
+ * Tipo de negócio na conta (PRIMEIROS-PASSOS-13)
+ *
+ * A escolha ficava só na sessão/cookie: em outro navegador a conta completa
+ * voltava a pedir o tipo. A coluna `segmento` guarda a chave do catálogo;
+ * sem a migração aplicada a leitura falha em silêncio e o cookie continua
+ * valendo, então uma hospedagem sem a coluna não quebra.
+ * ------------------------------------------------------------------------- */
+
+/** Grava o tipo de negócio na conta; null limpa a escolha ("Trocar"). */
+function agenday_primeiros_passos_segmento_gravar(
+    mysqli $conexao,
+    int $idEstabelecimento,
+    ?string $segmento
+): void {
+    $valor = agenday_primeiros_passos_segmento_valido($segmento) ? $segmento : null;
+    try {
+        $stmt = $conexao->prepare(
+            'UPDATE estabelecimento SET segmento = ? WHERE id_estabelecimento = ?'
+        );
+        $stmt->bind_param('si', $valor, $idEstabelecimento);
+        $stmt->execute();
+        $stmt->close();
+    } catch (Throwable $e) {
+        error_log('AgenDay primeiros passos: tipo de negócio não gravado (' . get_class($e) . ').');
+    }
+}
+
+/** Lê o tipo de negócio da conta; '' quando não há coluna, valor ou chave válida. */
+function agenday_primeiros_passos_segmento_da_conta(
+    mysqli $conexao,
+    int $idEstabelecimento
+): string {
+    try {
+        $stmt = $conexao->prepare(
+            'SELECT segmento FROM estabelecimento WHERE id_estabelecimento = ? LIMIT 1'
+        );
+        $stmt->bind_param('i', $idEstabelecimento);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $linha = $resultado === false ? null : $resultado->fetch_row();
+        $stmt->close();
+    } catch (Throwable $e) {
+        return '';
+    }
+
+    $valor = $linha[0] ?? null;
+
+    return agenday_primeiros_passos_segmento_valido(is_string($valor) ? $valor : null)
+        ? $valor
+        : '';
+}
+
+/**
+ * O link do portal já está pronto na conta? (PRIMEIROS-PASSOS-13)
+ *
+ * A confirmação do link vivia só num cookie: em outro navegador a conta
+ * pronta voltava a pedir "Confirme o link". Como o endereço nasce no
+ * cadastro, ter slug salvo já significa link pronto.
+ */
+function agenday_primeiros_passos_link_confirmado(
+    mysqli $conexao,
+    int $idEstabelecimento
+): bool {
+    if ((string) ($_COOKIE['agenday_pp_pronto_' . $idEstabelecimento] ?? '') === '1') {
+        return true;
+    }
+
+    try {
+        $stmt = $conexao->prepare(
+            'SELECT slug FROM estabelecimento WHERE id_estabelecimento = ? LIMIT 1'
+        );
+        $stmt->bind_param('i', $idEstabelecimento);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $linha = $resultado === false ? null : $resultado->fetch_row();
+        $stmt->close();
+    } catch (Throwable $e) {
+        return false;
+    }
+
+    $slug = $linha[0] ?? '';
+
+    return is_string($slug) && $slug !== '';
 }
 
 /* -------------------------------------------------------------------------
