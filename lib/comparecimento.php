@@ -35,7 +35,7 @@ function agenday_comparecimento_fechar(mysqli $conexao, int $idEstabelecimento):
 }
 
 /**
- * @param string $acao chegou|faltou|concluir
+ * @param string $acao confirmar|chegou|faltou|concluir
  * @return string novo status
  */
 function agenday_comparecimento_marcar(
@@ -45,6 +45,7 @@ function agenday_comparecimento_marcar(
     string $acao
 ): string {
     $regras = [
+        'confirmar' => ['de' => ['agendado'], 'para' => 'confirmado'],
         'chegou' => ['de' => ['agendado', 'confirmado'], 'para' => 'em_atendimento'],
         'faltou' => ['de' => ['agendado', 'confirmado'], 'para' => 'faltou'],
         'concluir' => ['de' => ['em_atendimento'], 'para' => 'concluido'],

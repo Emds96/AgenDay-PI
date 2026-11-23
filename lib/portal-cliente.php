@@ -444,6 +444,21 @@ function agenday_portal_assinatura_cancelamento(string $token): string
     return hash('sha256', 'agenday-cancelar-v1|' . $token);
 }
 
+/** Assinatura do formulário de confirmação de presença por link. */
+function agenday_portal_assinatura_confirmacao(string $token): string
+{
+    return hash('sha256', 'agenday-confirmar-v1|' . $token);
+}
+
+/** A página pública usa token + assinatura para impedir POSTs cegos. */
+function agenday_portal_confirmacao_autorizada(string $token, array $post): bool
+{
+    $assinatura = $post['assinatura'] ?? '';
+    return is_string($assinatura)
+        && $assinatura !== ''
+        && hash_equals(agenday_portal_assinatura_confirmacao($token), $assinatura);
+}
+
 /**
  * Decide se um POST de cancelamento por link pode prosseguir.
  *
@@ -964,6 +979,23 @@ function agenday_portal_link_cancelamento(array $estabelecimento, string $token)
     if ($dominio === '') {
         // Sem domínio próprio, o link continua absoluto no domínio do portal:
         // um caminho relativo não abre quando chega por WhatsApp.
+        $dominio = agenday_portal_hosts_publicos()[0];
+    }
+    return 'https://' . agenday_portal_host_normalizar($dominio) . '/' . $caminho;
+}
+
+/** Link público de confirmação de presença, enviado junto do lembrete. */
+function agenday_portal_link_confirmacao(array $estabelecimento, string $token): string
+{
+    $caminho = 'cliente-confirmar.php?t=' . rawurlencode($token);
+    if (agenday_portal_host_local()) {
+        $host = agenday_portal_host_atual_completo();
+        if ($host !== '') {
+            return 'http://' . $host . '/' . $caminho;
+        }
+    }
+    $dominio = trim((string) ($estabelecimento['dominio'] ?? ''));
+    if ($dominio === '') {
         $dominio = agenday_portal_hosts_publicos()[0];
     }
     return 'https://' . agenday_portal_host_normalizar($dominio) . '/' . $caminho;

@@ -222,7 +222,7 @@ $agendaPodePreparar = !$erroOpcoesAgenda && $agendaTemClientes && $agendaTemServ
     </main>
     <section class="overlay"></section>
     <script src="js/menu-lateral.js"></script>
-    <script src="js/calendario.js"></script>
+    <script src="js/calendario.js?v=20261122-conf01"></script>
     <script src="js/agendamento-form.js"></script>
 
 </body>

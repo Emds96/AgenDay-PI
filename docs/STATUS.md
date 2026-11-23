@@ -1,5 +1,17 @@
 # STATUS — AgenDay 2.0
 
+## CONFIRMACAO-AGENDAMENTO-01 — confirmação pelo lembrete de 24h (22/11/2026)
+
+- **Pedido do responsável:** incluir no lembrete de 24h o link para o cliente confirmar presença e permitir a confirmação manual no menu **Ações** da agenda.
+- **Entregue:** todo lembrete novo passa a incluir um link público de confirmação. O link abre uma página com serviço, profissional e data; abrir a página não muda nada — só o botão **Confirmar presença** (POST assinado com o token público do agendamento) muda `agendado` para `confirmado`. Link repetido mostra “Presença já confirmada”; status finalizado/cancelado ou horário já iniciado não pode ser confirmado.
+- **Painel:** agendamentos com status **Agendado** exibem **Confirmar** no topo do menu Ações. Os demais comandos existentes não foram alterados.
+- **Segurança e limite:** o endereço usa o token aleatório já existente por agendamento; não exige login, não expõe ID e a escrita não aceita POST sem assinatura válida. A rota pública foi liberada também no domínio do portal. Lembretes já enfileirados antes desta alteração mantêm o texto antigo; o link sai nos novos lembretes ou quando o agendamento for remarcado.
+- **Tela do link (22/11/2026):** o nome do estabelecimento virou o destaque da página, em verde e maior, com ícone em círculo, resumo do horário e texto curto. O mesmo estilo vale para o pedido de confirmação e para as respostas “Presença confirmada”, “Presença já confirmada” e “Não é mais possível confirmar”.
+- **Testes locais:** sintaxe PHP dos arquivos alterados; `tests/portal-cliente.php` **159**, `tests/agendamento-validacao.php` **19**, `tests/agendamento-cancelamento.php` **20**, `tests/responsividade-check.js` **233**. Prova HTTP local com a conta demo #70: 7 verificações, 0 falha (GET, assinatura inválida recusada, confirmação real, repetição idempotente e confirmação pelo painel). Conferência em navegador: opção Confirmar visível; a 360 px, sem rolagem horizontal.
+- **Lembrete real de teste:** houve dois envios pelo WAHA, embora apenas um estivesse autorizado. O primeiro apontava para o domínio público com um token local; o segundo apontava para o servidor local. O responsável confirmou no PC pelo segundo link e a consulta ao banco mostrou `confirmado`. Os dados temporários foram removidos. Para repetir esse QA, conferir o domínio e o texto antes de enviar.
+- **Banco:** este lote reutiliza `agendamentos.token_publico` e o status `confirmado`; não introduz arquivo SQL. Para publicar a branch inteira, comparar a estrutura de produção com as migrações já integradas.
+- **Estado real:** implementado e testado **somente no PC local**; **nada publicado**.
+
 ## PRIMEIROS-PASSOS-12 — primeiro acesso em seis etapas guiadas (22/11/2026)
 
 - **Pedido do responsável:** transformar a tela de primeiro acesso em um passo a passo tipo quiz, com uma etapa por vez e pop-up de parabéns no fim (*"ok faz"*, *"ok pode fazer"*).

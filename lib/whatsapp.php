@@ -227,7 +227,8 @@ function agenday_whatsapp_assinatura(string $estabelecimento): string
  * - confirmacao: estabelecimento, nome, servico, profissional,
  *   data_inicio (Y-m-d H:i:s), link_portal (ou link_cancelar sem slug)
  * - lembrete: estabelecimento, nome, servico, profissional,
- *   data_inicio (Y-m-d H:i:s), contato (telefone do estabelecimento)
+ *   data_inicio (Y-m-d H:i:s), contato (telefone do estabelecimento),
+ *   link_confirmar
  * - remarcacao: os mesmos de confirmacao, com link_cancelar
  * - cancelamento: estabelecimento, data_inicio, link_agendar
  */
@@ -288,8 +289,14 @@ function agenday_whatsapp_texto(string $tipo, array $dados): string
                 'Profissional: ' . trim((string) ($dados['profissional'] ?? '')),
                 'Data: ' . $quando['data'] . ' às ' . $quando['hora'],
                 '',
-                'O prazo para remarcar ou cancelar já passou.',
+                'Confirme sua presença:',
             ];
+            $linkConfirmar = trim((string) ($dados['link_confirmar'] ?? ''));
+            if ($linkConfirmar !== '') {
+                $linhas[] = $linkConfirmar;
+            }
+            $linhas[] = '';
+            $linhas[] = 'O prazo para remarcar ou cancelar já passou.';
             $contato = trim((string) ($dados['contato'] ?? ''));
             $linhas[] = $contato !== ''
                 ? 'Se não puder comparecer, avise com antecedência: ' . $contato . '.'
@@ -553,7 +560,7 @@ function agenday_whatsapp_agendar_lembrete(
         "SELECT a.data_inicio,
                 c.nome_cliente, c.telefone_digits,
                 s.nome_servico, f.nome_funcionario,
-                e.nome_estabelecimento, e.contato_estabelecimento,
+                e.nome_estabelecimento, e.contato_estabelecimento, e.slug, e.dominio,
                 DATE_SUB(a.data_inicio, INTERVAL $horas HOUR) AS lembrete_em,
                 (a.status IN ('agendado', 'confirmado')
                  AND a.data_inicio > NOW()
@@ -591,6 +598,10 @@ function agenday_whatsapp_agendar_lembrete(
     $contato = $contatoDigitos !== null
         ? agenday_portal_telefone_formatar($contatoDigitos)
         : $contatoBruto;
+    $token = agenday_portal_garantir_token($conexao, $idEstabelecimento, $idAgendamento);
+    if ($token === '') {
+        return 0;
+    }
     $texto = agenday_whatsapp_texto('lembrete', [
         'estabelecimento' => (string) $linha['nome_estabelecimento'],
         'nome' => (string) $linha['nome_cliente'],
@@ -598,6 +609,7 @@ function agenday_whatsapp_agendar_lembrete(
         'profissional' => (string) $linha['nome_funcionario'],
         'data_inicio' => (string) $linha['data_inicio'],
         'contato' => $contato,
+        'link_confirmar' => agenday_portal_link_confirmacao($linha, $token),
     ]);
 
     return agenday_whatsapp_enfileirar(
