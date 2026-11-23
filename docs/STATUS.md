@@ -1,5 +1,29 @@
 # STATUS — AgenDay 2.0
 
+**Conclusão do primeiro acesso:** 42 confetes caem brevemente sobre o pop-up, sem bloquear os botões. A mensagem indica onde editar o link: Configurações, campo “Endereço do portal”. A animação respeita a preferência por movimento reduzido. Sintaxe PHP e 233 verificações estruturais aprovadas localmente.
+
+**Etapa 3 — pessoa e serviços:** no mesmo pop-up, “Continuar” leva dos dados pessoais à seleção dos serviços. Para o responsável, todos vêm pré-selecionados e podem ser desmarcados; para a equipe, a seleção começa vazia. O servidor grava pessoa e vínculos na mesma transação e exige ao menos um serviço do estabelecimento. O quiz continua com seis etapas. Teste HTTP local com conta temporária: responsável e funcionário com vínculos, seleção vazia recusada e transação revertida com serviço indisponível. Interação conferida a 360 px: seleção habilita salvar e voltar preserva o nome. Sem deploy.
+
+**Quiz no celular (22/11/2026):** a etapa usa um fluxo vertical para impedir que as regras de grade do checklist antigo espremam as opções. Na primeira pergunta, os seis botões ocupam a largura útil em 320, 360 e 390 px, com altura mínima observada de 74 px. Conferido no navegador local também em 1024 px, sem rolagem horizontal. Sintaxe PHP e 233 verificações estruturais aprovadas.
+
+## Primeiro acesso guiado — 22/11/2026
+
+O cartão mostra uma das seis etapas por vez. A navegação permite revisar respostas e limita o avanço à primeira etapa sem dados. Serviços podem ser adicionados antes de concluir a seleção. A etapa final valida e salva o endereço antes de exibir a confirmação, com cópia do link e acesso à agenda. Sem migração. A sessão guarda a etapa atual; em nova sessão o fluxo consulta os dados existentes. A confirmação do link é lembrada no navegador por estabelecimento.
+
+Local: prova HTTP com conta temporária cobrindo as seis etapas, tentativa de salto, retomada, endereço inválido e confirmação de sucesso sem repetição ao recarregar. Pop-up final aberto no navegador a 1912 e 360 px, sem transbordamento horizontal. Suítes de primeiros passos (195), prévia do link (39) e responsividade (233) aprovadas. Sem deploy.
+
+## Primeiro acesso — sugestões em pop-up (22/11/2026)
+
+Ao escolher um tipo com sugestões, a lista de serviços abre em pop-up sobre “O que falta”. Após adicionar um serviço, a lista reabre para permitir outras escolhas. O passo de serviços permite voltar à lista ou cadastrar um serviço próprio. Validação local: sintaxe PHP e suítes de primeiros passos, prévia do link e responsividade aprovadas. Sem deploy.
+
+## Primeiro acesso — link dentro de “O que falta” (22/11/2026)
+
+O formulário do link do cliente passou para o final do mesmo cartão, após as cinco etapas, sem alterar a contagem ou as ações do link. Alteração local.
+
+## Primeiro acesso — rodapé (22/11/2026)
+
+Removido o botão “Fazer o primeiro agendamento” que aparecia ao concluir os cinco itens. Validação local: sintaxe PHP e 233 verificações estruturais aprovadas. Sem deploy.
+
 ## PRIMEIROS-PASSOS-11 — O tipo de negócio virou o item 1 do checklist (22/11/2026)
 
 - **Pedido do responsável:** *"vamos ajustar esse card 'Que tipo de negócio é o seu?' vai ficar dentro do card 'O que falta', ai vai mudar de 4 pra 5 itens"*.

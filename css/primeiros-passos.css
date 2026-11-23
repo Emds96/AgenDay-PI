@@ -112,6 +112,13 @@
 
 /* Tipo de negócio ---------------------------------------------------------- */
 
+.agenday-app .pp-etapa {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-wrap: anywhere;
+}
+
 .agenday-app .pp-segmentos {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
@@ -395,6 +402,38 @@
 
 /* Pop-ups do primeiro uso -------------------------------------------------- */
 
+.pp-confetes {
+    display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .modal.show .pp-confetes {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .pp-confetes span {
+        position: absolute;
+        top: -1rem;
+        width: .45rem;
+        height: .8rem;
+        background: var(--ad-accent);
+        animation: pp-confete-cair 1.7s ease-in var(--atraso) both;
+    }
+
+    .pp-confetes span:nth-child(3n) { background: var(--ad-primary-soft); }
+    .pp-confetes span:nth-child(3n + 1) { background: var(--ad-primary); border-radius: 50%; }
+
+    @keyframes pp-confete-cair {
+        from { transform: translateY(0) rotate(0); }
+        to { transform: translate(var(--desvio), 102vh) rotate(290deg); opacity: 0; }
+    }
+}
+
 .agenday-app .modal-body .pp-campo {
     margin-bottom: .9rem;
 }
@@ -493,6 +532,11 @@
 /* Celular ------------------------------------------------------------------ */
 
 @media (max-width: 575.98px) {
+    .agenday-app .pp-chip span {
+        font-size: .875rem;
+        line-height: 1.45;
+    }
+
     .agenday-app .pp-passo {
         grid-template-columns: auto minmax(0, 1fr);
         grid-template-areas:
