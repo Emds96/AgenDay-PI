@@ -43,8 +43,9 @@ if ($email !== '' && (strlen($email) > 190 || !filter_var($email, FILTER_VALIDAT
     agenday_erro_cliente_edicao('Informe um e-mail válido ou deixe esse campo vazio.');
 }
 if (strlen($contato) > 20
-    || ($contato !== '' && !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato))) {
-    agenday_erro_cliente_edicao('Informe um telefone válido (de 8 a 15 dígitos).');
+    || ($contato !== '' && !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato))
+    || strlen($digitos) > 11) {
+    agenday_erro_cliente_edicao('Informe um telefone válido (de 8 a 11 dígitos).');
 }
 // O celular com WhatsApp é conferido mais abaixo, só quando o número muda:
 // cliente antigo com telefone fixo continua podendo ser editado.
@@ -114,7 +115,7 @@ try {
     // nome de um cliente antigo com fixo não pode esbarrar em código.
     $telefoneMudou = (string) ($telefoneAtual ?? '') !== (string) ($telefoneDigits ?? '');
     if ($telefoneMudou && !$semWhatsapp) {
-        if ($contato === '' || strlen($digitos) < 8 || strlen($digitos) > 15) {
+        if ($contato === '' || strlen($digitos) < 8 || strlen($digitos) > 11) {
             agenday_erro_cliente_edicao('Informe o celular do cliente ou marque "não tem WhatsApp".');
         }
         if (!agenday_portal_telefone_whatsapp_ok($telefoneDigits)) {

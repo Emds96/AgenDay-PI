@@ -153,6 +153,10 @@
             semWhatsapp.addEventListener('change', function () {
                 var marcado = semWhatsapp.checked;
                 campoTelefone.required = !marcado;
+                // Sem WhatsApp o campo pode guardar um fixo antigo (8 a 11 dígitos);
+                // com WhatsApp a máscara exige os 11 dígitos do celular.
+                campoTelefone.toggleAttribute('data-permitir-fixo', marcado);
+                campoTelefone.dispatchEvent(new Event('input', { bubbles: true }));
                 botaoEnviar.disabled = marcado;
                 limparConfirmacao();
                 avisar(marcado

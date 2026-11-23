@@ -171,7 +171,8 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                             <div data-confirmar-telefone>
                                                 <input type="tel" class="form-control rounded-3 shadow" placeholder="Celular com WhatsApp"
                                                        id="editar-contato" name="contato" maxlength="20"
-                                                       aria-label="Contato do cliente" required data-telefone-campo>
+                                                       aria-label="Contato do cliente" required data-telefone-campo
+                                                       data-permitir-fixo>
                                                 <div class="d-flex gap-2 mt-1">
                                                     <button type="button" class="btn btn-outline-primary btn-sm" data-enviar-codigo>
                                                         <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Confirmar no WhatsApp
@@ -349,6 +350,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
         });
     </script>
 
+    <script src="js/telefone-celular.js"></script>
     <script src="js/confirmar-telefone.js"></script>
 
     <footer>

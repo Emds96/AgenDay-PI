@@ -12,7 +12,9 @@ $casos = [
     ["Nome\nInvalido", '', false],
     ['      ', '', false],
     ['Empresa boa', '123', false],
-    ['Empresa boa', '12345678', true],
+    ['Empresa boa', '12345678', false],
+    ['Empresa boa', '9299999999', false],
+    ['Empresa boa', '92999999999', true],
     ['Empresa boa', 'abcde12345678', false],
     ['Empresa boa', '1234567890123456', false],
 ];
@@ -35,7 +37,9 @@ if (agenday_config_html('<script>"x"</script>') !== '&lt;script&gt;&quot;x&quot;
 $casosTelefone = [
     ['(92) 99999-9999', true, true],
     ['+55 (92) 99999-9999', true, true],
-    ['92345678', true, true],
+    ['92999999999', true, true],
+    ['92345678', true, false],
+    ['9299999999', true, false],
     ['', true, false],
     ['   ', true, false],
     ['123', true, false],

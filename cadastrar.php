@@ -36,7 +36,7 @@ if ($nome === '' || mb_strlen($nome) > 120 || !filter_var($email, FILTER_VALIDAT
 // Telefone obrigatório no cadastro: é ele que aparece na mensagem de
 // lembrete ao cliente. Contas antigas continuam podendo ficar sem número.
 if (!agenday_telefone_estabelecimento_valido($contato, true)) {
-    $_SESSION['erro_cadastro'] = 'Informe o telefone do estabelecimento com DDD (8 a 15 dígitos).';
+    $_SESSION['erro_cadastro'] = 'Informe o telefone do estabelecimento com DDD (11 dígitos).';
     header('Location: index.php', true, 302);
     exit;
 }

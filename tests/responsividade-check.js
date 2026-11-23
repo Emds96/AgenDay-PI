@@ -87,6 +87,7 @@ verificar(!css.includes('ad-account-') && !css.includes('.navbar .dropdown'),
 /* UI-08: abas (Estabelecimento, Horários, Minha Conta), foto, modal e fonte. */
 const config = ler('config.php');
 const configJS = ler('js/configuracoes.js');
+const telefoneCelularJs = ler('js/telefone-celular.js');
 const configCSS = ler('css/configuracoes-v2.css');
 const avatar = ler('lib/avatar-estabelecimento.php');
 const perfil = ler('perfil.php');
@@ -130,6 +131,14 @@ verificar(agendarJsTel.includes('sem_whatsapp'),
 verificar(confirmarTelefoneJs.includes('api/painel-telefone.php')
     && confirmarTelefoneJs.includes('permitir_duplicado'),
     'TEL-01: script de confirmação não trata número repetido');
+verificar(cadCliente.includes('js/telefone-celular.js')
+    && agendarPagina.includes('js/telefone-celular.js')
+    && config.includes('js/telefone-celular.js')
+    && ler('index.php').includes('js/telefone-celular.js')
+    && ler('cliente.php').includes('js/telefone-celular.js')
+    && ler('cad-funcionario.php').includes('js/telefone-celular.js')
+    && ler('primeiros-passos.php').includes('js/telefone-celular.js'),
+    'TEL-02: telas de telefone sem a máscara de 11 dígitos');
 verificar(config.includes('id="formFuncionamento"')
     && config.includes('name="dias[')
     && config.includes('name="regras[intervalo]"')
@@ -166,9 +175,11 @@ verificar(config.includes('id="modalAlterarSenha"')
 verificar(configJS.includes('aria-selected') && configJS.includes("event.key === 'ArrowRight'")
     && configJS.includes('hide.bs.modal') && configJS.includes('enviando'),
     'UI-08: teclado ou proteção contra fechamento durante POST ausentes');
-verificar(configJS.includes('quantidade < 8') && configJS.includes('quantidade > 15')
-    && configJS.includes('digitos.length === 11'),
-    'UI-08: validação e formatação telefônica ausentes');
+verificar(telefoneCelularJs.includes('MAX_DIGITOS = 11')
+    && telefoneCelularJs.includes('slice(0, MAX_DIGITOS)')
+    && telefoneCelularJs.includes('setCustomValidity')
+    && config.includes('js/telefone-celular.js'),
+    'UI-08: máscara de 11 dígitos ausente');
 verificar(perfil.includes("Location: config.php?aba=conta")
     && alterarSenha.includes("Location: config.php?aba=conta"),
     'UI-08: links legados de Perfil ou Alterar senha perderam compatibilidade');

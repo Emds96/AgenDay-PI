@@ -35,10 +35,8 @@ $digitos = preg_replace('/[^0-9]/', '', $contato);
 if ($nome === '' || $letrasNome === 0 || $letrasNome > 120) {
     agenday_erro_funcionario_edicao('Informe o nome do funcionário (até 120 caracteres).');
 }
-if (strlen($contato) > 20 || !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato)
-    || strlen($digitos) < 8 || strlen($digitos) > 15) {
-    agenday_erro_funcionario_edicao('Informe um telefone válido (8 a 15 dígitos).');
-}
+// O contato é conferido depois de carregar o valor atual: cadastros antigos
+// com número incompleto continuam podendo ser editados sem trocar o telefone.
 
 // Valida todos os IDs recebidos. Um serviço de outra empresa nunca será aceito.
 $idsServicos = [];
@@ -100,22 +98,31 @@ $transacaoIniciada = false;
 try {
     require_once __DIR__ . '/conexao.php';
 
-    $conexao->begin_transaction();
-    $transacaoIniciada = true;
-
     // O funcionário precisa pertencer ao estabelecimento da sessão.
     $stmt = $conexao->prepare(
-        'SELECT arquivo_funcionario FROM funcionarios WHERE id_funcionario = ? AND id_estabelecimento = ?'
+        'SELECT arquivo_funcionario, contato_funcionario
+           FROM funcionarios WHERE id_funcionario = ? AND id_estabelecimento = ?'
     );
     $stmt->bind_param('ii', $idFuncionario, $idEstabelecimento);
     $stmt->execute();
-    $stmt->bind_result($arquivoAtual);
+    $stmt->bind_result($arquivoAtual, $contatoAtual);
     $existe = $stmt->fetch();
     $stmt->close();
 
     if (!$existe) {
         throw new DomainException('Funcionário não encontrado.');
     }
+
+    $digitosAtuais = preg_replace('/[^0-9]/', '', (string) $contatoAtual) ?? '';
+    if (strlen($contato) > 20 || !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato)) {
+        agenday_erro_funcionario_edicao('Informe um contato válido com até 20 caracteres.');
+    }
+    if ($digitos !== $digitosAtuais && strlen($digitos) !== 11) {
+        agenday_erro_funcionario_edicao('Informe o contato com DDD (11 dígitos).');
+    }
+
+    $conexao->begin_transaction();
+    $transacaoIniciada = true;
 
     // A relação N:N usa FK composta; conferir cada serviço antes de gravar.
     if ($idsServicos !== []) {

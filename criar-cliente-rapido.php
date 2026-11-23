@@ -34,8 +34,8 @@ $semWhatsapp = isset($_POST['sem_whatsapp']) && $_POST['sem_whatsapp'] === '1';
 if (mb_strlen($nome) < 2 || mb_strlen($nome) > 120) {
     agenday_cliente_rapido_erro('Informe o nome do cliente (2 a 120 caracteres).');
 }
-if ($telefone !== '' && (strlen($telefone) < 8 || strlen($telefone) > 15)) {
-    agenday_cliente_rapido_erro('O telefone deve ter de 8 a 15 dígitos, ou ficar vazio.');
+if ($telefone !== '' && (strlen($telefone) < 8 || strlen($telefone) > 11)) {
+    agenday_cliente_rapido_erro('O telefone deve ter de 8 a 11 dígitos, ou ficar vazio.');
 }
 // Identidade do portal: DDD + número (10 ou 11 dígitos). Null sem WhatsApp.
 $telefoneDigits = $semWhatsapp ? null : agenday_portal_telefone_normalizar($telefone);

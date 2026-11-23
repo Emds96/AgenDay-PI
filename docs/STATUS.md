@@ -1,5 +1,14 @@
 # STATUS — AgenDay 2.0
 
+## CELULAR-11-01 — máscara de 11 dígitos nos telefones (23/11/2026)
+
+- **Pedido do responsável:** bloquear a quantidade de caracteres do celular no cadastro do estabelecimento, no cadastro do cliente e em Configurações; aceitar somente 11 dígitos.
+- **Entregue:** novo `js/telefone-celular.js`, carregado nas telas de login/cadastro, portal do cliente, cadastro e edição de cliente, cadastro e edição de funcionário, agendamento, Configurações e primeiros passos. O campo aceita no máximo 11 dígitos, formata como `(92) 99999-9999` e recusa 10 dígitos onde o celular é obrigatório. Colar `+55 92 99999-9999` também resulta em 11 dígitos nacionais.
+- **Servidor:** telefone do estabelecimento e contato de funcionário novo passam a exigir 11 dígitos; cliente com WhatsApp já exigia. Cadastros antigos com número incompleto continuam podendo ser editados sem trocar o telefone (edição de cliente e de funcionário). O limite superior dos demais telefones caiu de 15 para 11 dígitos.
+- **Testes (23/11/2026, PC local):** `php -l` nos 16 PHP alterados; `configuracao-estabelecimento` **31**, `portal-cliente` **159**, `primeiros-passos` **195**, `agendamento-validacao` **19**, `agendamento-cancelamento` **20**, `alteracao-senha` **16**, `cadastro-reenvio` **11**, `link-portal-preview` **39**, `responsividade-check` **234**. No Chrome headless com emulação móvel (360×640): 13 dígitos foram truncados para 11, 10 dígitos ficaram inválidos, `+55` foi normalizado e um número legado de 9 dígitos continuou válido no modo de edição.
+- **Limite conhecido:** `tests/google-identidade-validacao.php` não roda neste PHP CLI por falta de OpenSSL; falha de ambiente, não relacionada a esta alteração.
+- **Estado real:** implementado e testado no PC local; **não publicado** até o próximo deploy.
+
 ## LOGIN-ROLAGEM-01 — cadastro travado em telas pequenas (23/11/2026)
 
 - **Relato do responsável:** no celular e em um monitor pequeno, a tela de criar conta não desce até o botão **Cadastrar-se**; a rolagem fica travada.

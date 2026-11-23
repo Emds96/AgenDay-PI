@@ -102,7 +102,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                     <div class="row">
                                         <div class="col-4 mb-3">
                                             <input type="tel" class="form-control rounded-3 shadow"
-                                                placeholder="Contato" name="contato" maxlength="20" required>
+                                                placeholder="Celular com DDD" name="contato" maxlength="20" required>
                                         </div>
                                     </div>
 
@@ -166,8 +166,9 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
                                     <div class="row">
                                         <div class="col-4 mb-3">
                                             <input type="tel" class="form-control rounded-3 shadow"
-                                                placeholder="Contato" id="editar-funcionario-contato"
-                                                name="contato" maxlength="20" aria-label="Contato do funcionário" required>
+                                                placeholder="Celular com DDD" id="editar-funcionario-contato"
+                                                name="contato" maxlength="20" aria-label="Contato do funcionário"
+                                                data-permitir-fixo required>
                                         </div>
                                     </div>
 
@@ -296,6 +297,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
     <script src="js\menu-lateral.js"></script>
     <script src="js/cadastro-envio.js?v=20261119-antiduplo"></script>
     <script src="js/excluir-registro.js?v=20261120-01"></script>
+    <script src="js/telefone-celular.js"></script>
     <script>
         // Preenche o modal de edição com os dados e os serviços da linha clicada.
         document.addEventListener('DOMContentLoaded', function () {
