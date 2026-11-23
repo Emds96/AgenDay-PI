@@ -1,5 +1,15 @@
 # STATUS — AgenDay 2.0
 
+## PRIMEIROS-PASSOS-12 — primeiro acesso em seis etapas guiadas (22/11/2026)
+
+- **Pedido do responsável:** transformar a tela de primeiro acesso em um passo a passo tipo quiz, com uma etapa por vez e pop-up de parabéns no fim (*"ok faz"*, *"ok pode fazer"*).
+- **Entregue:** cartão central com uma das seis etapas (tipo de negócio, serviços, quem atende, vínculos, horários, link). Avançar exige os dados da etapa; voltar para revisar continua liberado. A etapa 3 grava pessoa e vínculos na mesma transação; a etapa 6 valida e salva o endereço antes de abrir a confirmação, com confetes, copiar link e ir para a agenda. A agenda deixa de cobrar o link depois de salvo.
+- **Correções no mesmo lote:** cartão do link e sugestões de serviço absorvidos pelo cartão único (pop-up em vez de cartão solto), opções do tipo de negócio em largura total no celular, remoção do botão "Fazer o primeiro agendamento" do rodapé.
+- **PR:** #107 — merge `de34d93`, CI verde (`PHP syntax check` e `AgenDay 2.0 - Validacao e publicacao controlada`).
+- **Estado real:** implementado e testado **somente no PC local**; **nada publicado**. Variáveis de deploy seguem desativadas.
+
+Detalhes por ajuste deste lote:
+
 **Conclusão do primeiro acesso:** 42 confetes caem brevemente sobre o pop-up, sem bloquear os botões. A mensagem indica onde editar o link: Configurações, campo “Endereço do portal”. A animação respeita a preferência por movimento reduzido. Sintaxe PHP e 233 verificações estruturais aprovadas localmente.
 
 **Etapa 3 — pessoa e serviços:** no mesmo pop-up, “Continuar” leva dos dados pessoais à seleção dos serviços. Para o responsável, todos vêm pré-selecionados e podem ser desmarcados; para a equipe, a seleção começa vazia. O servidor grava pessoa e vínculos na mesma transação e exige ao menos um serviço do estabelecimento. O quiz continua com seis etapas. Teste HTTP local com conta temporária: responsável e funcionário com vínculos, seleção vazia recusada e transação revertida com serviço indisponível. Interação conferida a 360 px: seleção habilita salvar e voltar preserva o nome. Sem deploy.
