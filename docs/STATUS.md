@@ -1,5 +1,15 @@
 # STATUS — AgenDay 2.0
 
+## DEPLOY-06 — migração `segmento` e publicação do lote até o PR #115 (23/11/2026)
+
+- **SHA publicado:** `c8fa68983e2ef6083563c4b11d7be6057884d935` (`dev-feira-uninorte`), com os PRs #109, #112, #113, #114 e #115 integrados.
+- **Migração antes do código (phpMyAdmin, banco `if0_43415733_agenday`):** aplicado `sql/migracao-segmento-estabelecimento.sql` — `ALTER TABLE estabelecimento ADD COLUMN segmento VARCHAR(30) NULL DEFAULT NULL AFTER slug`. Conferência por leitura: `SHOW COLUMNS` retornou a coluna `segmento`; `SELECT COUNT(*), COUNT(segmento)` retornou **25 estabelecimentos** e **0 com valor**, ou seja, nenhum dado existente foi alterado.
+- **Backup:** `2026-11-23_182624_efa8909f` — **BACKUP OK**, 147 arquivos, 16 tabelas, restauração local aprovada, ZIP de 9.390.203 B; portal `portal_20261123_183404` — 131 arquivos, 1.082.633 B, CRC OK. Cópias anteriores à migração, mantidas como ponto de recuperação.
+- **Publicação:** [run 45290853130](https://github.com/Emds96/AgenDay-PI/actions/runs/45290853130), `workflow_dispatch`, SHA conferido. Os três jobs passaram: `validar` (9 s), `publicar` (6m02s) e `diagnosticar_ftp` (6 s). Log do envio: **131 arquivos no site principal, 131 no domínio do cliente; nenhum arquivo remoto apagado**.
+- **Flags:** `AGENDAY_DEPLOY_ENABLED` e `AGENDAY_DEPLOY_MODE` ativadas só na janela do run e conferidas em **`false`/`disabled`** ao final (23:47).
+- **Conferência pós-deploy (navegador real):** `https://agenday-sistema.infinityfree.io/` abriu a tela de login (HTTP 200); `js/telefone-celular.js` respondeu 200 com `MAX_DIGITOS = 11`; `css/cliente.css` publicado com a regra do spinner; `css/login.css` com `safe center` e `css/google-auth.css` com a correção móvel. O portal `agenday-agendamentos.infinityfree.io/?e=studio` abriu **Studio Bella Vita** (200), com a máscara carregada e o spinner medido em **0 px** de desvio.
+- **Observação:** este registro é documental e veio depois do deploy; o HEAD da `dev-feira-uninorte` fica à frente do SHA publicado (`c8fa689`), que é a versão em produção.
+
 ## SPINNER-01 — carregamento centralizado nos botões (23/11/2026)
 
 - **Relato do responsável:** a bolinha de carregamento aparece torta dentro dos botões, no celular e no navegador do PC.
@@ -7,7 +17,7 @@
 - **Correção:** em `css/cliente.css`, o botão passou a ser `position: relative` e o spinner saiu do fluxo (`position: absolute`, `top/left: 50%`, `translate(-50%, -50%)`), ficando centralizado no botão inteiro.
 - **Abrangência:** os quatro botões do portal (Entrar, Criar cadastro, Entrar do primeiro acesso e Confirmar agendamento). Os demais botões do sistema não usam spinner; mostram apenas texto "Salvando...".
 - **Testes (23/11/2026, PC local, Chrome headless):** deslocamento medido de 0 px na horizontal e na vertical nos quatro botões, em 390×844 e 1366×768; `responsividade-check` **235** (nova verificação UI-11).
-- **Estado real:** implementado e testado no PC local; **não publicado** até o próximo deploy.
+- **Estado real:** implementado e testado no PC local e **publicado** em 23/11/2026 no deploy do SHA `c8fa689` (DEPLOY-06); conferido também no portal de produção, com 0 px de desvio.
 
 ## CELULAR-11-01 — máscara de 11 dígitos nos telefones (23/11/2026)
 
@@ -16,7 +26,7 @@
 - **Servidor:** telefone do estabelecimento e contato de funcionário novo passam a exigir 11 dígitos; cliente com WhatsApp já exigia. Cadastros antigos com número incompleto continuam podendo ser editados sem trocar o telefone (edição de cliente e de funcionário). O limite superior dos demais telefones caiu de 15 para 11 dígitos.
 - **Testes (23/11/2026, PC local):** `php -l` nos 16 PHP alterados; `configuracao-estabelecimento` **31**, `portal-cliente` **159**, `primeiros-passos` **195**, `agendamento-validacao` **19**, `agendamento-cancelamento` **20**, `alteracao-senha` **16**, `cadastro-reenvio` **11**, `link-portal-preview` **39**, `responsividade-check` **234**. No Chrome headless com emulação móvel (360×640): 13 dígitos foram truncados para 11, 10 dígitos ficaram inválidos, `+55` foi normalizado e um número legado de 9 dígitos continuou válido no modo de edição.
 - **Limite conhecido:** `tests/google-identidade-validacao.php` não roda neste PHP CLI por falta de OpenSSL; falha de ambiente, não relacionada a esta alteração.
-- **Estado real:** implementado e testado no PC local; **não publicado** até o próximo deploy.
+- **Estado real:** implementado e testado no PC local e **publicado** em 23/11/2026 no deploy do SHA `c8fa689` (DEPLOY-06); `js/telefone-celular.js` confirmado em produção.
 
 ## LOGIN-ROLAGEM-01 — cadastro travado em telas pequenas (23/11/2026)
 
@@ -25,7 +35,7 @@
 - **Causa 2 (monitor pequeno):** o formulário tem altura fixa dentro do cartão e `justify-content: center`. Quando o conteúdo passa da altura, o topo fica acima da área visível e não pode ser alcançado — mesmo com a rolagem interna em zero.
 - **Correção:** `justify-content: safe center` e `overflow-y: auto` no formulário (centraliza quando cabe e alinha ao topo quando transborda, mantendo a rolagem interna no desktop); no celular, `overflow-y: visible` e `overscroll-behavior: auto` para a rolagem ser da página. Padding vertical de 20 px para o título não encostar na borda.
 - **Testes (23/11/2026, PC local, Chrome com emulação de toque):** arrasto real em 320×568, 360×640, 390×844 e 412×915 — em todos a página desce e o botão **Cadastrar-se** fica visível; roda do mouse em 1024×600, 1280×720, 1366×650 e 1366×768 — topo visível na abertura e botão alcançável após rolar. Sem rolagem horizontal em nenhum tamanho. `tests/responsividade-check.js` **233**.
-- **Estado real:** implementado e testado no PC local; **não publicado** até o próximo deploy.
+- **Estado real:** implementado e testado no PC local e **publicado** em 23/11/2026 no deploy do SHA `c8fa689` (DEPLOY-06); `css/login.css` e `css/google-auth.css` conferidos em produção.
 
 ## CONFIRMACAO-AGENDAMENTO-01 — confirmação pelo lembrete de 24h (22/11/2026)
 
@@ -51,7 +61,7 @@
 - **Testes (PC local, 22/11/2026):** `php -l` limpo em `primeiros-passos.php`, `lib/primeiros-passos.php` e `agenda.php`; prova HTTP na conta demo #70 — **17 verificações, 0 falha**: agenda sem banner, "Seus serviços"/"Continuar", almoço visível, "Tudo pronto" sem "Etapa 6 de 6", "Trocar" limpando a coluna e o banner voltando, escolha regravando `estetica`, e **navegador novo** (cookie jar vazio) sem banner e com o tipo já escolhido. Suítes: `tests/primeiros-passos.php` 195, `tests/portal-cliente.php` **159**, `tests/configuracao-estabelecimento.php` 27, `tests/link-portal-preview.js` 39, `tests/responsividade-check.js` 233.
 - **Rebase e nova rodada (23/11/2026):** a branch foi rebaseada sobre a `dev-feira-uninorte` (`15204e6`, depois do DEPLOY-05). Conflito só em `docs/STATUS.md`, resolvido mantendo as duas entradas; `agenda.php` aplicou sem conflito. `php -l` limpo e as mesmas suítes verdes (195 / 159 / 27 / 39 / 233). A prova HTTP na conta demo #70 foi repetida: **17 verificações, 0 falha**, e a conferência visual no navegador não encontrou divergência.
 - **Conferência visual (navegador real, 22/11/2026):** agenda sem banner; etapa 2 com "Tudo pronto"/"Seus serviços"; etapa 5 com as duas janelas de horário.
-- **Estado real:** implementado e testado **somente no PC local**; **não publicado**. A migração da coluna **não** foi aplicada na hospedagem.
+- **Produção (23/11/2026):** migração `sql/migracao-segmento-estabelecimento.sql` aplicada no phpMyAdmin do banco `if0_43415733_agenday` antes do código; coluna `segmento` conferida, 25 estabelecimentos e nenhum valor alterado. Código **publicado** no deploy do SHA `c8fa689` (DEPLOY-06).
 
 ## PRIMEIROS-PASSOS-12 — primeiro acesso em seis etapas guiadas (22/11/2026)
 

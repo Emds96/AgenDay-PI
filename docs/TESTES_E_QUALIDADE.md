@@ -1,6 +1,6 @@
 # Testes e qualidade (QA) — AgenDay 2.0
 
-**Revisado em 19/11/2026** após o QA de prevenção de reenvio no cadastro e a validação do login automático das contas QA A/B via DeskBrowse. Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+**Revisado em 23/11/2026** após o deploy `c8fa689` (migração `segmento`, máscara de 11 dígitos, spinner e rolagem do login). Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
 
 ## QA FIX-01 — Reenvio de cadastros (19/11/2026)
 
@@ -36,7 +36,7 @@ node tests/responsividade-check.js
 
 Workflows: `.github/workflows/php-lint.yml` e `.github/workflows/agenday-publicar.yml` (job `validar`). **Testes não acessam o MySQL do InfinityFree.** O teste de responsividade é estrutural; não substitui navegador real.
 
-`tests/portal-cliente.php` (150 verificações) cobre normalização do celular com o 9 e formato antigo, variantes de busca, slug, código de acesso, token público, sessão do cliente, CSRF, conferência de origem, prazo de cancelamento, endereço público (normalização, reservado, tamanho, link sem slug e domínio padrão), assinatura das mensagens do WhatsApp ("Enviado pela AgenDay em nome de …") nos cinco tipos de texto, a distinção entre celular com WhatsApp e telefone fixo (TEL-01), o lembrete automático de 24h (título próprio, prazo encerrado, telefone do estabelecimento, sem link e ligação nos fluxos — LEMBRETE-01/MENSAGENS-02), a confirmação com prazo de 24h e um único link do portal, com fallback para o token (MENSAGENS-02) e o domínio compartilhado do portal, que nunca identifica estabelecimento (PORTAL-RAIZ-01).
+`tests/portal-cliente.php` (**159 verificações**) cobre normalização do celular com o 9 e formato antigo, variantes de busca, slug, código de acesso, token público, sessão do cliente, CSRF, conferência de origem, prazo de cancelamento, endereço público (normalização, reservado, tamanho, link sem slug e domínio padrão), assinatura das mensagens do WhatsApp ("Enviado pela AgenDay em nome de …") nos cinco tipos de texto, a distinção entre celular com WhatsApp e telefone fixo (TEL-01), o lembrete automático de 24h (título próprio, prazo encerrado, telefone do estabelecimento, sem link e ligação nos fluxos — LEMBRETE-01/MENSAGENS-02), a confirmação com prazo de 24h e um único link do portal, com fallback para o token (MENSAGENS-02) e o domínio compartilhado do portal, que nunca identifica estabelecimento (PORTAL-RAIZ-01).
 
 O histórico de faltas e cancelamentos (FEE-01/FEE-02) **não tem teste no CI**, porque depende do MySQL: foi provado com 34 verificações contra o banco local (`lib/clientes-ausencias.php` — contadores, marca de taxa idempotente, cancelamento com e sem marca, isolamento entre estabelecimentos) mais a renderização real de `cad-cliente.php` e de `agenday_agenda_listar()`. Os testes do CI continuam sem acesso ao banco.
 
