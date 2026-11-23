@@ -1,5 +1,14 @@
 # STATUS — AgenDay 2.0
 
+## SPINNER-01 — carregamento centralizado nos botões (23/11/2026)
+
+- **Relato do responsável:** a bolinha de carregamento aparece torta dentro dos botões, no celular e no navegador do PC.
+- **Causa:** no portal do cliente, o texto do botão fica invisível durante o envio, mas continua ocupando espaço no flex; o spinner entrava ao lado dele, deslocado para a direita.
+- **Correção:** em `css/cliente.css`, o botão passou a ser `position: relative` e o spinner saiu do fluxo (`position: absolute`, `top/left: 50%`, `translate(-50%, -50%)`), ficando centralizado no botão inteiro.
+- **Abrangência:** os quatro botões do portal (Entrar, Criar cadastro, Entrar do primeiro acesso e Confirmar agendamento). Os demais botões do sistema não usam spinner; mostram apenas texto "Salvando...".
+- **Testes (23/11/2026, PC local, Chrome headless):** deslocamento medido de 0 px na horizontal e na vertical nos quatro botões, em 390×844 e 1366×768; `responsividade-check` **235** (nova verificação UI-11).
+- **Estado real:** implementado e testado no PC local; **não publicado** até o próximo deploy.
+
 ## CELULAR-11-01 — máscara de 11 dígitos nos telefones (23/11/2026)
 
 - **Pedido do responsável:** bloquear a quantidade de caracteres do celular no cadastro do estabelecimento, no cadastro do cliente e em Configurações; aceitar somente 11 dígitos.

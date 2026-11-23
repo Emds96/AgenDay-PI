@@ -148,6 +148,17 @@
   justify-content: center;
   gap: .5rem;
   font-weight: 600;
+  position: relative;
+}
+
+/* Durante o envio o texto fica invisível, mas continua ocupando espaço no
+   flex. O spinner é retirado do fluxo e centralizado no botão inteiro. */
+.agenday-portal .cliente-botao-largo [data-carregando] {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
 }
 
 .agenday-portal .cliente-codigo {
