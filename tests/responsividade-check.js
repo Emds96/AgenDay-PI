@@ -206,6 +206,13 @@ verificar(configCSS.includes('@media (max-width: 575.98px)')
     && configCSS.includes('max-height: calc(100dvh - 1.5rem)'),
     'UI-08: configurações e modal sem estilos mobile');
 
+/* UI-11: spinner centralizado no botão, inclusive no portal do cliente. */
+const clienteCSS = ler('css/cliente.css');
+verificar(clienteCSS.includes('.cliente-botao-largo [data-carregando]')
+    && clienteCSS.includes('position: absolute')
+    && clienteCSS.includes('transform: translate(-50%, -50%)'),
+    'UI-11: spinner do botão pode ficar deslocado');
+
 
 /* UI-09: um menu hambúrguer único, com identidade aprovada e logout no rodapé. */
 const menuLateral = ler('lib/menu-lateral.php');
