@@ -282,6 +282,9 @@
                 };
 
                 if (registro.status === 'agendado' || registro.status === 'confirmado') {
+                    if (registro.status === 'agendado') {
+                        adicionarAcao('Confirmar', 'confirmar');
+                    }
                     adicionarAcao('Chegou', 'chegou');
                     adicionarAcao('Faltou', 'faltou', 'text-danger');
                 }

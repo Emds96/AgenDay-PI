@@ -140,6 +140,18 @@ $cancelamento = agenday_whatsapp_texto('cancelamento', [
 verificar(strpos($cancelamento, 'cancelado') !== false, 'texto de cancelamento');
 verificar(strpos($cancelamento, 'https://exemplo.test/?e=studio') !== false, 'cancelamento com link');
 
+$lembrete = agenday_whatsapp_texto('lembrete', [
+    'estabelecimento' => 'Studio',
+    'nome' => 'Ana',
+    'servico' => 'Corte',
+    'profissional' => 'Bia',
+    'data_inicio' => '2026-11-27 14:30:00',
+    'contato' => '(92) 99999-0000',
+    'link_confirmar' => 'https://exemplo.test/cliente-confirmar.php?t=abc',
+]);
+verificar(strpos($lembrete, 'Confirme sua presença:') !== false, 'lembrete pede confirmação');
+verificar(strpos($lembrete, 'https://exemplo.test/cliente-confirmar.php?t=abc') !== false, 'lembrete com link de confirmação');
+
 verificar(agenday_whatsapp_chat_id('92981111001') === '5592981111001@c.us', 'chatId do WAHA');
 
 $semConfig = ['ativo' => false, 'base_url' => '', 'api_key' => '', 'sessao' => 'default'];
@@ -182,6 +194,8 @@ $r = simular_host($hostPortal, '/cliente.php');
 verificar($r['cliente'] && $r['portal'], 'portal: cliente.php permitido');
 $r = simular_host($hostPortal, '/cliente-cancelar.php');
 verificar($r['cliente'] && $r['portal'], 'portal: cliente-cancelar.php permitido');
+$r = simular_host($hostPortal, '/cliente-confirmar.php');
+verificar($r['cliente'] && $r['portal'], 'portal: cliente-confirmar.php permitido');
 $r = simular_host($hostPortal, '/api/cliente-dados.php');
 verificar($r['cliente'] && $r['portal'], 'portal: api/cliente-*.php permitido');
 $r = simular_host($hostPortal, '/index.php');
@@ -202,6 +216,21 @@ verificar(
     agenday_portal_link_cancelamento($estabLink, str_repeat('a', 64))
         === 'https://agenday-agendamentos.infinityfree.io/cliente-cancelar.php?t=' . str_repeat('a', 64),
     'link de cancelamento usa o dominio do cliente'
+);
+verificar(
+    agenday_portal_link_confirmacao($estabLink, str_repeat('a', 64))
+        === 'https://agenday-agendamentos.infinityfree.io/cliente-confirmar.php?t=' . str_repeat('a', 64),
+    'link de confirmação usa o dominio do cliente'
+);
+verificar(
+    agenday_portal_confirmacao_autorizada(str_repeat('a', 64), [
+        'assinatura' => agenday_portal_assinatura_confirmacao(str_repeat('a', 64)),
+    ]),
+    'assinatura de confirmação autoriza o formulário'
+);
+verificar(
+    !agenday_portal_confirmacao_autorizada(str_repeat('a', 64), ['assinatura' => 'invalida']),
+    'assinatura de confirmação inválida é recusada'
 );
 $hostAntesDoLinkBase = $_SERVER['HTTP_HOST'] ?? null;
 unset($_SERVER['HTTP_HOST']);

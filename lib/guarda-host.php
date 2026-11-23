@@ -78,7 +78,7 @@ function agenday_guarda_host_caminho(): string
 /**
  * A rota atual pertence ao portal público?
  *
- * Permitidas: cliente.php, cliente-cancelar.php e api/cliente-*.php.
+ * Permitidas: cliente.php, cliente-cancelar.php, cliente-confirmar.php e api/cliente-*.php.
  * Tudo o mais é administrativo.
  */
 function agenday_guarda_host_rota_portal(): bool
@@ -88,7 +88,7 @@ function agenday_guarda_host_rota_portal(): bool
         return false;
     }
     $arquivo = basename($caminho);
-    if ($arquivo === 'cliente.php' || $arquivo === 'cliente-cancelar.php') {
+    if ($arquivo === 'cliente.php' || $arquivo === 'cliente-cancelar.php' || $arquivo === 'cliente-confirmar.php') {
         return true;
     }
     // Endpoints do portal ficam em api/cliente-*.php (qualquer subpasta api/).
