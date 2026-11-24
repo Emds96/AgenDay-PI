@@ -316,7 +316,7 @@ if (!is_array($googlePending)
         </dialog>
     <?php endif; ?>
 
-    <script src="js/telefone-celular.js" charset="utf-8"></script>
+    <script src="js/telefone-celular.js?v=20261123-ddd" charset="utf-8"></script>
     <script src="js/login.js" charset="utf-8"></script>
     <script src="js/google-auth.js" charset="utf-8"></script>
 </body>

@@ -117,7 +117,7 @@ try {
     if (strlen($contato) > 20 || !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato)) {
         agenday_erro_funcionario_edicao('Informe um contato válido com até 20 caracteres.');
     }
-    if ($digitos !== $digitosAtuais && strlen($digitos) !== 11) {
+    if ($digitos !== $digitosAtuais && (strlen($digitos) !== 11 || $digitos[2] !== '9' || str_contains($contato, '+'))) {
         agenday_erro_funcionario_edicao('Informe o contato com DDD (11 dígitos).');
     }
 

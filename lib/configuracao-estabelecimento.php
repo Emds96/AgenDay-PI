@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 /**
  * Regra única do telefone comercial: até 20 caracteres, só dígitos e
- * separadores comuns e exatamente 11 dígitos (DDD + 9 + 8). O prefixo +55
- * também é aceito e não conta como parte do número nacional.
+ * separadores comuns e exatamente 11 dígitos nacionais (DDD + 9 + 8).
  *
  * `$obrigatorio` é usado no cadastro de contas novas, onde o número é
  * exigido porque aparece na mensagem de lembrete ao cliente. Em
@@ -17,15 +16,11 @@ function agenday_telefone_estabelecimento_valido(string $contato, bool $obrigato
         return !$obrigatorio;
     }
     if (strlen($contato) > 20
-        || !preg_match('/\A[0-9()+.\s-]+\z/D', $contato)) {
+        || !preg_match('/\A[0-9().\s-]+\z/D', $contato)) {
         return false;
     }
     $digitos = preg_replace('/[^0-9]/', '', $contato) ?? '';
-    if (strlen($digitos) === 13 && strncmp($digitos, '55', 2) === 0) {
-        $digitos = substr($digitos, 2);
-    }
-
-    return strlen($digitos) === 11;
+    return strlen($digitos) === 11 && $digitos[2] === '9';
 }
 
 /**

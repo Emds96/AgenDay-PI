@@ -4,6 +4,14 @@
 
 README e guias de continuidade, arquitetura, QA e WAHA reconciliados com a versão publicada `c76772d`. O portal já está no ar; a conexão WhatsApp é global. O cancelamento por link foi aprovado no PORTAL-07; faltam a regressão na versão atual e a prova de ponta a ponta do lembrete de 24 h em produção. A conferência do contêiner e do túnel no PC não envolveu envio de mensagem.
 
+## Celular nacional — preservar o DDD 55 ao atingir 11 dígitos (23/11/2026)
+
+**Defeito reproduzido na versão publicada `c76772d`:** no teste local dessa versão, digitar `5` depois de `(55) 90000-1234` mudava o valor para `(90) 0001-2345`. A máscara confundia o DDD com o código do país.
+
+**Correção:** nos campos de celular, informar DDD + 9 + oito dígitos. O DDD `(55)` é válido; a máscara recusa o prefixo `+55` e entradas que ultrapassem 11 dígitos, sem substituir o número anterior. É possível apagar ou selecionar dígitos para corrigi-los. Campos legados de contato/login continuam com sua regra de comprimento. Cadastro de estabelecimento, Configurações e contatos novos ou alterados de funcionários também validam o 9 após o DDD no servidor. Não houve migração de dados.
+
+**Verificação:** no cadastro local em Chrome (360×640 emulado), digitação do 12º dígito no final e no meio preservou `(55) 90000-1234`; entrada com `+55` foi recusada e substituição por número nacional com DDD 92 funcionou. Testes de regressão para DDD 55 e 92, inclusive colagem; 241 verificações de responsividade/máscara, 33 de Configurações, 195 de primeiros passos e 159 do portal passaram. **Ainda não publicado.**
+
 ## Portal do cliente — indicador de carregamento (23/11/2026)
 
 O responsável mostrou o indicador deslocado no botão Entrar. No código do painel do estabelecimento, os botões de envio pesquisados usam texto; os quatro indicadores de botão foram encontrados no portal. O texto e o indicador agora ocupam a mesma célula da grade, sem disputar a transformação usada na animação do Bootstrap. A URL do CSS foi versionada novamente.

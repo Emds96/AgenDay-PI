@@ -4,7 +4,7 @@ require_once __DIR__ . '/../lib/configuracao-estabelecimento.php';
 
 $casos = [
     ['Nome válido', '(92) 99999-9999', true],
-    ['Empresa Árvore', '+55 (92) 99999-9999', true],
+    ['Empresa Árvore', '+55 (92) 99999-9999', false],
     ['Empresa de Testes', '', true],
     ['', '', false],
     ['A', '', false],
@@ -36,7 +36,9 @@ if (agenday_config_html('<script>"x"</script>') !== '&lt;script&gt;&quot;x&quot;
 // lembrete ao cliente). Em Configurações continua opcional.
 $casosTelefone = [
     ['(92) 99999-9999', true, true],
-    ['+55 (92) 99999-9999', true, true],
+    ['+55 (92) 99999-9999', true, false],
+    ['(55) 90000-1234', true, true],
+    ['(55) 80000-1234', true, false],
     ['92999999999', true, true],
     ['92345678', true, false],
     ['9299999999', true, false],

@@ -912,7 +912,7 @@ $nomesDias = agenday_dias_semana();
     </div>
 </div>
 
-<script src="js/telefone-celular.js"></script>
+<script src="js/telefone-celular.js?v=20261123-ddd"></script>
 <script src="js/menu-lateral.js"></script>
 </body>
 </html>

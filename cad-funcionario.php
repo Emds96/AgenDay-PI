@@ -297,7 +297,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
     <script src="js\menu-lateral.js"></script>
     <script src="js/cadastro-envio.js?v=20261119-antiduplo"></script>
     <script src="js/excluir-registro.js?v=20261120-01"></script>
-    <script src="js/telefone-celular.js"></script>
+    <script src="js/telefone-celular.js?v=20261123-ddd"></script>
     <script>
         // Preenche o modal de edição com os dados e os serviços da linha clicada.
         document.addEventListener('DOMContentLoaded', function () {
