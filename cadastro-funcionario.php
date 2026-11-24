@@ -38,7 +38,7 @@ if ($nome === '' || $letrasNome === 0 || $letrasNome > 120) {
     agenday_erro_funcionario('Informe o nome do funcionário (até 120 caracteres).');
 }
 if (strlen($contato) > 20 || !preg_match('/^[0-9()+ .-]{8,20}$/D', $contato)
-    || strlen($digitos) !== 11) {
+    || strlen($digitos) !== 11 || $digitos[2] !== '9' || str_contains($contato, '+')) {
     agenday_erro_funcionario('Informe o contato com DDD (11 dígitos).');
 }
 

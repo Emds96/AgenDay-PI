@@ -350,7 +350,7 @@ require_once __DIR__ . '/lib/cadastro-reenvio.php';
         });
     </script>
 
-    <script src="js/telefone-celular.js"></script>
+    <script src="js/telefone-celular.js?v=20261123-ddd"></script>
     <script src="js/confirmar-telefone.js"></script>
 
     <footer>

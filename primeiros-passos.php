@@ -1265,7 +1265,7 @@ unset($_SESSION['pp_pessoa_tentativa']);
 
 </main>
 
-<script defer src="js/telefone-celular.js"></script>
+<script defer src="js/telefone-celular.js?v=20261123-ddd"></script>
 <script defer src="js/primeiros-passos.js?v=20261122-quiz"></script>
 <script defer src="js/pessoa-servicos.js?v=20261122-1"></script>
 </body>

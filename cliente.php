@@ -344,7 +344,7 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/telefone-celular.js"></script>
+<script src="js/telefone-celular.js?v=20261123-ddd"></script>
 <script defer src="js/cliente.js?v=20261121-cl14"></script>
 </body>
 </html>

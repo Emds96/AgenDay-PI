@@ -289,7 +289,7 @@ $minutosDuracao = static function (string $duracao): int {
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
 <script src="js/menu-lateral.js"></script>
-<script src="js/telefone-celular.js"></script>
+<script src="js/telefone-celular.js?v=20261123-ddd"></script>
 <script src="js/confirmar-telefone.js"></script>
 <script src="js/agendar.js?v=20261122-tel01"></script>
 </body>

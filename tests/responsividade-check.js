@@ -88,6 +88,33 @@ verificar(!css.includes('ad-account-') && !css.includes('.navbar .dropdown'),
 const config = ler('config.php');
 const configJS = ler('js/configuracoes.js');
 const telefoneCelularJs = ler('js/telefone-celular.js');
+// Exercita os eventos da máscara: um dígito excedente não pode apagar o DDD.
+{
+    const eventos = {};
+    const campo = {value: '', dataset: {}, setAttribute() {}, hasAttribute: () => false,
+        setCustomValidity(msg) { this.erro = msg; },
+        addEventListener(tipo, fn) { eventos[tipo] = fn; }};
+    require('node:vm').runInNewContext(telefoneCelularJs, {
+        document: {querySelectorAll: () => [campo]}
+    });
+    for (const ddd of ['55', '92']) {
+        campo.value = ddd + '900001234';
+        eventos.input();
+        const original = campo.value;
+        campo.selectionStart = campo.selectionEnd = 2;
+        let bloqueado = false;
+        eventos.beforeinput({data: '5', preventDefault() { bloqueado = true; }});
+        verificar(bloqueado && !campo.erro, 'Dígito excedente permitido no meio do celular');
+        campo.value += '5';
+        eventos.input();
+        verificar(campo.value === original, 'Dígito excedente alterou o DDD ' + ddd);
+        campo.selectionStart = 0;
+        campo.selectionEnd = original.length;
+        bloqueado = false;
+        eventos.paste({clipboardData: {getData: () => '+55 ' + original}, preventDefault() { bloqueado = true; }});
+        verificar(bloqueado, 'Colagem com código do país aceita');
+    }
+}
 const configCSS = ler('css/configuracoes-v2.css');
 const avatar = ler('lib/avatar-estabelecimento.php');
 const perfil = ler('perfil.php');
@@ -176,7 +203,6 @@ verificar(configJS.includes('aria-selected') && configJS.includes("event.key ===
     && configJS.includes('hide.bs.modal') && configJS.includes('enviando'),
     'UI-08: teclado ou proteção contra fechamento durante POST ausentes');
 verificar(telefoneCelularJs.includes('MAX_DIGITOS = 11')
-    && telefoneCelularJs.includes('slice(0, MAX_DIGITOS)')
     && telefoneCelularJs.includes('setCustomValidity')
     && config.includes('js/telefone-celular.js'),
     'UI-08: máscara de 11 dígitos ausente');

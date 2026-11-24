@@ -11,12 +11,7 @@
     var MAX_DIGITOS = 11;
 
     function apenasDigitos(valor) {
-        var digitos = String(valor || '').replace(/\D/g, '');
-        // Colagem no formato internacional: +55 (92) 99999-9999.
-        if (digitos.length > MAX_DIGITOS && digitos.slice(0, 2) === '55') {
-            digitos = digitos.slice(2);
-        }
-        return digitos.slice(0, MAX_DIGITOS);
+        return String(valor || '').replace(/\D/g, '');
     }
 
     function formatar(digitos) {
@@ -49,9 +44,9 @@
                 : 'Informe o número com DDD (8 a 11 dígitos).');
             return;
         }
-        campo.setCustomValidity(digitos.length === 11
+        campo.setCustomValidity(digitos.length === MAX_DIGITOS && digitos[2] === '9'
             ? ''
-            : 'Informe os 11 dígitos do celular com DDD.');
+            : 'Informe o DDD e o celular começando por 9 (11 dígitos, sem +55).');
     }
 
     function aplicar(campo) {
@@ -61,13 +56,33 @@
         campo.dataset.telefoneCelularPronto = '1';
         campo.setAttribute('inputmode', 'numeric');
 
+        var anterior = campo.value;
+        function excede(valor) {
+            return valor.includes('+') || apenasDigitos(valor).length > MAX_DIGITOS;
+        }
+        function recusarExcesso(evento, texto) {
+            if (!texto) return;
+            var valor = campo.value;
+            var proposto = valor.slice(0, campo.selectionStart) + texto + valor.slice(campo.selectionEnd);
+            if (excede(proposto)) evento.preventDefault();
+        }
+        campo.addEventListener('paste', function (evento) {
+            // Conferir a colagem inteira antes de o maxlength do navegador cortá-la.
+            if (evento.clipboardData) recusarExcesso(evento, evento.clipboardData.getData('text'));
+        });
+        campo.addEventListener('beforeinput', function (evento) {
+            anterior = campo.value;
+            recusarExcesso(evento, evento.data);
+        });
         campo.addEventListener('input', function () {
-            campo.value = formatar(apenasDigitos(campo.value));
+            campo.value = excede(campo.value) ? anterior : formatar(apenasDigitos(campo.value));
+            anterior = campo.value;
             validar(campo);
         });
 
         campo.addEventListener('blur', function () {
-            campo.value = formatar(apenasDigitos(campo.value));
+            if (!excede(campo.value)) campo.value = formatar(apenasDigitos(campo.value));
+            anterior = campo.value;
             validar(campo);
         });
     }
