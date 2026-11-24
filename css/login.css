@@ -97,6 +97,26 @@ form {
   transition: all 0.6s ease-in-out;
 }
 
+/* O painel visível determina a altura do cartão. A página pode crescer
+   mesmo com zoom, teclado aberto ou campos extras no cadastro. */
+.agenday-auth #container.box {
+  height: auto;
+}
+.agenday-auth #container .form-container form {
+  height: auto;
+  overflow: visible;
+}
+@media (min-width: 768px) {
+  .agenday-auth #container:not(.right-panel-active) .sign-in-container,
+  .agenday-auth #container.right-panel-active .sign-up-container {
+    position: relative;
+    height: auto;
+  }
+  .agenday-auth #container .form-container form {
+    min-height: 75vh;
+  }
+}
+
 .sign-in-container {
   left: 0;
   width: 50%;

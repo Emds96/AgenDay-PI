@@ -45,11 +45,11 @@ if (!is_array($googlePending)
 
     <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css'>
-    <link rel="stylesheet" href="css/login.css?v=20261120-cad01">
+    <link rel="stylesheet" href="css/login.css?v=20261123-fluxo">
     <!-- AgenDay 2.0: tokens e componentes visuais padronizados (5.1) -->
     <link rel="stylesheet" href="css/design-system.css">
-    <link rel="stylesheet" href="css/responsivo.css">
-    <link rel="stylesheet" href="css/google-auth.css">
+    <link rel="stylesheet" href="css/responsivo.css?v=20261123-fluxo">
+    <link rel="stylesheet" href="css/google-auth.css?v=20261123-fluxo">
     <?php if ($googleClientId !== '') : ?>
         <script src="https://accounts.google.com/gsi/client?hl=pt-BR" async defer></script>
     <?php endif; ?>
