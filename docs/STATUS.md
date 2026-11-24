@@ -1,10 +1,14 @@
 # STATUS — AgenDay 2.0
 
-## Portal do cliente — indicador de carregamento (23/11/2026, somente local)
+## Portal do cliente — indicador de carregamento (23/11/2026)
 
 O responsável mostrou o indicador deslocado no botão Entrar. No código do painel do estabelecimento, os botões de envio pesquisados usam texto; os quatro indicadores de botão foram encontrados no portal. O texto e o indicador agora ocupam a mesma célula da grade, sem disputar a transformação usada na animação do Bootstrap. A URL do CSS foi versionada novamente.
 
-No Chrome local, com os quatro botões visíveis em estado de envio simulado, o desvio entre os centros foi de 0 px nos dois eixos em cinco instantes da animação, em 360×640 e 1366×768. Lint dos três PHPs e 235 verificações estruturais aprovados. Revisão não publicada.
+No Chrome local, com os quatro botões visíveis em estado de envio simulado, o desvio entre os centros foi de 0 px nos dois eixos em cinco instantes da animação, em 360×640 e 1366×768. Lint dos três PHPs e 235 verificações estruturais aprovados.
+
+O [PR #119](https://github.com/Emds96/AgenDay-PI/pull/119) foi integrado no SHA `c76772d`. Antes do [run 45304476963](https://github.com/Emds96/AgenDay-PI/actions/runs/45304476963), o backup `2026-11-23_210835_aa45bb94` passou na restauração local e na conferência dos hashes. A cópia do portal `portal_20261123_210835` contém 132 arquivos, com CRC do ZIP verificado.
+
+**Publicado nos dois domínios:** os três jobs passaram e as flags voltaram a `false`/`disabled`. No portal Studio Bella Vita, em 390×844 emulado, foi confirmado o CSS `20261123-spinner-grid`. Com a sessão já autenticada, o teste usou uma cópia temporária do botão Entrar da página, em estado de carregamento: desvio máximo de 0 px em cinco instantes da animação. Não foi enviado formulário. A validação no celular físico desta revisão continua pendente.
 
 ## Login/cadastro — rolagem aprovada no celular em produção (23/11/2026)
 

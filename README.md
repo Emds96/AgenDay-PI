@@ -167,7 +167,9 @@ A CI passou nos commits publicados. Nos cenários de QA relatados, houve cadastr
 
 O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desktop Commander**, conectado ao computador autorizado, executa o **GitHub CLI (`gh`)** para consultar e alterar temporariamente as duas variáveis de autorização, disparar `workflow_dispatch` e, quando permitido e autorizado, aprovar o ambiente `producao-agenday`. Segredos FTP permanecem no GitHub Environments. Após a execução, as variáveis devem voltar a `false/disabled`.
 
-**Verificação mais recente (23/11/2026):** o responsável aprovou no celular a rolagem até **Cadastrar-se** após o [deploy do PR #117](https://github.com/Emds96/AgenDay-PI/actions/runs/45299388389), SHA 63a6d57. Detalhes em [STATUS](docs/STATUS.md).
+**Verificação mais recente (23/11/2026):** [deploy do PR #119](https://github.com/Emds96/AgenDay-PI/actions/runs/45304476963), SHA `c76772d`: indicador centralizado nos botões do portal do cliente. Testes e limites em [STATUS](docs/STATUS.md).
+
+**Verificação anterior (23/11/2026):** o responsável aprovou no celular a rolagem até **Cadastrar-se** após o [deploy do PR #117](https://github.com/Emds96/AgenDay-PI/actions/runs/45299388389), SHA 63a6d57.
 
 **Verificação de 22/11/2026:** SHA `6a9b48f` (run [#45096761768](https://github.com/Emds96/AgenDay-PI/actions/runs/45096761768)) levou ao ar SESSÃO-CONTA-01, PRIMEIROS-PASSOS-05 a 12 e a confirmação de presença pelo lembrete e pelo painel (PR #110). Backup verificado antes de publicar (`2026-11-22_211520`, 145 arquivos, 16 tabelas) e complemento do portal com 129 arquivos; **130 arquivos** enviados em cada pasta, nenhum arquivo remoto apagado e **nenhum SQL executado**. Os gates voltaram a `AGENDAY_DEPLOY_ENABLED=false` e `AGENDAY_DEPLOY_MODE=disabled`. **QA do responsável no celular pendente** (confirmação e cancelamento por link).
 
