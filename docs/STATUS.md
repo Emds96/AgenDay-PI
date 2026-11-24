@@ -1,5 +1,13 @@
 # STATUS — AgenDay 2.0
 
+## Login/cadastro — rolagem reaberta após teste no celular (23/11/2026)
+
+O responsável relatou que, mesmo após o DEPLOY-06, o login aparecia cortado e não conseguia alcançar **Cadastrar-se** no celular. A conferência dos arquivos publicados não validou esse gesto no aparelho.
+
+Ajuste local: o painel ativo determina a altura do cartão, inclusive no desktop; a página rola sem depender de uma área de rolagem dentro do formulário. O login passou a pedir URLs novas para os estilos, pois o deploy anterior reutilizava as antigas. Não foi possível determinar qual CSS estava no cache do aparelho.
+
+No Chrome local, após arrastar em quatro telas emuladas (320×568 a 412×915) e usar a roda em quatro tamanhos de desktop (1024×600 a 1366×768), o botão ficou inteiramente visível e recebeu o teste de toque no centro, sem rolagem horizontal. Sintaxe PHP e 235 verificações estruturais passaram. Pendente: publicação desta revisão e confirmação no celular físico.
+
 ## DEPLOY-06 — migração `segmento` e publicação do lote até o PR #115 (23/11/2026)
 
 - **SHA publicado:** `c8fa68983e2ef6083563c4b11d7be6057884d935` (`dev-feira-uninorte`), com os PRs #109, #112, #113, #114 e #115 integrados.
