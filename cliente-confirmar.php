@@ -39,7 +39,7 @@ function agenday_confirmar_pagina(
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261122-cl02">
+    <link rel="stylesheet" href="css/cliente.css?v=20261123-spinner-grid">
 </head>
 <body class="agenday-auth agenday-portal">
     <main class="container cliente-main">
@@ -211,7 +211,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261122-cl02">
+    <link rel="stylesheet" href="css/cliente.css?v=20261123-spinner-grid">
 </head>
 <body class="agenday-auth agenday-portal">
     <main class="container cliente-main">

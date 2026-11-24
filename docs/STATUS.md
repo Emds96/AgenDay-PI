@@ -1,5 +1,11 @@
 # STATUS — AgenDay 2.0
 
+## Portal do cliente — indicador de carregamento (23/11/2026, somente local)
+
+O responsável mostrou o indicador deslocado no botão Entrar. No código do painel do estabelecimento, os botões de envio pesquisados usam texto; os quatro indicadores de botão foram encontrados no portal. O texto e o indicador agora ocupam a mesma célula da grade, sem disputar a transformação usada na animação do Bootstrap. A URL do CSS foi versionada novamente.
+
+No Chrome local, com os quatro botões visíveis em estado de envio simulado, o desvio entre os centros foi de 0 px nos dois eixos em cinco instantes da animação, em 360×640 e 1366×768. Lint dos três PHPs e 235 verificações estruturais aprovados. Revisão não publicada.
+
 ## Login/cadastro — rolagem aprovada no celular em produção (23/11/2026)
 
 O responsável relatou que, mesmo após o DEPLOY-06, o login aparecia cortado e não conseguia alcançar **Cadastrar-se** no celular. A conferência dos arquivos publicados não validou esse gesto no aparelho.

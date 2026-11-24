@@ -209,8 +209,8 @@ verificar(configCSS.includes('@media (max-width: 575.98px)')
 /* UI-11: spinner centralizado no botão, inclusive no portal do cliente. */
 const clienteCSS = ler('css/cliente.css');
 verificar(clienteCSS.includes('.cliente-botao-largo [data-carregando]')
-    && clienteCSS.includes('position: absolute')
-    && clienteCSS.includes('transform: translate(-50%, -50%)'),
+    && clienteCSS.includes('place-items: center')
+    && clienteCSS.includes('grid-area: 1 / 1'),
     'UI-11: spinner do botão pode ficar deslocado');
 
 
