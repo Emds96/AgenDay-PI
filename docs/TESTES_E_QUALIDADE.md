@@ -1,6 +1,8 @@
 # Testes e qualidade (QA) — AgenDay 2.0
 
-**Revisado em 23/11/2026** após o deploy `c8fa689` (migração `segmento`, máscara de 11 dígitos, spinner e rolagem do login). Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+**Revisado em 23/11/2026** após a aprovação da rolagem do cadastro em produção (`63a6d57`). Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+
+**Login/cadastro no celular:** na tela pública em 320×568 emulado, **Criar conta → rolar → Cadastrar-se** deixou o botão inteiro e alcançável. Após o deploy do PR #117, o responsável também confirmou a correção no próprio celular. Essa validação cobre a rolagem até o botão; não houve relato de envio de um novo cadastro.
 
 ## QA FIX-01 — Reenvio de cadastros (19/11/2026)
 
