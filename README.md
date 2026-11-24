@@ -167,7 +167,9 @@ A CI passou nos commits publicados. Nos cenários de QA relatados, houve cadastr
 
 O **plugin GitHub** gerencia código/PRs e consulta execuções; o **Remote Desktop Commander**, conectado ao computador autorizado, executa o **GitHub CLI (`gh`)** para consultar e alterar temporariamente as duas variáveis de autorização, disparar `workflow_dispatch` e, quando permitido e autorizado, aprovar o ambiente `producao-agenday`. Segredos FTP permanecem no GitHub Environments. Após a execução, as variáveis devem voltar a `false/disabled`.
 
-**Verificação mais recente (23/11/2026):** [deploy do PR #119](https://github.com/Emds96/AgenDay-PI/actions/runs/45304476963), SHA `c76772d`: indicador centralizado nos botões do portal do cliente. Testes e limites em [STATUS](docs/STATUS.md).
+**Verificação mais recente (23/11/2026):** [deploy do PR #122](https://github.com/Emds96/AgenDay-PI/actions/runs/45316695601), SHA `3c1bb57`: celular limitado a 11 dígitos sem confundir o DDD `55` com o código do país; `+55` recusado. Conferido no site público. Testes e limites em [STATUS](docs/STATUS.md).
+
+**Verificação anterior (23/11/2026):** [deploy do PR #119](https://github.com/Emds96/AgenDay-PI/actions/runs/45304476963), SHA `c76772d`: indicador centralizado nos botões do portal do cliente.
 
 **Verificação anterior (23/11/2026):** o responsável aprovou no celular a rolagem até **Cadastrar-se** após o [deploy do PR #117](https://github.com/Emds96/AgenDay-PI/actions/runs/45299388389), SHA 63a6d57.
 

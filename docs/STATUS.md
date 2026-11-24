@@ -10,7 +10,11 @@ README e guias de continuidade, arquitetura, QA e WAHA reconciliados com a vers�
 
 **Correção:** nos campos de celular, informar DDD + 9 + oito dígitos. O DDD `(55)` é válido; a máscara recusa o prefixo `+55` e entradas que ultrapassem 11 dígitos, sem substituir o número anterior. É possível apagar ou selecionar dígitos para corrigi-los. Campos legados de contato/login continuam com sua regra de comprimento. Cadastro de estabelecimento, Configurações e contatos novos ou alterados de funcionários também validam o 9 após o DDD no servidor. Não houve migração de dados.
 
-**Verificação:** no cadastro local em Chrome (360×640 emulado), digitação do 12º dígito no final e no meio preservou `(55) 90000-1234`; entrada com `+55` foi recusada e substituição por número nacional com DDD 92 funcionou. Testes de regressão para DDD 55 e 92, inclusive colagem; 241 verificações de responsividade/máscara, 33 de Configurações, 195 de primeiros passos e 159 do portal passaram. **Ainda não publicado.**
+**Verificação:** no cadastro local em Chrome (360×640 emulado), digitação do 12º dígito no final e no meio preservou `(55) 90000-1234`; entrada com `+55` foi recusada e substituição por número nacional com DDD 92 funcionou. Testes de regressão para DDD 55 e 92, inclusive colagem; 241 verificações de responsividade/máscara, 33 de Configurações, 195 de primeiros passos e 159 do portal passaram.
+
+**Publicação:** [PR #122](https://github.com/Emds96/AgenDay-PI/pull/122), SHA `3c1bb57`, [run 45316695601](https://github.com/Emds96/AgenDay-PI/actions/runs/45316695601). Antes do envio, backup `2026-11-23_225521_36237bf2` com restauração local aprovada e cópia do portal `portal_20261123_225520` com 132 arquivos e CRC do ZIP verificado. Os três jobs passaram e as flags voltaram a `false`/`disabled`.
+
+**Conferência no site público (360×640 emulado):** o login carregou `js/telefone-celular.js?v=20261123-ddd`. Com `(55) 90000-1234` preenchido, inserir o 12º dígito no fim ou no meio manteve o número; colar `+55 92 90000-0000` foi recusado sem alterar o valor; substituir por `(92) 90000-1234` funcionou e o campo ficou válido. O portal público também carrega a versão nova do script. Nenhuma migração de banco foi necessária.
 
 ## Portal do cliente — indicador de carregamento (23/11/2026)
 

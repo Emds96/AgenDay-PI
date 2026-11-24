@@ -1,6 +1,8 @@
 # Testes e qualidade (QA) — AgenDay 2.0
 
-**Revisado em 23/11/2026** após a aprovação da rolagem do cadastro em produção (`63a6d57`). Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+**Revisado em 23/11/2026** após o deploy `3c1bb57` (máscara do celular com DDD nacional). Complementa [STATUS.md](STATUS.md), com a evidência de cada resultado. Este documento reúne **roteiro + estado dos defeitos**; nenhum caso de teste adicional é presumido executado apenas por constar aqui.
+
+**Celular nacional (23/11/2026):** regressão automatizada em `tests/responsividade-check.js` para DDD `55` e `92`, com 12º dígito no fim e no meio e colagem com `+55`; `tests/configuracao-estabelecimento.php` cobre a exigência do 9 após o DDD no servidor. No site publicado, em 360×640 emulado, o valor `(55) 90000-1234` foi preservado nas tentativas de excesso e a troca por `(92) 90000-1234` foi aceita. A regra cobre a digitação; não substitui o teste manual em aparelho físico.
 
 **Login/cadastro no celular:** na tela pública em 320×568 emulado, **Criar conta → rolar → Cadastrar-se** deixou o botão inteiro e alcançável. Após o deploy do PR #117, o responsável também confirmou a correção no próprio celular. Essa validação cobre a rolagem até o botão; não houve relato de envio de um novo cadastro.
 
