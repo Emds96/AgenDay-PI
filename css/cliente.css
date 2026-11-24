@@ -143,22 +143,16 @@
 .agenday-portal .cliente-botao-largo {
   width: 100%;
   min-height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
+  display: inline-grid;
+  place-items: center;
   font-weight: 600;
-  position: relative;
 }
 
-/* Durante o envio o texto fica invisível, mas continua ocupando espaço no
-   flex. O spinner é retirado do fluxo e centralizado no botão inteiro. */
+/* O texto preserva o tamanho do botão. A bolinha ocupa a mesma célula;
+   o transform continua livre para a rotação do Bootstrap. */
+.agenday-portal .cliente-botao-largo .cliente-botao-texto,
 .agenday-portal .cliente-botao-largo [data-carregando] {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin: 0;
-  transform: translate(-50%, -50%);
+  grid-area: 1 / 1;
 }
 
 .agenday-portal .cliente-codigo {

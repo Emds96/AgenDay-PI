@@ -42,7 +42,7 @@ function agenday_cancelar_pagina(string $titulo, string $mensagem, string $icone
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl01">
+    <link rel="stylesheet" href="css/cliente.css?v=20261123-spinner-grid">
 </head>
 <body class="agenday-auth agenday-portal">
     <main class="container cliente-main">
@@ -251,7 +251,7 @@ if (!$janela['pode']) {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl01">
+    <link rel="stylesheet" href="css/cliente.css?v=20261123-spinner-grid">
 </head>
 <body class="agenday-auth agenday-portal">
     <main class="container cliente-main">

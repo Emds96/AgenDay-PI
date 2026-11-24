@@ -54,7 +54,7 @@ if ($estabelecimento === null) {
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl14">
+    <link rel="stylesheet" href="css/cliente.css?v=20261123-spinner-grid">
 </head>
 <body class="agenday-auth agenday-portal">
     <main class="container cliente-main">
@@ -89,7 +89,7 @@ $exigirCodigo = (int) $estabelecimento['exigir_codigo_whatsapp'] === 1;
     <link rel="stylesheet" href="css/body.css">
     <link rel="stylesheet" href="css/design-system.css">
     <link rel="stylesheet" href="css/responsivo.css?v=20261120-del01">
-    <link rel="stylesheet" href="css/cliente.css?v=20261121-cl14">
+    <link rel="stylesheet" href="css/cliente.css?v=20261123-spinner-grid">
 </head>
 <body class="agenday-auth agenday-portal"
       data-slug="<?= $esc($slug) ?>"
