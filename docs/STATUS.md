@@ -1,12 +1,16 @@
 # STATUS — AgenDay 2.0
 
-## Login/cadastro — rolagem reaberta após teste no celular (23/11/2026)
+## Login/cadastro — rolagem aprovada no celular em produção (23/11/2026)
 
 O responsável relatou que, mesmo após o DEPLOY-06, o login aparecia cortado e não conseguia alcançar **Cadastrar-se** no celular. A conferência dos arquivos publicados não validou esse gesto no aparelho.
 
 Ajuste local: o painel ativo determina a altura do cartão, inclusive no desktop; a página rola sem depender de uma área de rolagem dentro do formulário. O login passou a pedir URLs novas para os estilos, pois o deploy anterior reutilizava as antigas. Não foi possível determinar qual CSS estava no cache do aparelho.
 
-No Chrome local, após arrastar em quatro telas emuladas (320×568 a 412×915) e usar a roda em quatro tamanhos de desktop (1024×600 a 1366×768), o botão ficou inteiramente visível e recebeu o teste de toque no centro, sem rolagem horizontal. Sintaxe PHP e 235 verificações estruturais passaram. Pendente: publicação desta revisão e confirmação no celular físico.
+No Chrome local, após arrastar em quatro telas emuladas (320×568 a 412×915) e usar a roda em quatro tamanhos de desktop (1024×600 a 1366×768), o botão ficou inteiramente visível e recebeu o teste de toque no centro, sem rolagem horizontal. Sintaxe PHP e 235 verificações estruturais passaram.
+
+- **Publicação:** [PR #117](https://github.com/Emds96/AgenDay-PI/pull/117), SHA `63a6d57`, [run 45299388389](https://github.com/Emds96/AgenDay-PI/actions/runs/45299388389). Validação, diagnóstico FTPS e envio concluídos com sucesso; flags conferidas em `false`/`disabled`.
+- **Verificação em produção:** na página pública, em 320×568 emulado, foi possível abrir **Criar conta** e rolar 429 px. O botão **Cadastrar-se** ficou inteiro na tela e seu centro estava livre para toque.
+- **Celular físico:** após testar a versão publicada, o responsável confirmou: “Agora sim corrigiu”. Defeito de rolagem encerrado; a aprovação se refere ao acesso ao botão, não ao envio de um novo cadastro.
 
 ## DEPLOY-06 — migração `segmento` e publicação do lote até o PR #115 (23/11/2026)
 
