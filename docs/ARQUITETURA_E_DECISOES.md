@@ -78,7 +78,6 @@ No código de agendamento, data/hora local é interpretada em `America/Manaus` p
 - Definir a taxa de cancelamento como regra/aviso, sem gateway de pagamento.
 - Completar regressão visual da correção de menu (QA-01), já integrada e incluída nos deploys posteriores; não presumir cobertura completa apenas pelo código publicado.
 - QA-02 e QA-03 estão concluídas no fluxo principal testado; ainda revisar os cenários negativos de senha. Priorizar QA-04 a QA-08 (configuração, módulos legados, JS, textos fixos, modais) conforme impacto na feira.
-- Definir página pública do consumidor, links e fluxo sem conta/com conta.
 - Decidir escopo real de comandas, financeiro, dashboard e perfil para a apresentação.
 - Decidir integração/colaboração com Gabriel; não unificar branches sem entendimento.
 - Confirmar oficialmente prazo final e data da feira e definir plano de demonstração/contingência.

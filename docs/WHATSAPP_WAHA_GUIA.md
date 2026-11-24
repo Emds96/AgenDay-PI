@@ -1,6 +1,6 @@
 # WhatsApp do AgenDay (WAHA + ngrok) — guia operacional
 
-Atualizado em 21/11/2026. Este guia é para o **PC que fica ligado durante a feira**, não para a hospedagem.
+Atualizado em 23/11/2026. Este guia é para o **PC que fica ligado durante a feira**, não para a hospedagem.
 
 O AgenDay não envia WhatsApp direto: ele coloca a mensagem numa fila (`mensagem_whatsapp`) e chama, por HTTPS de saída, um servidor **WAHA** que roda no seu PC. O WAHA é um WhatsApp Web automatizado, pareado ao número de um celular por QR code. Como a hospedagem não consegue enxergar o seu PC, o WAHA precisa de um endereço público: é o **ngrok** que cria esse endereço.
 
@@ -15,18 +15,20 @@ Navegador do cliente
 Consequências que precisam ser aceitas:
 
 - O PC precisa estar **ligado, com Docker Desktop aberto e o ngrok rodando** durante todo o uso.
-- Se o PC reiniciar, o endereço do ngrok gratuito **muda** e precisa ser atualizado na página **WhatsApp da plataforma** (`whatsapp-plataforma.php`, 2 minutos).
+- Após reiniciar o PC, confira se o túnel voltou com o endereço configurado em `whatsapp-plataforma.php`. Atualize a URL nessa página apenas se o endereço tiver mudado.
 - O número pareado é o remetente. Quem escaneia o QR precisa estar disponível no momento do pareamento.
 - WAHA é um projeto não oficial: existe risco de o WhatsApp bloquear o número. **Não usar o número pessoal principal.**
 - Sem WhatsApp, o portal continua funcionando com a contingência (login só pelo celular), descrita no fim.
 
 ## Pré-requisitos
 
-| Item | Situação em 21/11/2026 |
+Na conferência de 23/11/2026, `docker ps` mostrou o contêiner `agenday-waha` em execução e a API local do ngrok informou um túnel ativo. Isso comprova o estado dos processos naquele momento, não a entrega de um lembrete ao celular. Os passos de instalação abaixo servem para preparar outro PC ou repor um componente ausente.
+
+| Item | Referência para operação |
 | --- | --- |
-| Docker Desktop | **não instalado** — precisa instalar e reiniciar o PC |
-| WSL2 | `wsl.exe` presente; a instalação do Docker Desktop ativa o resto |
-| ngrok | **não instalado** — pacote `Ngrok.Ngrok` disponível no winget |
+| Docker | No PC da feira, conferir se `agenday-waha` aparece em `docker ps`. |
+| WSL2 | Requisito da instalação com o backend WSL2 do Docker Desktop. |
+| ngrok | Conferir o túnel na API local `http://127.0.0.1:4040/api/tunnels`. |
 | Conta ngrok + authtoken | já existe (o token **não** vai para o chat nem para o Git) |
 | Celular do número remetente | combinado com o responsável pelo número |
 

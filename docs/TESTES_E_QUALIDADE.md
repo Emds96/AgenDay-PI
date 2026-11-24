@@ -139,7 +139,7 @@ Documento específico: [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md). **Não co
 - **Testes automatizados:** `tests/portal-cliente.php` (100 verificações, incluindo host local, links locais, assinatura do formulário de cancelamento e autorização do POST sem `Origin`) mais `agendamento-validacao` (19), `agendamento-cancelamento` (20) e `responsividade-check` (210), executados na CI e no local; `php -l` e `node --check` limpos nos arquivos alterados.
 - **Validação local (21/11/2026):** fluxo completo em 1366 px e 360 px, com agendamento real gravado e cancelado em seguida; sem rolagem horizontal em 360 px. Envio real pelo WAHA/GOWS com número novo e antigo (HTTP 201) e ciclo completo com WhatsApp real.
 - **Validação em produção (21/11/2026, relato do responsável + conferência no banco):** conta criada pelo portal com o código recebido no WhatsApp, agendamento confirmado (id 189, 23/11 15:00–17:00) e mensagem `confirmacao` `enviado` em 3 segundos; cliente novo no Studio (17 para 18).
-- **Ainda pendente:** cancelamento pelo link no **celular físico** em produção e leitores de tela.
+- **Pendências daquela etapa:** o cancelamento pelo link no celular foi aprovado depois, no PORTAL-07 (abaixo). O teste com leitor de tela continua pendente.
 
 ### PORTAL-06 — correções no link de cancelamento e no aviso de remarcação (21/11/2026)
 
@@ -161,4 +161,4 @@ Documento específico: [CONFIGURACOES_UI08.md](CONFIGURACOES_UI08.md). **Não co
 - **Prova HTTP local:** **7 verificações, 0 falha** — GET, assinatura inválida recusada com 403, confirmação real, repetição idempotente e confirmação pelo painel.
 - **Teste com WhatsApp real (22/11/2026, PC local):** lembrete enviado pelo WAHA para o número do responsável, que abriu o link e confirmou; o banco passou a `confirmado`. Registro honesto: houve **dois envios**, embora só um estivesse autorizado — o primeiro saiu com o domínio público e um token que só existia no banco local. Os dados temporários foram removidos.
 - **Publicado:** DEPLOY-05, SHA `6a9b48f` (22/11/2026).
-- **Ainda pendente:** teste de ponta a ponta no celular em produção (lembrete real com link público), cancelamento por link no celular e leitores de tela.
+- **Pendente na versão atual:** receber no celular o lembrete real de 24 h gerado em produção, confirmar pelo link público e verificar o status na agenda. Repetir o cancelamento por link como regressão do PORTAL-07, já aprovado em 21/11. O teste com leitor de tela também permanece pendente.

@@ -1,5 +1,9 @@
 # STATUS — AgenDay 2.0
 
+## Revisão da documentação ativa (23/11/2026)
+
+README e guias de continuidade, arquitetura, QA e WAHA reconciliados com a versão publicada `c76772d`. O portal já está no ar; a conexão WhatsApp é global. O cancelamento por link foi aprovado no PORTAL-07; faltam a regressão na versão atual e a prova de ponta a ponta do lembrete de 24 h em produção. A conferência do contêiner e do túnel no PC não envolveu envio de mensagem.
+
 ## Portal do cliente — indicador de carregamento (23/11/2026)
 
 O responsável mostrou o indicador deslocado no botão Entrar. No código do painel do estabelecimento, os botões de envio pesquisados usam texto; os quatro indicadores de botão foram encontrados no portal. O texto e o indicador agora ocupam a mesma célula da grade, sem disputar a transformação usada na animação do Bootstrap. A URL do CSS foi versionada novamente.
